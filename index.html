@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en" class="scroll-smooth">
 <head>
@@ -1267,7 +1266,7 @@
 
             </div>
 
-            <!-- CATEGORY 4: REGISTERED CUSTOMERS CRM DIRECTORY (Includes Name, Phone, Location, Email) -->
+            <!-- CATEGORY 4: REGISTERED CUSTOMERS CRM DIRECTORY -->
             <div id="admin-sec-users" class="hidden">
                 <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-3">
                     <div class="border-b border-slate-100 pb-3">
@@ -1363,19 +1362,20 @@
 
     <!-- Frontend Functional JavaScript Code -->
     <script>
-        let cartItems = {};
-        let notificationsHistory = [];
-        let expandedComments = {}; 
-        let currentUser = null; 
-        let guestSessionName = ""; 
-        let activeAdminCatalogFilter = 'all';
+        // Changed to 'var' to allow clean cross-script scope communication with Firebase module
+        var cartItems = {};
+        var notificationsHistory = [];
+        var expandedComments = {}; 
+        var currentUser = null; 
+        var guestSessionName = ""; 
+        var activeAdminCatalogFilter = 'all';
 
         // Staging arrays for pending sort changes before confirmation update
-        let workingMenuData = [];
-        let workingFeedPosts = [];
+        var workingMenuData = [];
+        var workingFeedPosts = [];
 
         // Verified Food Menu Data (Includes Fast Food, Local Menu & 5 Cold Drinks Items)
-        let menuData = [
+        var menuData = [
             { id: 1, name: 'Chicken Shaurma', desc: 'Juicy roasted chicken wrap with secret garlic dressing sauce.', price: 180, image: 'https://images.unsplash.com/photo-1561651823-34feb02250e4?q=80&w=600&auto=format&fit=crop', category: 'fast' },
             { id: 2, name: 'Zinger Burger', desc: 'Crispy fried chicken breast inside toasted sesame buns with lettuce.', price: 280, image: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?q=80&w=600&auto=format&fit=crop', category: 'fast' },
             { id: 3, name: 'Club Sandwich', desc: 'Triple layered toasted bread stuffed with egg, chicken and cheese.', price: 250, image: 'https://images.unsplash.com/photo-1525351484163-7529414344d8?q=80&w=600&auto=format&fit=crop', category: 'fast' },
@@ -1394,7 +1394,7 @@
         ];
 
         // Placed Orders Log Database
-        let ordersList = [
+        var ordersList = [
             {
                 id: '#ACP-4821',
                 customerName: 'Muhammad Arslan',
@@ -1420,10 +1420,10 @@
         ];
 
         // Registered Customers CRM Database
-        let registeredUsers = [];
+        var registeredUsers = [];
 
         // Interactive Live Social Feed Database
-        let feedPosts = [
+        var feedPosts = [
             { 
                 id: 101, 
                 title: "🔥 Special Friday Jalebi & Samosa Extravaganza!", 
@@ -1935,6 +1935,9 @@
             document.getElementById('navBellBadge').classList.add('hidden');
         }
 
+        window.openNotificationsModal = openNotificationsModal;
+        window.closeNotificationsModal = closeNotificationsModal;
+
         function closeNotificationsModal() {
             document.getElementById('notificationsModal').classList.add('hidden');
         }
@@ -1946,6 +1949,8 @@
             document.getElementById('navBellBadge').classList.remove('hidden');
             renderNotificationsList();
         }
+
+        window.addOrderNotification = addOrderNotification;
 
         function renderNotificationsList() {
             const list = document.getElementById('notificationsList');
@@ -2027,11 +2032,15 @@
             document.getElementById('checkoutConfirmModal').classList.remove('hidden');
         }
 
+        window.openCheckoutConfirmModal = openCheckoutConfirmModal;
+
         function closeCheckoutConfirmModal() {
             document.getElementById('checkoutConfirmModal').classList.add('hidden');
         }
 
-        // Finalize Order: Add to Admin Panel & Redirect to WhatsApp
+        window.closeCheckoutConfirmModal = closeCheckoutConfirmModal;
+
+        // Finalize Order Placeholder (safely overridden by Firebase DB module)
         function finalizeOrderAndSendWhatsApp() {
             const keys = Object.keys(cartItems);
             if (keys.length === 0) return;
@@ -2062,7 +2071,7 @@
             const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
             const dateStr = new Date().toLocaleDateString();
 
-            // Record in Admin Orders Database
+            // Record in Local Orders Database
             ordersList.unshift({
                 id: orderId,
                 customerName: name,
@@ -2106,7 +2115,7 @@
             window.open(whatsappUrl, '_blank');
         }
 
-        // Admin Approval Action Function
+        // Local Admin Approval Action (safely overridden by Firebase DB module)
         function approveAdminOrder(index) {
             if (ordersList[index]) {
                 ordersList[index].status = 'Approved';
@@ -2132,6 +2141,8 @@
             renderDrinksMenu();
             renderCartSummary();
         }
+
+        window.updateQty = updateQty;
 
         function renderCartSummary() {
             const emptyState = document.getElementById('emptyCart');
@@ -2210,6 +2221,8 @@
             showNotification('Basket cleared.', 'warning');
         }
 
+        window.clearCart = clearCart;
+
         // Account Auth Switcher (Sign In vs Register)
         function switchAuthMode(mode) {
             const btnSignIn = document.getElementById('btnAuthTabSignIn');
@@ -2233,6 +2246,8 @@
             }
         }
 
+        window.switchAuthMode = switchAuthMode;
+
         function openUserModal() {
             const modal = document.getElementById('userAuthModal');
             const authContainer = document.getElementById('userAuthContainer');
@@ -2254,11 +2269,15 @@
             modal.classList.remove('hidden');
         }
 
+        window.openUserModal = openUserModal;
+
         function closeUserModal() {
             document.getElementById('userAuthModal').classList.add('hidden');
         }
 
-        // Sign In Existing User
+        window.closeUserModal = closeUserModal;
+
+        // Sign In Existing User (Reads synced user registration list)
         function signInUser() {
             const phone = document.getElementById('signInPhone').value.trim();
             if (!phone) return;
@@ -2278,7 +2297,9 @@
             }
         }
 
-        // Register First-Time User
+        window.signInUser = signInUser;
+
+        // Register First-Time User Placeholder (safely overridden by Firebase DB module)
         function registerUser() {
             const name = document.getElementById('regName').value.trim();
             const phone = document.getElementById('regPhone').value.trim();
@@ -2316,15 +2337,21 @@
             showNotification('Signed out successfully.');
         }
 
+        window.logoutUser = logoutUser;
+
         function openAdminPortal() {
             document.getElementById('adminAuthModal').classList.remove('hidden');
             document.getElementById('adminPasscode').focus();
         }
 
+        window.openAdminPortal = openAdminPortal;
+
         function closeAdminAuth() {
             document.getElementById('adminAuthModal').classList.add('hidden');
             document.getElementById('adminPasscode').value = '';
         }
+
+        window.closeAdminAuth = closeAdminAuth;
 
         function verifyAdminPasscode() {
             const codeField = document.getElementById('adminPasscode');
@@ -2352,6 +2379,8 @@
             }
         }
 
+        window.verifyAdminPasscode = verifyAdminPasscode;
+
         function closeAdminPortal() {
             document.getElementById('admin-page').classList.add('hidden');
             document.getElementById('customer-page').classList.remove('hidden');
@@ -2363,6 +2392,8 @@
             renderCartSummary();
             renderCustomerSocialFeeds();
         }
+
+        window.closeAdminPortal = closeAdminPortal;
 
         function switchAdminTab(activeTab) {
             const btnOrders = document.getElementById('adminTabOrders');
@@ -2409,6 +2440,8 @@
             }
         }
 
+        window.switchAdminTab = switchAdminTab;
+
         function switchCatalogSubTab(subTab) {
             const btnList = document.getElementById('btnSubCatList');
             const btnAdd = document.getElementById('btnSubCatAdd');
@@ -2431,6 +2464,8 @@
             }
         }
 
+        window.switchCatalogSubTab = switchCatalogSubTab;
+
         function switchFeedSubTab(subTab) {
             const btnCreate = document.getElementById('btnSubFeedCreate');
             const btnList = document.getElementById('btnSubFeedList');
@@ -2452,6 +2487,8 @@
                 btnList.className = activeBtn;
             }
         }
+
+        window.switchFeedSubTab = switchFeedSubTab;
 
         // 1. Render Admin Orders List
         function renderAdminOrdersList() {
@@ -2528,11 +2565,15 @@
             });
         }
 
+        window.renderAdminOrdersList = renderAdminOrdersList;
+
         function removeAdminOrder(index) {
             ordersList.splice(index, 1);
             renderAdminOrdersList();
             showNotification('Order record cleared.');
         }
+
+        window.removeAdminOrder = removeAdminOrder;
 
         function handleImageUpload(event) {
             const file = event.target.files[0];
@@ -2546,6 +2587,8 @@
                 reader.readAsDataURL(file);
             }
         }
+
+        window.handleImageUpload = handleImageUpload;
 
         function handlePostImageUpload(event) {
             const file = event.target.files[0];
@@ -2567,6 +2610,8 @@
             }
         }
 
+        window.handlePostImageUpload = handlePostImageUpload;
+
         function removePostImage() {
             document.getElementById('postFormFile').value = '';
             document.getElementById('postFormImage').value = '';
@@ -2577,6 +2622,8 @@
             }
             showNotification('Image attachment removed.', 'warning');
         }
+
+        window.removePostImage = removePostImage;
 
         // Filter Admin Catalog View by Category Boxes
         function filterAdminCatalog(cat) {
@@ -2603,6 +2650,8 @@
             renderAdminCatalog();
         }
 
+        window.filterAdminCatalog = filterAdminCatalog;
+
         // Reorder Catalog Item Up or Down (Stages locally until Save button clicked)
         function moveCatalogItem(id, direction) {
             const index = workingMenuData.findIndex(x => x.id === id);
@@ -2623,6 +2672,8 @@
             if (updateBar) updateBar.classList.remove('hidden');
         }
 
+        window.moveCatalogItem = moveCatalogItem;
+
         function saveCatalogOrderChanges() {
             menuData = JSON.parse(JSON.stringify(workingMenuData));
             renderAdminCatalog();
@@ -2634,6 +2685,8 @@
             if (updateBar) updateBar.classList.add('hidden');
             showNotification('Catalog order updated successfully!');
         }
+
+        window.saveCatalogOrderChanges = saveCatalogOrderChanges;
 
         // Reorder Feed Post Up or Down (Stages locally until Save button clicked)
         function movePostItem(id, direction) {
@@ -2655,6 +2708,8 @@
             if (updateBar) updateBar.classList.remove('hidden');
         }
 
+        window.movePostItem = movePostItem;
+
         function savePostOrderChanges() {
             feedPosts = JSON.parse(JSON.stringify(workingFeedPosts));
             renderAdminPostsList();
@@ -2664,6 +2719,8 @@
             if (updateBar) updateBar.classList.add('hidden');
             showNotification('Feed post order updated successfully!');
         }
+
+        window.savePostOrderChanges = savePostOrderChanges;
 
         // 2. Render Food Catalog in Admin Panel
         function renderAdminCatalog() {
@@ -2728,6 +2785,8 @@
             });
         }
 
+        window.renderAdminCatalog = renderAdminCatalog;
+
         // 3. Render Published Posts List
         function renderAdminPostsList() {
             const container = document.getElementById('adminPostsListContainer');
@@ -2780,6 +2839,8 @@
             });
         }
 
+        window.renderAdminPostsList = renderAdminPostsList;
+
         function loadPostToEdit(postId) {
             const post = feedPosts.find(p => p.id === postId);
             if (!post) return;
@@ -2803,6 +2864,8 @@
             switchFeedSubTab('create');
         }
 
+        window.loadPostToEdit = loadPostToEdit;
+
         function resetPostForm() {
             document.getElementById('editPostId').value = '';
             document.getElementById('postFormTitle').value = '';
@@ -2820,6 +2883,8 @@
             }
         }
 
+        window.resetPostForm = resetPostForm;
+
         function deleteFeedPost(postId) {
             feedPosts = feedPosts.filter(p => p.id !== postId);
             workingFeedPosts = JSON.parse(JSON.stringify(feedPosts));
@@ -2827,6 +2892,8 @@
             renderCustomerSocialFeeds();
             showNotification('Post deleted successfully!', 'warning');
         }
+
+        window.deleteFeedPost = deleteFeedPost;
 
         function handleFeedPostSubmit(event) {
             event.preventDefault();
@@ -2870,7 +2937,9 @@
             switchFeedSubTab('list');
         }
 
-        // 4. Render Registered Customers CRM Directory (Displays Name, Phone, Location & Email)
+        window.handleFeedPostSubmit = handleFeedPostSubmit;
+
+        // 4. Render Registered Customers CRM Directory
         function renderRegisteredUsers(usersToShow = registeredUsers) {
             const tableBody = document.getElementById('registeredUsersRows');
             const badge = document.getElementById('adminUsersCountBadge');
@@ -2926,10 +2995,14 @@
             });
         }
 
+        window.renderRegisteredUsers = renderRegisteredUsers;
+
         function copyCustomerAddress(address) {
             document.execCommand('copy');
             showNotification('Address copied to clipboard!');
         }
+
+        window.copyCustomerAddress = copyCustomerAddress;
 
         function removeCustomerRecord(idx) {
             registeredUsers.splice(idx, 1);
@@ -2937,6 +3010,8 @@
             renderRegisteredUsers();
             showNotification('Account removed from CRM database.', 'warning');
         }
+
+        window.removeCustomerRecord = removeCustomerRecord;
 
         function searchUsers(keyword) {
             const filtered = registeredUsers.filter(u => 
@@ -2948,6 +3023,8 @@
             renderRegisteredUsers(filtered);
         }
 
+        window.searchUsers = searchUsers;
+
         function deleteFoodCatalog(id) {
             if (cartItems[id]) {
                 delete cartItems[id];
@@ -2957,6 +3034,8 @@
             renderAdminCatalog();
             showNotification('Item removed from catalog.');
         }
+
+        window.deleteFoodCatalog = deleteFoodCatalog;
 
         function loadFoodToEdit(id) {
             const item = menuData.find(x => x.id == id);
@@ -2974,6 +3053,8 @@
 
             switchCatalogSubTab('add');
         }
+
+        window.loadFoodToEdit = loadFoodToEdit;
 
         function handleFoodFormSubmit(event) {
             event.preventDefault();
@@ -3015,12 +3096,16 @@
             switchCatalogSubTab('list');
         }
 
+        window.handleFoodFormSubmit = handleFoodFormSubmit;
+
         function resetAdminForm() {
             document.getElementById('editFoodId').value = '';
             document.getElementById('adminFoodForm').reset();
             document.getElementById('formPanelTitle').innerText = 'Add New Food Item';
             document.getElementById('foodFormSubmitBtn').innerHTML = '<i class="fa-solid fa-save mr-1"></i> Save Product';
         }
+
+        window.resetAdminForm = resetAdminForm;
 
         function generateStoreInvoice() {
             const modalOverlay = document.getElementById('invoiceModalOverlay');
@@ -3070,12 +3155,16 @@
             if (modalOverlay) modalOverlay.style.display = 'flex';
         }
 
+        window.generateStoreInvoice = generateStoreInvoice;
+
         function closeReceiptAndScrollToMenu() {
             const modalOverlay = document.getElementById('invoiceModalOverlay');
             if (modalOverlay) {
                 modalOverlay.style.display = 'none';
             }
         }
+
+        window.closeReceiptAndScrollToMenu = closeReceiptAndScrollToMenu;
 
         function downloadInvoiceJPG() {
             const element = document.getElementById('receiptContainer');
@@ -3105,9 +3194,518 @@
                 showNotification('Failed to generate crisp JPG receipt.', 'warning');
             });
         }
+
+        window.downloadInvoiceJPG = downloadInvoiceJPG;
     </script>
 
-    <!-- Connect External script.js file containing Firebase configuration module -->
-    <script type="module" src="script.js"></script>
+    <!-- Unified Modular Script for Live Cloud Database Configuration -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getDatabase, ref, set, push, onValue, update, remove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js";
+
+        // =========================================================================
+        // YOUR ACTIVE WEB APP'S FIREBASE CONFIGURATION
+        // =========================================================================
+        const firebaseConfig = {
+            apiKey: "AIzaSyCnTvjumYj8qXN8rsQtmkGOAmNuJDummBI",
+            authDomain: "alfa-corex.firebaseapp.com",
+            databaseURL: "https://alfa-corex-default-rtdb.firebaseio.com", // Points to your Realtime Database node
+            projectId: "alfa-corex",
+            storageBucket: "alfa-corex.firebasestorage.app",
+            messagingSenderId: "137972735130",
+            appId: "1:137972735130:web:8edac3d79ebea4046b1323",
+            measurementId: "G-FERT7LM1W6"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        const analytics = getAnalytics(app);
+
+        // Bind global variables clearly onto window namespace for ES scope safety
+        if (typeof menuData !== 'undefined') window.menuData = menuData;
+        if (typeof feedPosts !== 'undefined') window.feedPosts = feedPosts;
+        if (typeof ordersList !== 'undefined') window.ordersList = ordersList;
+        if (typeof registeredUsers !== 'undefined') window.registeredUsers = registeredUsers;
+        if (typeof currentUser !== 'undefined') window.currentUser = currentUser;
+        if (typeof cartItems !== 'undefined') window.cartItems = cartItems;
+        if (typeof workingMenuData !== 'undefined') window.workingMenuData = workingMenuData;
+        if (typeof workingFeedPosts !== 'undefined') window.workingFeedPosts = workingFeedPosts;
+
+        // Clone offline default lists for first-time database autoseeding
+        const initialMenuData = JSON.parse(JSON.stringify(window.menuData || []));
+        const initialFeedPosts = JSON.parse(JSON.stringify(window.feedPosts || []));
+
+        // -------------------------------------------------------------------------
+        // A. REAL-TIME DATA LISTENERS (READS)
+        // -------------------------------------------------------------------------
+
+        // Live Food Catalog Sync
+        onValue(ref(db, 'menuData'), (snapshot) => {
+            const data = snapshot.val();
+            let parsedData = [];
+            if (data) {
+                parsedData = Array.isArray(data) ? data.filter(Boolean) : Object.values(data);
+            } else {
+                parsedData = initialMenuData;
+                set(ref(db, 'menuData'), initialMenuData);
+            }
+            
+            window.menuData.length = 0;
+            window.menuData.push(...parsedData);
+            
+            window.workingMenuData.length = 0;
+            window.workingMenuData.push(...JSON.parse(JSON.stringify(window.menuData)));
+
+            if (typeof window.renderCustomerMenu === 'function') window.renderCustomerMenu();
+            if (typeof window.renderLocalMenu === 'function') window.renderLocalMenu();
+            if (typeof window.renderDrinksMenu === 'function') window.renderDrinksMenu();
+            if (typeof window.renderAdminCatalog === 'function') window.renderAdminCatalog();
+        });
+
+        // Live Social Feed Sync
+        onValue(ref(db, 'feedPosts'), (snapshot) => {
+            const data = snapshot.val();
+            let parsedData = [];
+            if (data) {
+                parsedData = Array.isArray(data) ? data.filter(Boolean) : Object.values(data);
+                parsedData.forEach(post => {
+                    if (!post.comments) post.comments = [];
+                    else if (!Array.isArray(post.comments)) post.comments = Object.values(post.comments);
+                });
+            } else {
+                parsedData = initialFeedPosts;
+                set(ref(db, 'feedPosts'), initialFeedPosts);
+            }
+
+            window.feedPosts.length = 0;
+            window.feedPosts.push(...parsedData);
+
+            window.workingFeedPosts.length = 0;
+            window.workingFeedPosts.push(...JSON.parse(JSON.stringify(window.feedPosts)));
+
+            if (typeof window.renderCustomerSocialFeeds === 'function') window.renderCustomerSocialFeeds();
+            if (typeof window.renderAdminPostsList === 'function') window.renderAdminPostsList();
+        });
+
+        // Live Placed Orders List Sync
+        onValue(ref(db, 'ordersList'), (snapshot) => {
+            const data = snapshot.val();
+            let parsedData = [];
+            if (data) {
+                parsedData = Array.isArray(data) ? data.filter(Boolean) : Object.values(data);
+                parsedData.forEach(ord => {
+                    if (!ord.items) ord.items = [];
+                    else if (!Array.isArray(ord.items)) ord.items = Object.values(ord.items);
+                });
+            }
+
+            window.ordersList.length = 0;
+            window.ordersList.push(...parsedData);
+
+            if (typeof window.renderAdminOrdersList === 'function') window.renderAdminOrdersList();
+        });
+
+        // Live Registered Customers List Sync
+        onValue(ref(db, 'registeredUsers'), (snapshot) => {
+            const data = snapshot.val();
+            let parsedData = [];
+            if (data) {
+                parsedData = Array.isArray(data) ? data.filter(Boolean) : Object.values(data);
+            }
+
+            window.registeredUsers.length = 0;
+            window.registeredUsers.push(...parsedData);
+
+            if (typeof window.renderRegisteredUsers === 'function') window.renderRegisteredUsers();
+            if (typeof window.updateUserAccountDisplay === 'function') window.updateUserAccountDisplay();
+        });
+
+        // -------------------------------------------------------------------------
+        // B. OVERRIDDEN EVENT HANDLERS (WRITES)
+        // -------------------------------------------------------------------------
+
+        // Customer checkout order submission
+        window.finalizeOrderAndSendWhatsApp = function() {
+            const keys = Object.keys(window.cartItems);
+            if (keys.length === 0) return;
+
+            const name = document.getElementById('checkoutName').value.trim();
+            const phone = document.getElementById('checkoutPhone').value.trim();
+            const location = document.getElementById('checkoutLocation').value.trim();
+
+            if (!name || !phone || !location) {
+                window.showNotification('Please fill in Name, Phone and Location.', 'warning');
+                return;
+            }
+
+            const orderId = '#ACP-' + Math.floor(1000 + Math.random() * 9000);
+            let itemsDetail = [];
+            let grandTotal = 0;
+
+            keys.forEach(id => {
+                const item = window.menuData.find(x => x.id == id);
+                if (item) {
+                    const qty = window.cartItems[id];
+                    const total = item.price * qty;
+                    grandTotal += total;
+                    itemsDetail.push({ name: item.name, qty: qty, price: item.price, total: total });
+                }
+            });
+
+            const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            const dateStr = new Date().toLocaleDateString();
+
+            const newOrder = {
+                id: orderId,
+                customerName: name,
+                phone: phone,
+                location: location,
+                date: dateStr,
+                time: timeStr,
+                items: itemsDetail,
+                total: grandTotal,
+                status: 'Pending'
+            };
+
+            // Write order payload to Firebase
+            push(ref(db, 'ordersList'), newOrder).then(() => {
+                let waMsg = `*🛒 NEW ORDER - ALQADRI CHASKA POINT*\n`;
+                waMsg += `*Order ID:* ${orderId}\n`;
+                waMsg += `*Customer:* ${name}\n`;
+                waMsg += `*Phone:* ${phone}\n`;
+                waMsg += `*Location:* ${location}\n\n`;
+                waMsg += `*Items Ordered:*\n`;
+                itemsDetail.forEach(it => {
+                    waMsg += `• ${it.name} x${it.qty} = Rs. ${it.total}\n`;
+                });
+                waMsg += `\n*Grand Total:* Rs. ${grandTotal}\n`;
+                waMsg += `Thank you! Please prepare my order.`;
+
+                const whatsappUrl = `https://wa.me/923102434222?text=${encodeURIComponent(waMsg)}`;
+
+                window.closeCheckoutConfirmModal();
+                window.showNotification(`Order ${orderId} submitted! Opening WhatsApp...`);
+                window.addOrderNotification(`Order Placed (${orderId})`, `Order sent to WhatsApp & kitchen for approval.`);
+
+                // Empty offline cart context
+                window.cartItems = {};
+                window.renderCustomerMenu();
+                window.renderLocalMenu();
+                window.renderDrinksMenu();
+                window.renderCartSummary();
+
+                window.open(whatsappUrl, '_blank');
+            }).catch(err => {
+                console.error(err);
+                window.showNotification('Order transmission failed on cloud database.', 'warning');
+            });
+        };
+
+        // User account registration
+        window.registerUser = function() {
+            const name = document.getElementById('regName').value.trim();
+            const phone = document.getElementById('regPhone').value.trim();
+            const loc = document.getElementById('regLocation').value.trim();
+            const email = document.getElementById('regEmail').value.trim() || 'No Email';
+            
+            if(!name || !phone || !loc) {
+                window.showNotification('Please fill in Name, Phone, and Location fields.', 'warning');
+                return;
+            }
+
+            const newUser = { name, phone, location: loc, email };
+            
+            push(ref(db, 'registeredUsers'), newUser).then(() => {
+                window.currentUser = newUser; 
+                window.updateUserAccountDisplay();
+                window.showNotification(`Welcome, ${name}! Account registered.`);
+                window.closeUserModal();
+                
+                document.getElementById('regName').value = '';
+                document.getElementById('regPhone').value = '';
+                document.getElementById('regLocation').value = '';
+                document.getElementById('regEmail').value = '';
+
+                window.renderCustomerSocialFeeds();
+            }).catch(err => {
+                console.error(err);
+                window.showNotification('Cloud database registration failed.', 'warning');
+            });
+        };
+
+        // Approved order update (Admin Console)
+        window.approveAdminOrder = function(index) {
+            const order = window.ordersList[index];
+            if (!order) return;
+
+            onValue(ref(db, 'ordersList'), (snapshot) => {
+                const data = snapshot.val();
+                if (data) {
+                    Object.keys(data).forEach(key => {
+                        if (data[key].id === order.id) {
+                            update(ref(db, `ordersList/${key}`), { status: 'Approved' }).then(() => {
+                                window.showNotification(`Order ${order.id} approved!`);
+                                window.addOrderNotification(`Order Approved (${order.id})`, `Kitchen approved order ${order.id}! Fresh food preparation started.`, true);
+                            });
+                        }
+                    });
+                }
+            }, { onlyOnce: true });
+        };
+
+        // Clear order record (Admin Console)
+        window.removeAdminOrder = function(index) {
+            const order = window.ordersList[index];
+            if (!order) return;
+
+            onValue(ref(db, 'ordersList'), (snapshot) => {
+                const data = snapshot.val();
+                if (data) {
+                    Object.keys(data).forEach(key => {
+                        if (data[key].id === order.id) {
+                            remove(ref(db, `ordersList/${key}`)).then(() => {
+                                window.showNotification('Order record cleared.');
+                            });
+                        }
+                    });
+                }
+            }, { onlyOnce: true });
+        };
+
+        // Save food item added / modified (Admin Console)
+        window.handleFoodFormSubmit = function(event) {
+            event.preventDefault();
+
+            const editId = document.getElementById('editFoodId').value;
+            const name = document.getElementById('foodFormName').value.trim();
+            const price = parseInt(document.getElementById('foodFormPrice').value);
+            let image = document.getElementById('foodFormImage').value.trim();
+            const desc = document.getElementById('foodFormDesc').value.trim();
+            const category = document.getElementById('foodFormCategory').value;
+
+            if (!name || isNaN(price)) {
+                window.showNotification('Please fill in required name and price fields.', 'warning');
+                return;
+            }
+
+            if (!image) {
+                image = 'https://placehold.co/400x300/FF5A36/ffffff?text=ACP';
+            }
+
+            if (editId) {
+                onValue(ref(db, 'menuData'), (snapshot) => {
+                    const data = snapshot.val();
+                    if (data) {
+                        Object.keys(data).forEach(key => {
+                            if (data[key].id == editId) {
+                                update(ref(db, `menuData/${key}`), { name, price, image, desc, category }).then(() => {
+                                    window.showNotification('Changes saved successfully!');
+                                });
+                            }
+                        });
+                    }
+                }, { onlyOnce: true });
+            } else {
+                const newId = window.menuData.length > 0 ? Math.max(...window.menuData.map(x => x.id)) + 1 : 1;
+                const newItem = { id: newId, name, price, image, desc, category };
+                push(ref(db, 'menuData'), newItem).then(() => {
+                    window.showNotification('Product successfully added to the catalog!');
+                });
+            }
+
+            window.resetAdminForm();
+            window.switchCatalogSubTab('list');
+        };
+
+        // Remove item from food catalog (Admin Console)
+        window.deleteFoodCatalog = function(id) {
+            if (window.cartItems[id]) {
+                delete window.cartItems[id];
+            }
+            
+            onValue(ref(db, 'menuData'), (snapshot) => {
+                const data = snapshot.val();
+                if (data) {
+                    Object.keys(data).forEach(key => {
+                        if (data[key].id == id) {
+                            remove(ref(db, `menuData/${key}`)).then(() => {
+                                window.showNotification('Item removed from catalog.');
+                            });
+                        }
+                    });
+                }
+            }, { onlyOnce: true });
+        };
+
+        // Bulk save manual catalog reorder drag sequence (Admin Console)
+        window.saveCatalogOrderChanges = function() {
+            set(ref(db, 'menuData'), window.workingMenuData).then(() => {
+                const updateBar = document.getElementById('catalogUpdateBar');
+                if (updateBar) updateBar.classList.add('hidden');
+                window.showNotification('Catalog order updated successfully!');
+            });
+        };
+
+        // Save deal post added / modified (Admin Console)
+        window.handleFeedPostSubmit = function(event) {
+            event.preventDefault();
+
+            const editId = document.getElementById('editPostId').value;
+            const title = document.getElementById('postFormTitle').value.trim();
+            const image = document.getElementById('postFormImage').value.trim();
+            const desc = document.getElementById('postFormDesc').value.trim();
+
+            if (!title || !image || !desc) {
+                window.showNotification('Please fill in required post details.', 'warning');
+                return;
+            }
+
+            if (editId) {
+                onValue(ref(db, 'feedPosts'), (snapshot) => {
+                    const data = snapshot.val();
+                    if (data) {
+                        Object.keys(data).forEach(key => {
+                            if (data[key].id == editId) {
+                                update(ref(db, `feedPosts/${key}`), { title, image, desc }).then(() => {
+                                    window.showNotification('Post changes saved successfully!');
+                                });
+                            }
+                        });
+                    }
+                }, { onlyOnce: true });
+            } else {
+                const newPostId = window.feedPosts.length > 0 ? Math.max(...window.feedPosts.map(p => p.id)) + 1 : 101;
+                const newPost = {
+                    id: newPostId,
+                    title,
+                    image,
+                    desc,
+                    likes: 0,
+                    isLiked: false,
+                    comments: []
+                };
+                push(ref(db, 'feedPosts'), newPost).then(() => {
+                    window.showNotification('New post broadcasted live!');
+                });
+            }
+
+            window.resetPostForm();
+            window.switchFeedSubTab('list');
+        };
+
+        // Delete active social deal post (Admin Console)
+        window.deleteFeedPost = function(postId) {
+            onValue(ref(db, 'feedPosts'), (snapshot) => {
+                const data = snapshot.val();
+                if (data) {
+                    Object.keys(data).forEach(key => {
+                        if (data[key].id == postId) {
+                            remove(ref(db, `feedPosts/${key}`)).then(() => {
+                                window.showNotification('Post deleted successfully!', 'warning');
+                            });
+                        }
+                    });
+                }
+            }, { onlyOnce: true });
+        };
+
+        // Bulk save manual deal post reorder sequence (Admin Console)
+        window.savePostOrderChanges = function() {
+            set(ref(db, 'feedPosts'), window.workingFeedPosts).then(() => {
+                const updateBar = document.getElementById('postUpdateBar');
+                if (updateBar) updateBar.classList.add('hidden');
+                window.showNotification('Feed post order updated successfully!');
+            });
+        };
+
+        // Toggle like increments
+        window.likePost = function(id) {
+            const post = window.feedPosts.find(p => p.id === id);
+            if (!post) return;
+
+            post.isLiked = !post.isLiked;
+            const incremental = post.isLiked ? 1 : -1;
+            const newLikesCount = Math.max(0, post.likes + incremental);
+
+            onValue(ref(db, 'feedPosts'), (snapshot) => {
+                const data = snapshot.val();
+                if (data) {
+                    Object.keys(data).forEach(key => {
+                        if (data[key].id == id) {
+                            update(ref(db, `feedPosts/${key}`), { likes: newLikesCount }).then(() => {
+                                if (post.isLiked) {
+                                    window.showNotification('Liked this post! ♥');
+                                }
+                            });
+                        }
+                    });
+                }
+            }, { onlyOnce: true });
+        };
+
+        // Sync and push comment list
+        window.submitComment = function(id) {
+            const post = window.feedPosts.find(p => p.id === id);
+            const input = document.getElementById(`comment-input-${id}`);
+            
+            if (!post || !input) return;
+
+            const commentText = input.value.trim();
+            if (!commentText) return;
+
+            let commenterName = "";
+
+            if (window.currentUser) {
+                commenterName = window.currentUser.name;
+            } else if (window.guestSessionName) {
+                commenterName = window.guestSessionName;
+            } else {
+                window.openGuestNameModal();
+                return;
+            }
+
+            const newComment = { commenter: commenterName, text: commentText };
+            
+            onValue(ref(db, 'feedPosts'), (snapshot) => {
+                const data = snapshot.val();
+                if (data) {
+                    Object.keys(data).forEach(key => {
+                        if (data[key].id == id) {
+                            const existingComments = data[key].comments ? Object.values(data[key].comments) : [];
+                            existingComments.push(newComment);
+                            update(ref(db, `feedPosts/${key}`), { comments: existingComments }).then(() => {
+                                input.value = '';
+                            });
+                        }
+                    });
+                }
+            }, { onlyOnce: true });
+        };
+
+        // Remove user registration from CRM database (Admin Console)
+        window.removeCustomerRecord = function(idx) {
+            const user = window.registeredUsers[idx];
+            if (!user) return;
+
+            onValue(ref(db, 'registeredUsers'), (snapshot) => {
+                const data = snapshot.val();
+                if (data) {
+                    Object.keys(data).forEach(key => {
+                        if (data[key].phone === user.phone) {
+                            remove(ref(db, `registeredUsers/${key}`)).then(() => {
+                                window.showNotification('Account removed from CRM database.', 'warning');
+                                if (window.currentUser && window.currentUser.phone === user.phone) {
+                                    window.currentUser = null;
+                                    window.updateUserAccountDisplay();
+                                }
+                            });
+                        }
+                    });
+                }
+            }, { onlyOnce: true });
+        };
+    </script>
 </body>
 </html>
