@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en" class="scroll-smooth">
 <head>
@@ -1041,7 +1042,7 @@
                 <button onclick="switchAdminTab('orders')" id="adminTabOrders" class="p-3 rounded-2xl border text-center transition-all bg-white border-[#FF5A36] shadow-md text-slate-900 font-extrabold text-xs flex flex-col items-center gap-1.5 relative active:scale-95">
                     <i class="fa-solid fa-shopping-bag text-xl text-[#FF5A36]"></i>
                     <span class="text-[11px]">Customers Orders</span>
-                    <span id="adminOrdersCountBadge" class="absolute top-2 right-2 bg-[#FF5A36] text-white rounded-full text-[9px] w-5 h-5 flex items-center justify-center font-black">2</span>
+                    <span id="adminOrdersCountBadge" class="absolute top-2 right-2 bg-[#FF5A36] text-white rounded-full text-[9px] w-5 h-5 flex items-center justify-center font-black">0</span>
                 </button>
 
                 <button onclick="switchAdminTab('catalog')" id="adminTabCatalog" class="p-3 rounded-2xl border border-slate-200 bg-white text-slate-700 font-bold text-xs flex flex-col items-center gap-1.5 relative hover:border-[#FF5A36] active:scale-95">
@@ -1072,7 +1073,7 @@
                             <p class="text-[10px] text-slate-400 mt-0.5">Incoming customer orders requiring approval</p>
                         </div>
                         <span class="bg-orange-50 border border-orange-200 text-orange-700 text-[10px] font-black px-2.5 py-1 rounded-full">
-                            Total: <span id="lblAdminOrdersCount">2</span>
+                            Total: <span id="lblAdminOrdersCount">0</span>
                         </span>
                     </div>
 
@@ -1249,7 +1250,7 @@
                         <h3 class="text-xs font-black text-slate-900 flex items-center gap-1.5">
                             <i class="fa-solid fa-newspaper text-amber-500"></i> Active Posts
                         </h3>
-                        <span class="text-[10px] bg-slate-100 px-2.5 py-0.5 rounded-full font-bold text-slate-600"><span id="lblAdminPostsCount">2</span> Published</span>
+                        <span class="text-[10px] bg-slate-100 px-2.5 py-0.5 rounded-full font-bold text-slate-600"><span id="lblAdminPostsCount">0</span> Published</span>
                     </div>
 
                     <div id="adminPostsListContainer" class="space-y-3">
@@ -1266,7 +1267,7 @@
 
             </div>
 
-            <!-- CATEGORY 4: REGISTERED CUSTOMERS CRM DIRECTORY -->
+            <!-- CATEGORY 4: REGISTERED CUSTOMERS CRM DIRECTORY (Includes Name, Phone, Location, Email) -->
             <div id="admin-sec-users" class="hidden">
                 <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-3">
                     <div class="border-b border-slate-100 pb-3">
@@ -1360,22 +1361,51 @@
         </div>
     </div>
 
-    <!-- Frontend Functional JavaScript Code -->
-    <script>
-        // Changed to 'var' to allow clean cross-script scope communication with Firebase module
-        var cartItems = {};
-        var notificationsHistory = [];
-        var expandedComments = {}; 
-        var currentUser = null; 
-        var guestSessionName = ""; 
-        var activeAdminCatalogFilter = 'all';
+    <!-- FIREBASE MODULE INTEGRATION & REALTIME FIRESTORE PERSISTENCE -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-analytics.js";
+        import { 
+            getFirestore, 
+            collection, 
+            doc, 
+            setDoc, 
+            getDocs, 
+            addDoc, 
+            updateDoc, 
+            deleteDoc, 
+            onSnapshot 
+        } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-        // Staging arrays for pending sort changes before confirmation update
-        var workingMenuData = [];
-        var workingFeedPosts = [];
+        // Firebase Configuration
+        const firebaseConfig = {
+          apiKey: "AIzaSyCnTvjumYj8qXN8rsQtmkGOAmNuJDummBI",
+          authDomain: "alfa-corex.firebaseapp.com",
+          projectId: "alfa-corex",
+          storageBucket: "alfa-corex.firebasestorage.app",
+          messagingSenderId: "137972735130",
+          appId: "1:137972735130:web:8edac3d79ebea4046b1323",
+          measurementId: "G-FERT7LM1W6"
+        };
 
-        // Verified Food Menu Data (Includes Fast Food, Local Menu & 5 Cold Drinks Items)
-        var menuData = [
+        // Initialize Firebase SDK
+        const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app);
+        const db = getFirestore(app);
+
+        // Global Application State Variables
+        let cartItems = {};
+        let notificationsHistory = [];
+        let expandedComments = {}; 
+        let currentUser = null; 
+        let guestSessionName = ""; 
+        let activeAdminCatalogFilter = 'all';
+
+        let workingMenuData = [];
+        let workingFeedPosts = [];
+
+        // Seed Default Food Items
+        let menuData = [
             { id: 1, name: 'Chicken Shaurma', desc: 'Juicy roasted chicken wrap with secret garlic dressing sauce.', price: 180, image: 'https://images.unsplash.com/photo-1561651823-34feb02250e4?q=80&w=600&auto=format&fit=crop', category: 'fast' },
             { id: 2, name: 'Zinger Burger', desc: 'Crispy fried chicken breast inside toasted sesame buns with lettuce.', price: 280, image: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?q=80&w=600&auto=format&fit=crop', category: 'fast' },
             { id: 3, name: 'Club Sandwich', desc: 'Triple layered toasted bread stuffed with egg, chicken and cheese.', price: 250, image: 'https://images.unsplash.com/photo-1525351484163-7529414344d8?q=80&w=600&auto=format&fit=crop', category: 'fast' },
@@ -1384,8 +1414,6 @@
             { id: 6, name: 'Gulab Jamun', desc: 'Warm traditional golden milk balls soaked inside heavy sweet syrup.', price: 60, image: 'https://images.unsplash.com/photo-1596509183058-27d075256ec5?q=80&w=400&auto=format&fit=crop', category: 'local' },
             { id: 7, name: 'Warm Jalebi', desc: 'Crisp spiral treats dripping with delicious hot sugary liquid syrup.', price: 80, image: 'https://images.unsplash.com/photo-1589301760014-d929f3979dbc?q=80&w=400&auto=format&fit=crop', category: 'local' },
             { id: 8, name: 'Fresh Barfi', desc: 'Premium sweet milk cake blocks topped with fresh dry pistachios.', price: 90, image: 'https://images.unsplash.com/photo-1605197586541-8936aa8019fb?q=80&w=400&auto=format&fit=crop', category: 'local' },
-            
-            // 5 Featured Cold Drinks Items
             { id: 9, name: 'Pepsi 500ml', desc: 'Ice-cold carbonated soft drink.', price: 90, image: 'https://images.unsplash.com/photo-1629203851122-3726ecdf080e?q=80&w=400&auto=format&fit=crop', category: 'drinks' },
             { id: 10, name: '7Up 500ml', desc: 'Crisp lemon-lime sparkling drink.', price: 90, image: 'https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?q=80&w=400&auto=format&fit=crop', category: 'drinks' },
             { id: 11, name: 'Sting Energy Drink', desc: 'High energy berry boost drink.', price: 100, image: 'https://images.unsplash.com/photo-1622483767028-3f66f32aef97?q=80&w=400&auto=format&fit=crop', category: 'drinks' },
@@ -1393,55 +1421,28 @@
             { id: 13, name: 'Sweet Yogurt Lassi', desc: 'Traditional rich creamy yogurt drink.', price: 110, image: 'https://images.unsplash.com/photo-1571006682881-22920272b123?q=80&w=400&auto=format&fit=crop', category: 'drinks' }
         ];
 
-        // Placed Orders Log Database
-        var ordersList = [
-            {
-                id: '#ACP-4821',
-                customerName: 'Muhammad Arslan',
-                phone: '03123456789',
-                location: 'Peoples Colony, Gujranwala',
-                date: new Date().toLocaleDateString(),
-                time: '12:30 PM',
-                items: [{ name: 'Zinger Burger', qty: 2, price: 280, total: 560 }],
-                total: 560,
-                status: 'Pending'
-            },
-            {
-                id: '#ACP-3109',
-                customerName: 'Syeda Zainab',
-                phone: '03219876543',
-                location: 'Sialkot Bypass, Gujranwala',
-                date: new Date().toLocaleDateString(),
-                time: '01:15 PM',
-                items: [{ name: 'Chicken Shaurma', qty: 1, price: 180, total: 180 }, { name: 'Sweet Yogurt Lassi', qty: 2, price: 110, total: 220 }],
-                total: 400,
-                status: 'Approved'
-            }
-        ];
+        let ordersList = [];
+        let registeredUsers = [];
 
-        // Registered Customers CRM Database
-        var registeredUsers = [];
-
-        // Interactive Live Social Feed Database
-        var feedPosts = [
+        // Seed Default Posts
+        let feedPosts = [
             { 
                 id: 101, 
                 title: "🔥 Special Friday Jalebi & Samosa Extravaganza!", 
                 image: "https://images.unsplash.com/photo-1589301760014-d929f3979dbc?q=80&w=600&auto=format&fit=crop", 
-                desc: "Get free hot crispy spiral Jalebi on buying three Potato Samosas today! Perfect treat for the rainy afternoon in Gujranwala. Order hotline open now!", 
+                desc: "Get free hot crispy spiral Jalebi on buying three Potato Samosas today! Perfect treat for the afternoon in Gujranwala.", 
                 likes: 42, 
                 isLiked: false,
                 comments: [
                     { commenter: "Muhammad Arslan", text: "Best Jalebi in Gujranwala town, recommended!" },
-                    { commenter: "Zainab Bibi", text: "Are you guys delivering to Sialkot bypass?" },
-                    { commenter: "Hamza Malik", text: "Ordered 5 samosas, super crispy!" }
+                    { commenter: "Zainab Bibi", text: "Are you guys delivering to Sialkot bypass?" }
                 ]
             },
             { 
                 id: 102, 
                 title: "🍔 Weekend Double-Decker Zinger Feast!", 
                 image: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?q=80&w=600&auto=format&fit=crop", 
-                desc: "Our double layered crispy fried chicken burger is hitting high records! Prepared fresh with Alqadri special spicy mayo and soft sesame buns.", 
+                desc: "Our double layered crispy fried chicken burger is hitting high records! Prepared fresh with Alqadri special spicy mayo.", 
                 likes: 89, 
                 isLiked: false,
                 comments: [
@@ -1450,6 +1451,47 @@
             }
         ];
 
+        // Sync Firestore Collections Live
+        function initFirestoreSync() {
+            // 1. Menu Sync
+            onSnapshot(collection(db, "menu"), (snapshot) => {
+                if (snapshot.empty) {
+                    menuData.forEach(item => setDoc(doc(db, "menu", String(item.id)), item));
+                } else {
+                    menuData = snapshot.docs.map(doc => doc.data());
+                    workingMenuData = JSON.parse(JSON.stringify(menuData));
+                    renderCustomerMenu();
+                    renderLocalMenu();
+                    renderDrinksMenu();
+                    renderAdminCatalog();
+                }
+            });
+
+            // 2. Orders Sync
+            onSnapshot(collection(db, "orders"), (snapshot) => {
+                ordersList = snapshot.docs.map(doc => ({ firebaseDocId: doc.id, ...doc.data() }));
+                renderAdminOrdersList();
+            });
+
+            // 3. Posts Sync
+            onSnapshot(collection(db, "posts"), (snapshot) => {
+                if (snapshot.empty) {
+                    feedPosts.forEach(post => setDoc(doc(db, "posts", String(post.id)), post));
+                } else {
+                    feedPosts = snapshot.docs.map(doc => ({ firebaseDocId: doc.id, ...doc.data() }));
+                    workingFeedPosts = JSON.parse(JSON.stringify(feedPosts));
+                    renderCustomerSocialFeeds();
+                    renderAdminPostsList();
+                }
+            });
+
+            // 4. Users Sync
+            onSnapshot(collection(db, "users"), (snapshot) => {
+                registeredUsers = snapshot.docs.map(doc => ({ firebaseDocId: doc.id, ...doc.data() }));
+                renderRegisteredUsers();
+            });
+        }
+
         window.addEventListener('DOMContentLoaded', () => {
             updateUserAccountDisplay();
             renderCustomerMenu();
@@ -1457,38 +1499,36 @@
             renderDrinksMenu();
             renderCartSummary();
             renderCustomerSocialFeeds();
+            initFirestoreSync();
         });
 
-        // Trigger Guest Name Pop-up Modal
-        function openGuestNameModal() {
+        // Functions attached to Window scope to keep HTML handlers working
+        window.openGuestNameModal = function() {
             const modal = document.getElementById('guestNameModal');
             if (modal) modal.classList.remove('hidden');
-        }
+        };
 
-        function closeGuestNameModal() {
+        window.closeGuestNameModal = function() {
             const modal = document.getElementById('guestNameModal');
             if (modal) modal.classList.add('hidden');
-        }
+        };
 
-        function saveGuestNameFromPopup() {
+        window.saveGuestNameFromPopup = function() {
             const input = document.getElementById('popupGuestNameInput');
             if (!input) return;
-
             const val = input.value.trim();
             if (!val) return;
-
             guestSessionName = val;
             closeGuestNameModal();
             renderCustomerSocialFeeds();
-        }
+        };
 
-        function resetGuestSessionName() {
+        window.resetGuestSessionName = function() {
             guestSessionName = "";
             renderCustomerSocialFeeds();
-        }
+        };
 
-        // Display user account name in standard font size or default Sign In state
-        function updateUserAccountDisplay() {
+        window.updateUserAccountDisplay = function() {
             const userBtn = document.getElementById('navUserBtn');
             if (!userBtn) return;
 
@@ -1508,10 +1548,9 @@
                     </div>
                 `;
             }
-        }
+        };
 
-        // Toggle Main User View Tabs & Hide Floating Bar on Social Feed
-        function switchCustomerTab(tabName) {
+        window.switchCustomerTab = function(tabName) {
             const storeBtn = document.getElementById('tabBtnStore');
             const feedsBtn = document.getElementById('tabBtnFeeds');
             const viewStore = document.getElementById('view-store');
@@ -1525,7 +1564,6 @@
                 heroSec.classList.remove('hidden');
                 storeBtn.className = "btn-tab-effect btn-tab-active flex-1 max-w-[180px] flex items-center justify-center gap-1.5 py-2 px-3 text-[11px] font-black rounded-xl border border-[#FF5A36] bg-[#FF5A36] text-white shadow-md active:scale-95";
                 feedsBtn.className = "btn-tab-effect btn-tab-inactive flex-1 max-w-[180px] flex items-center justify-center gap-1.5 py-2 px-3 text-[11px] font-black rounded-xl border border-slate-200 bg-white text-slate-700 shadow-sm relative active:scale-95";
-                
                 renderCartSummary();
             } else {
                 viewStore.classList.add('hidden');
@@ -1540,27 +1578,19 @@
                 }
             }
             window.scrollTo(0,0);
-        }
+        };
 
-        // Render Fast Food catalog (Selected items get active outline & checkmark)
-        function renderCustomerMenu() {
+        window.renderCustomerMenu = function() {
             const container = document.getElementById('menuGridContainer');
             if (!container) return;
-
             container.innerHTML = '';
             const fastFoodItems = menuData.filter(x => x.category === 'fast');
 
             fastFoodItems.forEach(item => {
                 const currentQty = cartItems[item.id] || 0;
                 const isSelected = currentQty > 0;
-
-                const cardOutline = isSelected 
-                    ? 'border-2 border-[#FF5A36] ring-2 ring-[#FF5A36]/20 bg-orange-50/20' 
-                    : 'border border-slate-200 bg-white';
-
-                const checkBadge = isSelected 
-                    ? `<div class="absolute top-1.5 right-1.5 bg-[#FF5A36] text-white w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-black shadow-md z-10"><i class="fa-solid fa-check"></i></div>` 
-                    : '';
+                const cardOutline = isSelected ? 'border-2 border-[#FF5A36] ring-2 ring-[#FF5A36]/20 bg-orange-50/20' : 'border border-slate-200 bg-white';
+                const checkBadge = isSelected ? `<div class="absolute top-1.5 right-1.5 bg-[#FF5A36] text-white w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-black shadow-md z-10"><i class="fa-solid fa-check"></i></div>` : '';
 
                 container.innerHTML += `
                     <div class="portrait-card relative ${cardOutline}" id="customer-card-${item.id}">
@@ -1580,27 +1610,19 @@
                     </div>
                 `;
             });
-        }
+        };
 
-        // Render Local Delicacies inside Customer store
-        function renderLocalMenu() {
+        window.renderLocalMenu = function() {
             const container = document.getElementById('localMenuGridContainer');
             if (!container) return;
-
             container.innerHTML = '';
             const localItems = menuData.filter(x => x.category === 'local');
 
             localItems.forEach(item => {
                 const currentQty = cartItems[item.id] || 0;
                 const isSelected = currentQty > 0;
-
-                const cardOutline = isSelected 
-                    ? 'border-2 border-[#FF5A36] ring-2 ring-[#FF5A36]/20 bg-orange-50/20' 
-                    : 'border border-slate-200 bg-white';
-
-                const checkBadge = isSelected 
-                    ? `<div class="absolute top-1 right-1 bg-[#FF5A36] text-white w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-black shadow-md z-10"><i class="fa-solid fa-check"></i></div>` 
-                    : '';
+                const cardOutline = isSelected ? 'border-2 border-[#FF5A36] ring-2 ring-[#FF5A36]/20 bg-orange-50/20' : 'border border-slate-200 bg-white';
+                const checkBadge = isSelected ? `<div class="absolute top-1 right-1 bg-[#FF5A36] text-white w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-black shadow-md z-10"><i class="fa-solid fa-check"></i></div>` : '';
 
                 container.innerHTML += `
                     <div class="local-mini-card relative ${cardOutline}" id="local-card-${item.id}">
@@ -1610,7 +1632,6 @@
                             <h3 class="local-title-compact !mb-0">${item.name}</h3>
                             <div class="local-price-compact !mb-0 !mt-0">Rs. ${item.price}</div>
                         </div>
-                        
                         <div class="selector-box-compact w-full text-center mt-1">
                             <button class="btn-qty-mini !w-5 !h-5" onclick="updateQty(${item.id}, -1)">-</button>
                             <span class="qty-val-mini !w-4 !text-[10px]" id="qty-local-${item.id}">${currentQty}</span>
@@ -1619,27 +1640,19 @@
                     </div>
                 `;
             });
-        }
+        };
 
-        // Render Cold Drinks inside Customer store
-        function renderDrinksMenu() {
+        window.renderDrinksMenu = function() {
             const container = document.getElementById('drinksMenuGridContainer');
             if (!container) return;
-
             container.innerHTML = '';
             const drinkItems = menuData.filter(x => x.category === 'drinks');
 
             drinkItems.forEach(item => {
                 const currentQty = cartItems[item.id] || 0;
                 const isSelected = currentQty > 0;
-
-                const cardOutline = isSelected 
-                    ? 'border-2 border-[#FF5A36] ring-2 ring-[#FF5A36]/20 bg-orange-50/20' 
-                    : 'border border-slate-200 bg-white';
-
-                const checkBadge = isSelected 
-                    ? `<div class="absolute top-1 right-1 bg-[#FF5A36] text-white w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-black shadow-md z-10"><i class="fa-solid fa-check"></i></div>` 
-                    : '';
+                const cardOutline = isSelected ? 'border-2 border-[#FF5A36] ring-2 ring-[#FF5A36]/20 bg-orange-50/20' : 'border border-slate-200 bg-white';
+                const checkBadge = isSelected ? `<div class="absolute top-1 right-1 bg-[#FF5A36] text-white w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-black shadow-md z-10"><i class="fa-solid fa-check"></i></div>` : '';
 
                 container.innerHTML += `
                     <div class="local-mini-card relative ${cardOutline}" id="drink-card-${item.id}">
@@ -1649,7 +1662,6 @@
                             <h3 class="local-title-compact !mb-0">${item.name}</h3>
                             <div class="local-price-compact !mb-0 !mt-0">Rs. ${item.price}</div>
                         </div>
-                        
                         <div class="selector-box-compact w-full text-center mt-1">
                             <button class="btn-qty-mini !w-5 !h-5" onclick="updateQty(${item.id}, -1)">-</button>
                             <span class="qty-val-mini !w-4 !text-[10px]" id="qty-drink-${item.id}">${currentQty}</span>
@@ -1658,18 +1670,16 @@
                     </div>
                 `;
             });
-        }
+        };
 
-        // Toggle Comments Expansion (Show More / Show Less)
-        function toggleComments(postId) {
+        window.toggleComments = function(postId) {
             expandedComments[postId] = !expandedComments[postId];
             renderCustomerSocialFeeds();
-        }
+        };
 
-        function renderCustomerSocialFeeds() {
+        window.renderCustomerSocialFeeds = function() {
             const container = document.getElementById('feedPostsContainer');
             if (!container) return;
-
             container.innerHTML = '';
             
             if(feedPosts.length === 0) {
@@ -1685,9 +1695,8 @@
             feedPosts.forEach(post => {
                 const heartColor = post.isLiked ? 'text-rose-500 scale-125' : 'text-slate-400';
                 const heartIcon = post.isLiked ? 'fa-solid fa-heart' : 'fa-regular fa-heart';
-                
                 const isExpanded = !!expandedComments[post.id];
-                const visibleComments = isExpanded ? post.comments : post.comments.slice(0, 2);
+                const visibleComments = isExpanded ? (post.comments || []) : (post.comments || []).slice(0, 2);
 
                 let commentItemsHtml = '';
                 visibleComments.forEach(c => {
@@ -1700,18 +1709,12 @@
                 });
 
                 let toggleBtnHtml = '';
-                if (post.comments.length > 2) {
+                if ((post.comments || []).length > 2) {
                     const btnText = isExpanded ? 'Show Less Comments' : `Show More Comments (${post.comments.length - 2})`;
-                    toggleBtnHtml = `
-                        <button onclick="toggleComments(${post.id})" class="text-[10px] font-extrabold text-[#FF5A36] hover:underline mt-1 block">
-                            ${btnText}
-                        </button>
-                    `;
+                    toggleBtnHtml = `<button onclick="toggleComments(${post.id})" class="text-[10px] font-extrabold text-[#FF5A36] hover:underline mt-1 block">${btnText}</button>`;
                 }
 
-                // Render Guest or Registered User Comment Box
                 let commentBoxHtml = '';
-
                 if (currentUser) {
                     commentBoxHtml = `
                         <div class="pt-2">
@@ -1720,9 +1723,7 @@
                             </div>
                             <form onsubmit="event.preventDefault(); submitComment(${post.id});" class="flex gap-2">
                                 <input type="text" id="comment-input-${post.id}" required placeholder="Add a sweet foodie comment..." class="flex-1 px-3 py-2 bg-white border border-slate-200 rounded-lg outline-none text-[11px] font-bold text-slate-800 placeholder-slate-400 focus:border-[#FF5A36]">
-                                <button type="submit" class="bg-[#FF5A36] hover:bg-[#E04825] text-white px-3 rounded-lg text-xs font-black transition-all shadow-sm">
-                                    Send
-                                </button>
+                                <button type="submit" class="bg-[#FF5A36] hover:bg-[#E04825] text-white px-3 rounded-lg text-xs font-black transition-all shadow-sm">Send</button>
                             </form>
                         </div>
                     `;
@@ -1735,9 +1736,7 @@
                             </div>
                             <form onsubmit="event.preventDefault(); submitComment(${post.id});" class="flex gap-2">
                                 <input type="text" id="comment-input-${post.id}" required placeholder="Write your comment..." class="flex-1 px-3 py-2 bg-white border border-slate-200 rounded-lg outline-none text-[11px] font-bold text-slate-800 placeholder-slate-400 focus:border-[#FF5A36]">
-                                <button type="submit" class="bg-[#FF5A36] hover:bg-[#E04825] text-white px-3 rounded-lg text-xs font-black transition-all shadow-sm">
-                                    Post
-                                </button>
+                                <button type="submit" class="bg-[#FF5A36] hover:bg-[#E04825] text-white px-3 rounded-lg text-xs font-black transition-all shadow-sm">Post</button>
                             </form>
                         </div>
                     `;
@@ -1745,17 +1744,12 @@
                     commentBoxHtml = `
                         <div class="bg-gradient-to-r from-orange-50/70 to-amber-50/70 p-3 rounded-2xl border border-orange-200/60 space-y-2 mt-2">
                             <div class="flex items-center justify-between text-[10px] font-black text-slate-700">
-                                <span class="flex items-center gap-1 text-[#FF5A36]">
-                                    <i class="fa-solid fa-user-pen"></i> Guest Comment
-                                </span>
+                                <span class="flex items-center gap-1 text-[#FF5A36]"><i class="fa-solid fa-user-pen"></i> Guest Comment</span>
                                 <span class="text-[9px] text-slate-400 font-bold">No registration needed</span>
                             </div>
-                            
                             <div class="flex gap-2">
                                 <input type="text" readonly onclick="openGuestNameModal()" placeholder="Click to enter your name & comment..." class="flex-1 px-3 py-2 bg-white border border-slate-200 rounded-lg outline-none text-[11px] font-bold text-slate-700 cursor-pointer hover:border-[#FF5A36] transition-all">
-                                <button type="button" onclick="openGuestNameModal()" class="bg-[#FF5A36] hover:bg-[#E04825] text-white px-3 py-2 rounded-lg text-xs font-black transition-all shadow-sm shrink-0 flex items-center gap-1">
-                                    <i class="fa-solid fa-paper-plane text-[10px]"></i> Comment
-                                </button>
+                                <button type="button" onclick="openGuestNameModal()" class="bg-[#FF5A36] hover:bg-[#E04825] text-white px-3 py-2 rounded-lg text-xs font-black transition-all shadow-sm shrink-0 flex items-center gap-1"><i class="fa-solid fa-paper-plane text-[10px]"></i> Comment</button>
                             </div>
                         </div>
                     `;
@@ -1789,18 +1783,16 @@
                         <div class="px-4 py-3 border-t border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
                             <button onclick="likePost(${post.id})" class="flex items-center gap-1.5 text-xs font-extrabold text-slate-600 hover:text-rose-500 transition-all">
                                 <i class="${heartIcon} ${heartColor} text-sm"></i>
-                                <span id="post-likes-count-${post.id}">${post.likes}</span>
+                                <span id="post-likes-count-${post.id}">${post.likes || 0}</span>
                             </button>
                             <button onclick="focusCommentInput(${post.id})" class="flex items-center gap-1.5 text-xs font-extrabold text-slate-600 hover:text-sky-500 transition-all">
                                 <i class="fa-regular fa-comment text-sm"></i>
-                                <span>${post.comments.length}</span>
+                                <span>${(post.comments || []).length}</span>
                             </button>
-                            
                             <button onclick="downloadPostMedia('${post.image}', '${post.title.replace(/'/g, "\\'")}')" class="flex items-center gap-1.5 text-xs font-extrabold text-slate-600 hover:text-[#FF5A36] transition-all" title="Download Image">
                                 <i class="fa-solid fa-download text-sm"></i>
                                 <span>Download</span>
                             </button>
-
                             <button onclick="sharePost(${post.id}, '${post.title.replace(/'/g, "\\'")}')" class="flex items-center gap-1.5 text-xs font-extrabold text-slate-600 hover:text-emerald-500 transition-all">
                                 <i class="fa-solid fa-share text-sm"></i>
                                 <span>Share</span>
@@ -1808,21 +1800,16 @@
                         </div>
 
                         <div class="p-4 bg-slate-50/50 space-y-2">
-                            <div class="space-y-2" id="comments-list-${post.id}">
-                                ${commentItemsHtml}
-                            </div>
-
+                            <div class="space-y-2" id="comments-list-${post.id}">${commentItemsHtml}</div>
                             ${toggleBtnHtml}
-                            
                             ${commentBoxHtml}
                         </div>
                     </div>
                 `;
             });
-        }
+        };
 
-        // Download Post Media Function
-        async function downloadPostMedia(imageUrl, title) {
+        window.downloadPostMedia = async function(imageUrl, title) {
             try {
                 showNotification('Downloading post image...');
                 const response = await fetch(imageUrl);
@@ -1847,23 +1834,20 @@
                 link.remove();
                 showNotification('Opened image in new tab for saving.');
             }
-        }
+        };
 
-        function likePost(id) {
+        window.likePost = function(id) {
             const post = feedPosts.find(p => p.id === id);
             if (!post) return;
-
             post.isLiked = !post.isLiked;
-            if (post.isLiked) {
-                post.likes += 1;
-                showNotification('Liked this post! ♥');
-            } else {
-                post.likes -= 1;
-            }
-            renderCustomerSocialFeeds();
-        }
+            post.likes = (post.likes || 0) + (post.isLiked ? 1 : -1);
+            if (post.isLiked) showNotification('Liked this post! ♥');
+            
+            // Save to Firestore
+            setDoc(doc(db, "posts", String(post.id)), post, { merge: true });
+        };
 
-        function focusCommentInput(id) {
+        window.focusCommentInput = function(id) {
             const input = document.getElementById(`comment-input-${id}`);
             if (input) {
                 input.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -1871,52 +1855,44 @@
             } else {
                 openGuestNameModal();
             }
-        }
+        };
 
-        function sharePost(id, text) {
+        window.sharePost = function(id, text) {
             document.execCommand('copy');
             showNotification('Deal copied to clipboard! Share on social media.');
-        }
+        };
 
-        function submitComment(id) {
+        window.submitComment = function(id) {
             const post = feedPosts.find(p => p.id === id);
             const input = document.getElementById(`comment-input-${id}`);
-            
             if (!post || !input) return;
 
             const commentText = input.value.trim();
             if (!commentText) return;
 
-            let commenterName = "";
-
-            if (currentUser) {
-                commenterName = currentUser.name;
-            } else if (guestSessionName) {
-                commenterName = guestSessionName;
-            } else {
+            let commenterName = currentUser ? currentUser.name : (guestSessionName || "");
+            if (!commenterName) {
                 openGuestNameModal();
                 return;
             }
 
+            if (!post.comments) post.comments = [];
             post.comments.push({ commenter: commenterName, text: commentText });
             input.value = '';
-            
-            renderCustomerSocialFeeds();
-        }
 
-        function showNotification(message, type = 'success') {
+            // Update Firestore
+            setDoc(doc(db, "posts", String(post.id)), post, { merge: true });
+        };
+
+        window.showNotification = function(message, type = 'success') {
             const container = document.getElementById('toastContainer');
             if (!container) return;
-
             const icon = type === 'success' ? 'fa-circle-check text-emerald-500' : 'fa-triangle-exclamation text-amber-500';
             const accent = type === 'success' ? 'border-emerald-100 bg-white' : 'border-amber-100 bg-white';
             
             const toast = document.createElement('div');
             toast.className = `flex items-center gap-3 p-3 rounded-xl border ${accent} shadow-md transition-all transform translate-x-12 opacity-0 pointer-events-auto w-full max-w-xs`;
-            toast.innerHTML = `
-                <i class="fa-solid ${icon} text-base shrink-0"></i>
-                <div class="text-[10px] font-bold text-slate-800">${message}</div>
-            `;
+            toast.innerHTML = `<i class="fa-solid ${icon} text-base shrink-0"></i><div class="text-[10px] font-bold text-slate-800">${message}</div>`;
             container.appendChild(toast);
 
             setTimeout(() => {
@@ -1928,41 +1904,29 @@
                 toast.classList.add('translate-x-12', 'opacity-0');
                 setTimeout(() => { toast.remove(); }, 300);
             }, 2500);
-        }
+        };
 
-        function openNotificationsModal() {
+        window.openNotificationsModal = function() {
             document.getElementById('notificationsModal').classList.remove('hidden');
             document.getElementById('navBellBadge').classList.add('hidden');
-        }
+        };
 
-        window.openNotificationsModal = openNotificationsModal;
-        window.closeNotificationsModal = closeNotificationsModal;
-
-        function closeNotificationsModal() {
+        window.closeNotificationsModal = function() {
             document.getElementById('notificationsModal').classList.add('hidden');
-        }
+        };
 
-        function addOrderNotification(title, message, isApproval = false) {
+        window.addOrderNotification = function(title, message, isApproval = false) {
             const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
             notificationsHistory.unshift({ title, message, time: timeStr, isApproval });
-            
             document.getElementById('navBellBadge').classList.remove('hidden');
             renderNotificationsList();
-        }
+        };
 
-        window.addOrderNotification = addOrderNotification;
-
-        function renderNotificationsList() {
+        window.renderNotificationsList = function() {
             const list = document.getElementById('notificationsList');
             if (!list) return;
-
             if (notificationsHistory.length === 0) {
-                list.innerHTML = `
-                    <div class="text-center py-6 text-slate-400 text-xs">
-                        <i class="fa-regular fa-bell-slash text-2xl text-slate-300 block mb-1"></i>
-                        No order alerts yet.
-                    </div>
-                `;
+                list.innerHTML = `<div class="text-center py-6 text-slate-400 text-xs"><i class="fa-regular fa-bell-slash text-2xl text-slate-300 block mb-1"></i>No order alerts yet.</div>`;
                 return;
             }
 
@@ -1974,20 +1938,16 @@
                 list.innerHTML += `
                     <div class="bg-slate-50 border border-slate-100 p-2.5 rounded-xl text-xs space-y-1">
                         <div class="flex items-center justify-between">
-                            <span class="font-extrabold text-slate-900 flex items-center gap-1.5">
-                                <i class="${iconClass} ${iconBg} p-1 rounded-md text-[10px]"></i>
-                                ${item.title}
-                            </span>
+                            <span class="font-extrabold text-slate-900 flex items-center gap-1.5"><i class="${iconClass} ${iconBg} p-1 rounded-md text-[10px]"></i>${item.title}</span>
                             <span class="text-[9px] text-slate-400 font-medium">${item.time}</span>
                         </div>
                         <p class="text-[10px] text-slate-600 font-medium leading-relaxed">${item.message}</p>
                     </div>
                 `;
             });
-        }
+        };
 
-        // Open Checkout Order Confirmation Modal
-        function openCheckoutConfirmModal() {
+        window.openCheckoutConfirmModal = function() {
             const keys = Object.keys(cartItems);
             if (keys.length === 0) {
                 showNotification('Your basket is empty!', 'warning');
@@ -1996,7 +1956,6 @@
 
             const itemsContainer = document.getElementById('checkoutModalItemsList');
             const grandTotalEl = document.getElementById('checkoutModalGrandTotal');
-            
             if (itemsContainer) itemsContainer.innerHTML = '';
             let totalAmount = 0;
 
@@ -2006,7 +1965,6 @@
                     const qty = cartItems[id];
                     const total = item.price * qty;
                     totalAmount += total;
-
                     itemsContainer.innerHTML += `
                         <div class="flex justify-between items-center text-xs py-1 border-b border-slate-100 last:border-0">
                             <span class="font-extrabold text-slate-800">${item.name} <span class="text-slate-400 font-normal">x${qty}</span></span>
@@ -2018,30 +1976,20 @@
 
             if (grandTotalEl) grandTotalEl.innerText = 'Rs. ' + totalAmount;
 
-            // Pre-fill user details if logged in
-            const nameInput = document.getElementById('checkoutName');
-            const phoneInput = document.getElementById('checkoutPhone');
-            const locationInput = document.getElementById('checkoutLocation');
-
             if (currentUser) {
-                if (nameInput) nameInput.value = currentUser.name;
-                if (phoneInput) phoneInput.value = currentUser.phone;
-                if (locationInput) locationInput.value = currentUser.location;
+                if (document.getElementById('checkoutName')) document.getElementById('checkoutName').value = currentUser.name;
+                if (document.getElementById('checkoutPhone')) document.getElementById('checkoutPhone').value = currentUser.phone;
+                if (document.getElementById('checkoutLocation')) document.getElementById('checkoutLocation').value = currentUser.location;
             }
 
             document.getElementById('checkoutConfirmModal').classList.remove('hidden');
-        }
+        };
 
-        window.openCheckoutConfirmModal = openCheckoutConfirmModal;
-
-        function closeCheckoutConfirmModal() {
+        window.closeCheckoutConfirmModal = function() {
             document.getElementById('checkoutConfirmModal').classList.add('hidden');
-        }
+        };
 
-        window.closeCheckoutConfirmModal = closeCheckoutConfirmModal;
-
-        // Finalize Order Placeholder (safely overridden by Firebase DB module)
-        function finalizeOrderAndSendWhatsApp() {
+        window.finalizeOrderAndSendWhatsApp = async function() {
             const keys = Object.keys(cartItems);
             if (keys.length === 0) return;
 
@@ -2068,34 +2016,24 @@
                 }
             });
 
-            const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            const dateStr = new Date().toLocaleDateString();
-
-            // Record in Local Orders Database
-            ordersList.unshift({
+            const newOrderObj = {
                 id: orderId,
                 customerName: name,
                 phone: phone,
                 location: location,
-                date: dateStr,
-                time: timeStr,
+                date: new Date().toLocaleDateString(),
+                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
                 items: itemsDetail,
                 total: grandTotal,
                 status: 'Pending'
-            });
+            };
 
-            // Construct formatted WhatsApp message
-            let waMsg = `*🛒 NEW ORDER - ALQADRI CHASKA POINT*\n`;
-            waMsg += `*Order ID:* ${orderId}\n`;
-            waMsg += `*Customer:* ${name}\n`;
-            waMsg += `*Phone:* ${phone}\n`;
-            waMsg += `*Location:* ${location}\n\n`;
-            waMsg += `*Items Ordered:*\n`;
-            itemsDetail.forEach(it => {
-                waMsg += `• ${it.name} x${it.qty} = Rs. ${it.total}\n`;
-            });
-            waMsg += `\n*Grand Total:* Rs. ${grandTotal}\n`;
-            waMsg += `Thank you! Please prepare my order.`;
+            // Save to Firebase Firestore Collection
+            await addDoc(collection(db, "orders"), newOrderObj);
+
+            let waMsg = `*🛒 NEW ORDER - ALQADRI CHASKA POINT*\n*Order ID:* ${orderId}\n*Customer:* ${name}\n*Phone:* ${phone}\n*Location:* ${location}\n\n*Items Ordered:*\n`;
+            itemsDetail.forEach(it => { waMsg += `• ${it.name} x${it.qty} = Rs. ${it.total}\n`; });
+            waMsg += `\n*Grand Total:* Rs. ${grandTotal}\nThank you! Please prepare my order.`;
 
             const whatsappUrl = `https://wa.me/923102434222?text=${encodeURIComponent(waMsg)}`;
 
@@ -2103,48 +2041,40 @@
             showNotification(`Order ${orderId} submitted! Opening WhatsApp...`);
             addOrderNotification(`Order Placed (${orderId})`, `Order sent to WhatsApp & kitchen for approval.`);
 
-            // Clear Cart
             cartItems = {};
             renderCustomerMenu();
             renderLocalMenu();
             renderDrinksMenu();
             renderCartSummary();
-            renderAdminOrdersList();
 
-            // Open WhatsApp automatically
             window.open(whatsappUrl, '_blank');
-        }
+        };
 
-        // Local Admin Approval Action (safely overridden by Firebase DB module)
-        function approveAdminOrder(index) {
+        window.approveAdminOrder = async function(index) {
             if (ordersList[index]) {
-                ordersList[index].status = 'Approved';
                 const ord = ordersList[index];
+                ord.status = 'Approved';
+                if (ord.firebaseDocId) {
+                    await updateDoc(doc(db, "orders", ord.firebaseDocId), { status: 'Approved' });
+                }
                 showNotification(`Order ${ord.id} approved!`);
                 addOrderNotification(`Order Approved (${ord.id})`, `Kitchen approved order ${ord.id}! Fresh food preparation started.`, true);
-                renderAdminOrdersList();
             }
-        }
+        };
 
-        function updateQty(id, change) {
+        window.updateQty = function(id, change) {
             const currentQty = cartItems[id] || 0;
             const newQty = Math.max(0, currentQty + change);
-            
-            if (newQty === 0) {
-                delete cartItems[id];
-            } else {
-                cartItems[id] = newQty;
-            }
+            if (newQty === 0) delete cartItems[id];
+            else cartItems[id] = newQty;
 
             renderCustomerMenu();
             renderLocalMenu();
             renderDrinksMenu();
             renderCartSummary();
-        }
+        };
 
-        window.updateQty = updateQty;
-
-        function renderCartSummary() {
+        window.renderCartSummary = function() {
             const emptyState = document.getElementById('emptyCart');
             const activeState = document.getElementById('activeCart');
             const cartTableBody = document.getElementById('cartTableRows');
@@ -2153,16 +2083,12 @@
             const floatingCartTotal = document.getElementById('floatingCartTotal');
             
             const keys = Object.keys(cartItems);
-            
             let totalItemsCount = 0;
-            keys.forEach(k => {
-                totalItemsCount += cartItems[k];
-            });
+            keys.forEach(k => { totalItemsCount += cartItems[k]; });
             
             if (keys.length === 0) {
                 if (emptyState) emptyState.style.display = 'block';
                 if (activeState) activeState.style.display = 'none';
-                
                 if (floatingCartBar) {
                     floatingCartBar.classList.add('translate-y-24', 'opacity-0', 'pointer-events-none');
                     floatingCartBar.classList.remove('translate-y-0', 'opacity-100', 'pointer-events-auto');
@@ -2175,11 +2101,9 @@
             if (cartTableBody) cartTableBody.innerHTML = '';
 
             let grandTotal = 0;
-
             keys.forEach(id => {
                 const item = menuData.find(x => x.id == id);
                 if (!item) return;
-
                 const qty = cartItems[id];
                 const total = item.price * qty;
                 grandTotal += total;
@@ -2195,36 +2119,30 @@
                 }
             });
 
-            const txtSubtotal = document.getElementById('txtSubtotal');
-            const txtGrandTotal = document.getElementById('txtGrandTotal');
-            if (txtSubtotal) txtSubtotal.innerText = 'Rs. ' + grandTotal;
-            if (txtGrandTotal) txtGrandTotal.innerText = 'Rs. ' + grandTotal;
+            if (document.getElementById('txtSubtotal')) document.getElementById('txtSubtotal').innerText = 'Rs. ' + grandTotal;
+            if (document.getElementById('txtGrandTotal')) document.getElementById('txtGrandTotal').innerText = 'Rs. ' + grandTotal;
 
             if (floatingCartBar) {
                 if (floatingCartCount) floatingCartCount.innerText = totalItemsCount;
                 if (floatingCartTotal) floatingCartTotal.innerText = 'Rs. ' + grandTotal;
-                
                 const viewStore = document.getElementById('view-store');
                 if (viewStore && !viewStore.classList.contains('hidden')) {
                     floatingCartBar.classList.remove('translate-y-24', 'opacity-0', 'pointer-events-none');
                     floatingCartBar.classList.add('translate-y-0', 'opacity-100', 'pointer-events-auto');
                 }
             }
-        }
+        };
 
-        function clearCart() {
+        window.clearCart = function() {
             cartItems = {};
             renderCustomerMenu();
             renderLocalMenu();
             renderDrinksMenu();
             renderCartSummary();
             showNotification('Basket cleared.', 'warning');
-        }
+        };
 
-        window.clearCart = clearCart;
-
-        // Account Auth Switcher (Sign In vs Register)
-        function switchAuthMode(mode) {
+        window.switchAuthMode = function(mode) {
             const btnSignIn = document.getElementById('btnAuthTabSignIn');
             const btnRegister = document.getElementById('btnAuthTabRegister');
             const viewSignIn = document.getElementById('userSignInView');
@@ -2244,11 +2162,9 @@
                 btnSignIn.className = inactiveTabStyle;
                 btnRegister.className = activeTabStyle;
             }
-        }
+        };
 
-        window.switchAuthMode = switchAuthMode;
-
-        function openUserModal() {
+        window.openUserModal = function() {
             const modal = document.getElementById('userAuthModal');
             const authContainer = document.getElementById('userAuthContainer');
             const profileView = document.getElementById('userProfileView');
@@ -2256,7 +2172,6 @@
             if (currentUser) {
                 authContainer.classList.add('hidden');
                 profileView.classList.remove('hidden');
-
                 document.getElementById('profileName').innerText = currentUser.name;
                 document.getElementById('profilePhone').innerText = currentUser.phone;
                 document.getElementById('profileLocation').innerText = currentUser.location;
@@ -2267,18 +2182,13 @@
             }
 
             modal.classList.remove('hidden');
-        }
+        };
 
-        window.openUserModal = openUserModal;
-
-        function closeUserModal() {
+        window.closeUserModal = function() {
             document.getElementById('userAuthModal').classList.add('hidden');
-        }
+        };
 
-        window.closeUserModal = closeUserModal;
-
-        // Sign In Existing User (Reads synced user registration list)
-        function signInUser() {
+        window.signInUser = function() {
             const phone = document.getElementById('signInPhone').value.trim();
             if (!phone) return;
 
@@ -2295,12 +2205,9 @@
                 switchAuthMode('register');
                 document.getElementById('regPhone').value = phone;
             }
-        }
+        };
 
-        window.signInUser = signInUser;
-
-        // Register First-Time User Placeholder (safely overridden by Firebase DB module)
-        function registerUser() {
+        window.registerUser = async function() {
             const name = document.getElementById('regName').value.trim();
             const phone = document.getElementById('regPhone').value.trim();
             const loc = document.getElementById('regLocation').value.trim();
@@ -2312,11 +2219,12 @@
             }
 
             const newUser = { name, phone, location: loc, email };
-            registeredUsers.push(newUser);
+            
+            // Save User to Firebase
+            await addDoc(collection(db, "users"), newUser);
             currentUser = newUser; 
 
             updateUserAccountDisplay();
-            
             showNotification(`Welcome, ${name}! Account registered.`);
             closeUserModal();
             
@@ -2325,44 +2233,35 @@
             document.getElementById('regLocation').value = '';
             document.getElementById('regEmail').value = '';
 
-            renderRegisteredUsers();
             renderCustomerSocialFeeds();
-        }
+        };
 
-        function logoutUser() {
+        window.logoutUser = function() {
             currentUser = null;
             updateUserAccountDisplay();
             closeUserModal();
             renderCustomerSocialFeeds();
             showNotification('Signed out successfully.');
-        }
+        };
 
-        window.logoutUser = logoutUser;
-
-        function openAdminPortal() {
+        window.openAdminPortal = function() {
             document.getElementById('adminAuthModal').classList.remove('hidden');
             document.getElementById('adminPasscode').focus();
-        }
+        };
 
-        window.openAdminPortal = openAdminPortal;
-
-        function closeAdminAuth() {
+        window.closeAdminAuth = function() {
             document.getElementById('adminAuthModal').classList.add('hidden');
             document.getElementById('adminPasscode').value = '';
-        }
+        };
 
-        window.closeAdminAuth = closeAdminAuth;
-
-        function verifyAdminPasscode() {
+        window.verifyAdminPasscode = function() {
             const codeField = document.getElementById('adminPasscode');
             if (codeField.value === '7574') {
                 closeAdminAuth();
-                
                 document.getElementById('customer-page').classList.add('hidden');
                 document.getElementById('admin-page').classList.remove('hidden');
                 window.scrollTo(0, 0);
                 
-                // Initialize staging working arrays on entry
                 workingMenuData = JSON.parse(JSON.stringify(menuData));
                 workingFeedPosts = JSON.parse(JSON.stringify(feedPosts));
 
@@ -2377,11 +2276,9 @@
                 codeField.value = '';
                 codeField.focus();
             }
-        }
+        };
 
-        window.verifyAdminPasscode = verifyAdminPasscode;
-
-        function closeAdminPortal() {
+        window.closeAdminPortal = function() {
             document.getElementById('admin-page').classList.add('hidden');
             document.getElementById('customer-page').classList.remove('hidden');
             window.scrollTo(0, 0);
@@ -2391,11 +2288,9 @@
             renderDrinksMenu();
             renderCartSummary();
             renderCustomerSocialFeeds();
-        }
+        };
 
-        window.closeAdminPortal = closeAdminPortal;
-
-        function switchAdminTab(activeTab) {
+        window.switchAdminTab = function(activeTab) {
             const btnOrders = document.getElementById('adminTabOrders');
             const btnCatalog = document.getElementById('adminTabCatalog');
             const btnFeed = document.getElementById('adminTabFeed');
@@ -2438,11 +2333,9 @@
                 btnUsers.className = activeBox;
                 renderRegisteredUsers();
             }
-        }
+        };
 
-        window.switchAdminTab = switchAdminTab;
-
-        function switchCatalogSubTab(subTab) {
+        window.switchCatalogSubTab = function(subTab) {
             const btnList = document.getElementById('btnSubCatList');
             const btnAdd = document.getElementById('btnSubCatAdd');
             const secList = document.getElementById('subSecCatalogList');
@@ -2462,11 +2355,9 @@
                 btnList.className = inactiveBtn;
                 btnAdd.className = activeBtn;
             }
-        }
+        };
 
-        window.switchCatalogSubTab = switchCatalogSubTab;
-
-        function switchFeedSubTab(subTab) {
+        window.switchFeedSubTab = function(subTab) {
             const btnCreate = document.getElementById('btnSubFeedCreate');
             const btnList = document.getElementById('btnSubFeedList');
             const secCreate = document.getElementById('subSecFeedCreate');
@@ -2486,12 +2377,9 @@
                 btnCreate.className = inactiveBtn;
                 btnList.className = activeBtn;
             }
-        }
+        };
 
-        window.switchFeedSubTab = switchFeedSubTab;
-
-        // 1. Render Admin Orders List
-        function renderAdminOrdersList() {
+        window.renderAdminOrdersList = function() {
             const container = document.getElementById('adminOrdersContainer');
             const counter = document.getElementById('lblAdminOrdersCount');
             const badge = document.getElementById('adminOrdersCountBadge');
@@ -2503,12 +2391,7 @@
             container.innerHTML = '';
 
             if (ordersList.length === 0) {
-                container.innerHTML = `
-                    <div class="py-8 text-center text-slate-400 font-bold text-xs">
-                        <i class="fa-solid fa-box-open text-2xl mb-1 text-slate-300 block"></i>
-                        No customer orders received yet.
-                    </div>
-                `;
+                container.innerHTML = `<div class="py-8 text-center text-slate-400 font-bold text-xs"><i class="fa-solid fa-box-open text-2xl mb-1 text-slate-300 block"></i>No customer orders received yet.</div>`;
                 return;
             }
 
@@ -2528,11 +2411,7 @@
                     ? '<span class="bg-amber-100 text-amber-700 border border-amber-200 px-2 py-0.5 rounded-full text-[9px] font-black uppercase">Pending</span>'
                     : '<span class="bg-emerald-100 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-full text-[9px] font-black uppercase">Approved</span>';
 
-                const approveBtnHtml = isPending ? `
-                    <button onclick="approveAdminOrder(${index})" class="px-2.5 py-1 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-xs font-bold transition-all flex items-center gap-1 shadow-sm">
-                        <i class="fa-solid fa-circle-check"></i> Approve Order
-                    </button>
-                ` : '';
+                const approveBtnHtml = isPending ? `<button onclick="approveAdminOrder(${index})" class="px-2.5 py-1 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-xs font-bold transition-all flex items-center gap-1 shadow-sm"><i class="fa-solid fa-circle-check"></i> Approve Order</button>` : '';
 
                 container.innerHTML += `
                     <div class="bg-slate-50 border border-slate-200 rounded-xl p-3 shadow-sm space-y-2">
@@ -2544,60 +2423,49 @@
                             </div>
                             ${statusBadge}
                         </div>
-
-                        <div class="bg-white p-2.5 rounded-lg border border-slate-100 space-y-0.5">
-                            ${itemsListHtml}
-                        </div>
-
+                        <div class="bg-white p-2.5 rounded-lg border border-slate-100 space-y-0.5">${itemsListHtml}</div>
                         <div class="flex justify-between items-center pt-0.5">
                             <span class="text-[11px] font-bold text-slate-500">Total Amount:</span>
                             <span class="text-xs font-black text-[#FF5A36]">Rs. ${ord.total}</span>
                         </div>
-
                         <div class="flex justify-end gap-1.5 pt-1.5 border-t border-slate-200/60">
                             ${approveBtnHtml}
-                            <button onclick="removeAdminOrder(${index})" class="px-2 py-1 bg-red-50 hover:bg-red-500 text-red-600 hover:text-white border border-red-200 rounded-lg text-xs font-bold transition-all flex items-center gap-1">
-                                <i class="fa-solid fa-trash-can"></i> Clear
-                            </button>
+                            <button onclick="removeAdminOrder(${index})" class="px-2 py-1 bg-red-50 hover:bg-red-500 text-red-600 hover:text-white border border-red-200 rounded-lg text-xs font-bold transition-all flex items-center gap-1"><i class="fa-solid fa-trash-can"></i> Clear</button>
                         </div>
                     </div>
                 `;
             });
-        }
+        };
 
-        window.renderAdminOrdersList = renderAdminOrdersList;
+        window.removeAdminOrder = async function(index) {
+            if (ordersList[index]) {
+                const ord = ordersList[index];
+                if (ord.firebaseDocId) {
+                    await deleteDoc(doc(db, "orders", ord.firebaseDocId));
+                }
+                showNotification('Order record cleared.');
+            }
+        };
 
-        function removeAdminOrder(index) {
-            ordersList.splice(index, 1);
-            renderAdminOrdersList();
-            showNotification('Order record cleared.');
-        }
-
-        window.removeAdminOrder = removeAdminOrder;
-
-        function handleImageUpload(event) {
+        window.handleImageUpload = function(event) {
             const file = event.target.files[0];
             if (file) {
                 const reader = new FileReader();
                 reader.onload = function(e) {
-                    const result = e.target.result;
-                    document.getElementById('foodFormImage').value = result;
+                    document.getElementById('foodFormImage').value = e.target.result;
                     showNotification('Device image uploaded successfully.');
                 };
                 reader.readAsDataURL(file);
             }
-        }
+        };
 
-        window.handleImageUpload = handleImageUpload;
-
-        function handlePostImageUpload(event) {
+        window.handlePostImageUpload = function(event) {
             const file = event.target.files[0];
             if (file) {
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     const result = e.target.result;
                     document.getElementById('postFormImage').value = result;
-                    
                     const previewContainer = document.getElementById('postImagePreviewContainer');
                     const previewImg = document.getElementById('postImagePreview');
                     if (previewContainer && previewImg) {
@@ -2608,153 +2476,92 @@
                 };
                 reader.readAsDataURL(file);
             }
-        }
+        };
 
-        window.handlePostImageUpload = handlePostImageUpload;
-
-        function removePostImage() {
+        window.removePostImage = function() {
             document.getElementById('postFormFile').value = '';
             document.getElementById('postFormImage').value = '';
-            
             const previewContainer = document.getElementById('postImagePreviewContainer');
-            if (previewContainer) {
-                previewContainer.classList.add('hidden');
-            }
+            if (previewContainer) previewContainer.classList.add('hidden');
             showNotification('Image attachment removed.', 'warning');
-        }
+        };
 
-        window.removePostImage = removePostImage;
-
-        // Filter Admin Catalog View by Category Boxes
-        function filterAdminCatalog(cat) {
+        window.filterAdminCatalog = function(cat) {
             activeAdminCatalogFilter = cat;
-
-            const btnAll = document.getElementById('catFilterAll');
-            const btnFast = document.getElementById('catFilterFast');
-            const btnLocal = document.getElementById('catFilterLocal');
-            const btnDrinks = document.getElementById('catFilterDrinks');
-
-            const inactiveStyle = "px-2.5 py-1 rounded-lg text-[10px] font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 shrink-0";
-            const activeStyle = "px-2.5 py-1 rounded-lg text-[10px] font-black bg-[#FF5A36] text-white shadow-sm shrink-0";
-
-            if (btnAll) btnAll.className = inactiveStyle;
-            if (btnFast) btnFast.className = inactiveStyle;
-            if (btnLocal) btnLocal.className = inactiveStyle;
-            if (btnDrinks) btnDrinks.className = inactiveStyle;
-
-            if (cat === 'all' && btnAll) btnAll.className = activeStyle;
-            if (cat === 'fast' && btnFast) btnFast.className = activeStyle;
-            if (cat === 'local' && btnLocal) btnLocal.className = activeStyle;
-            if (cat === 'drinks' && btnDrinks) btnDrinks.className = activeStyle;
-
             renderAdminCatalog();
-        }
+        };
 
-        window.filterAdminCatalog = filterAdminCatalog;
-
-        // Reorder Catalog Item Up or Down (Stages locally until Save button clicked)
-        function moveCatalogItem(id, direction) {
+        window.moveCatalogItem = function(id, direction) {
             const index = workingMenuData.findIndex(x => x.id === id);
             if (index === -1) return;
 
             const targetIndex = direction === 'up' ? index - 1 : index + 1;
             if (targetIndex < 0 || targetIndex >= workingMenuData.length) return;
 
-            // Swap items in working staging array
             const temp = workingMenuData[index];
             workingMenuData[index] = workingMenuData[targetIndex];
             workingMenuData[targetIndex] = temp;
 
             renderAdminCatalog();
-
-            // Show Save Catalog Order Changes button at bottom
             const updateBar = document.getElementById('catalogUpdateBar');
             if (updateBar) updateBar.classList.remove('hidden');
-        }
+        };
 
-        window.moveCatalogItem = moveCatalogItem;
-
-        function saveCatalogOrderChanges() {
+        window.saveCatalogOrderChanges = async function() {
             menuData = JSON.parse(JSON.stringify(workingMenuData));
-            renderAdminCatalog();
-            renderCustomerMenu();
-            renderLocalMenu();
-            renderDrinksMenu();
-
+            for (let item of menuData) {
+                await setDoc(doc(db, "menu", String(item.id)), item);
+            }
             const updateBar = document.getElementById('catalogUpdateBar');
             if (updateBar) updateBar.classList.add('hidden');
-            showNotification('Catalog order updated successfully!');
-        }
+            showNotification('Catalog order updated in Firebase!');
+        };
 
-        window.saveCatalogOrderChanges = saveCatalogOrderChanges;
-
-        // Reorder Feed Post Up or Down (Stages locally until Save button clicked)
-        function movePostItem(id, direction) {
+        window.movePostItem = function(id, direction) {
             const index = workingFeedPosts.findIndex(p => p.id === id);
             if (index === -1) return;
 
             const targetIndex = direction === 'up' ? index - 1 : index + 1;
             if (targetIndex < 0 || targetIndex >= workingFeedPosts.length) return;
 
-            // Swap posts in working staging array
             const temp = workingFeedPosts[index];
             workingFeedPosts[index] = workingFeedPosts[targetIndex];
             workingFeedPosts[targetIndex] = temp;
 
             renderAdminPostsList();
-
-            // Show Save Post Order Changes button at bottom
             const updateBar = document.getElementById('postUpdateBar');
             if (updateBar) updateBar.classList.remove('hidden');
-        }
+        };
 
-        window.movePostItem = movePostItem;
-
-        function savePostOrderChanges() {
+        window.savePostOrderChanges = async function() {
             feedPosts = JSON.parse(JSON.stringify(workingFeedPosts));
-            renderAdminPostsList();
-            renderCustomerSocialFeeds();
-
+            for (let post of feedPosts) {
+                await setDoc(doc(db, "posts", String(post.id)), post);
+            }
             const updateBar = document.getElementById('postUpdateBar');
             if (updateBar) updateBar.classList.add('hidden');
-            showNotification('Feed post order updated successfully!');
-        }
+            showNotification('Feed post order updated in Firebase!');
+        };
 
-        window.savePostOrderChanges = savePostOrderChanges;
-
-        // 2. Render Food Catalog in Admin Panel
-        function renderAdminCatalog() {
+        window.renderAdminCatalog = function() {
             const container = document.getElementById('adminCatalogRows');
             const counter = document.getElementById('adminCatalogCount');
             if (!container) return;
 
-            const filteredData = activeAdminCatalogFilter === 'all' 
-                ? workingMenuData 
-                : workingMenuData.filter(x => x.category === activeAdminCatalogFilter);
-
+            const filteredData = activeAdminCatalogFilter === 'all' ? workingMenuData : workingMenuData.filter(x => x.category === activeAdminCatalogFilter);
             container.innerHTML = '';
             if (counter) counter.innerText = filteredData.length;
 
             if (filteredData.length === 0) {
-                container.innerHTML = `
-                    <tr>
-                        <td colspan="3" class="p-4 text-center text-slate-400 font-bold text-xs italic">
-                            No products listed under this category.
-                        </td>
-                    </tr>
-                `;
+                container.innerHTML = `<tr><td colspan="3" class="p-4 text-center text-slate-400 font-bold text-xs italic">No products listed under this category.</td></tr>`;
                 return;
             }
 
-            filteredData.forEach((item, index) => {
+            filteredData.forEach(item => {
                 let categoryBadge = '';
-                if (item.category === 'fast') {
-                    categoryBadge = '<span class="text-[9px] bg-indigo-50 text-indigo-700 font-extrabold px-1.5 py-0.5 rounded border border-indigo-200 uppercase">Fast Food</span>';
-                } else if (item.category === 'local') {
-                    categoryBadge = '<span class="text-[9px] bg-amber-50 text-amber-700 font-extrabold px-1.5 py-0.5 rounded border border-amber-200 uppercase">Local Menu</span>';
-                } else if (item.category === 'drinks') {
-                    categoryBadge = '<span class="text-[9px] bg-sky-50 text-sky-700 font-extrabold px-1.5 py-0.5 rounded border border-sky-200 uppercase">Cold Drink</span>';
-                }
+                if (item.category === 'fast') categoryBadge = '<span class="text-[9px] bg-indigo-50 text-indigo-700 font-extrabold px-1.5 py-0.5 rounded border border-indigo-200 uppercase">Fast Food</span>';
+                else if (item.category === 'local') categoryBadge = '<span class="text-[9px] bg-amber-50 text-amber-700 font-extrabold px-1.5 py-0.5 rounded border border-amber-200 uppercase">Local Menu</span>';
+                else if (item.category === 'drinks') categoryBadge = '<span class="text-[9px] bg-sky-50 text-sky-700 font-extrabold px-1.5 py-0.5 rounded border border-sky-200 uppercase">Cold Drink</span>';
 
                 container.innerHTML += `
                     <tr class="hover:bg-slate-50 transition-all">
@@ -2767,28 +2574,17 @@
                         </td>
                         <td class="p-2.5 text-right font-black text-slate-800">Rs. ${item.price}</td>
                         <td class="p-2.5 text-right space-x-1 whitespace-nowrap">
-                            <button onclick="moveCatalogItem(${item.id}, 'up')" class="w-7 h-7 inline-flex items-center justify-center bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg transition-all font-bold" title="Move Up">
-                                <i class="fa-solid fa-arrow-up text-[10px]"></i>
-                            </button>
-                            <button onclick="moveCatalogItem(${item.id}, 'down')" class="w-7 h-7 inline-flex items-center justify-center bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg transition-all font-bold" title="Move Down">
-                                <i class="fa-solid fa-arrow-down text-[10px]"></i>
-                            </button>
-                            <button onclick="loadFoodToEdit(${item.id})" class="w-7 h-7 inline-flex items-center justify-center bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg transition-all font-bold" title="Edit Item">
-                                <i class="fa-solid fa-pencil text-[10px]"></i>
-                            </button>
-                            <button onclick="deleteFoodCatalog(${item.id})" class="w-7 h-7 inline-flex items-center justify-center bg-red-50 text-red-500 hover:bg-red-500 hover:text-white rounded-lg transition-all font-bold" title="Delete Item">
-                                <i class="fa-solid fa-trash text-[10px]"></i>
-                            </button>
+                            <button onclick="moveCatalogItem(${item.id}, 'up')" class="w-7 h-7 inline-flex items-center justify-center bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg transition-all font-bold" title="Move Up"><i class="fa-solid fa-arrow-up text-[10px]"></i></button>
+                            <button onclick="moveCatalogItem(${item.id}, 'down')" class="w-7 h-7 inline-flex items-center justify-center bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg transition-all font-bold" title="Move Down"><i class="fa-solid fa-arrow-down text-[10px]"></i></button>
+                            <button onclick="loadFoodToEdit(${item.id})" class="w-7 h-7 inline-flex items-center justify-center bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg transition-all font-bold" title="Edit Item"><i class="fa-solid fa-pencil text-[10px]"></i></button>
+                            <button onclick="deleteFoodCatalog(${item.id})" class="w-7 h-7 inline-flex items-center justify-center bg-red-50 text-red-500 hover:bg-red-500 hover:text-white rounded-lg transition-all font-bold" title="Delete Item"><i class="fa-solid fa-trash text-[10px]"></i></button>
                         </td>
                     </tr>
                 `;
             });
-        }
+        };
 
-        window.renderAdminCatalog = renderAdminCatalog;
-
-        // 3. Render Published Posts List
-        function renderAdminPostsList() {
+        window.renderAdminPostsList = function() {
             const container = document.getElementById('adminPostsListContainer');
             const counter = document.getElementById('lblAdminPostsCount');
             if (!container) return;
@@ -2797,16 +2593,11 @@
             container.innerHTML = '';
 
             if (workingFeedPosts.length === 0) {
-                container.innerHTML = `
-                    <div class="py-8 text-center text-slate-400 font-bold text-xs">
-                        <i class="fa-regular fa-newspaper text-2xl mb-1 text-slate-300 block"></i>
-                        No active posts.
-                    </div>
-                `;
+                container.innerHTML = `<div class="py-8 text-center text-slate-400 font-bold text-xs"><i class="fa-regular fa-newspaper text-2xl mb-1 text-slate-300 block"></i>No active posts.</div>`;
                 return;
             }
 
-            workingFeedPosts.forEach((post, index) => {
+            workingFeedPosts.forEach(post => {
                 container.innerHTML += `
                     <div class="bg-slate-50 border border-slate-200 rounded-xl p-2.5 space-y-2">
                         <div class="flex gap-2.5 items-start">
@@ -2816,32 +2607,21 @@
                                 <p class="text-[9px] text-slate-500 line-clamp-2 leading-tight">${post.desc}</p>
                             </div>
                         </div>
-
                         <div class="flex justify-between items-center pt-1.5 border-t border-slate-200">
-                            <span class="text-[9px] text-slate-400 font-bold"><i class="fa-solid fa-heart text-rose-500 mr-1"></i>${post.likes} Likes</span>
+                            <span class="text-[9px] text-slate-400 font-bold"><i class="fa-solid fa-heart text-rose-500 mr-1"></i>${post.likes || 0} Likes</span>
                             <div class="flex gap-1">
-                                <button onclick="movePostItem(${post.id}, 'up')" class="px-2 py-1 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-md text-[10px] font-bold transition-all flex items-center gap-1" title="Move Up">
-                                    <i class="fa-solid fa-arrow-up"></i>
-                                </button>
-                                <button onclick="movePostItem(${post.id}, 'down')" class="px-2 py-1 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-md text-[10px] font-bold transition-all flex items-center gap-1" title="Move Down">
-                                    <i class="fa-solid fa-arrow-down"></i>
-                                </button>
-                                <button onclick="loadPostToEdit(${post.id})" class="px-2 py-1 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-md text-[10px] font-bold transition-all flex items-center gap-1">
-                                    <i class="fa-solid fa-pen-to-square"></i> Edit
-                                </button>
-                                <button onclick="deleteFeedPost(${post.id})" class="px-2 py-1 bg-red-50 hover:bg-red-500 text-red-600 hover:text-white border border-red-200 rounded-md text-[10px] font-bold transition-all flex items-center gap-1">
-                                    <i class="fa-solid fa-trash-can"></i> Delete
-                                </button>
+                                <button onclick="movePostItem(${post.id}, 'up')" class="px-2 py-1 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-md text-[10px] font-bold transition-all flex items-center gap-1"><i class="fa-solid fa-arrow-up"></i></button>
+                                <button onclick="movePostItem(${post.id}, 'down')" class="px-2 py-1 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-md text-[10px] font-bold transition-all flex items-center gap-1"><i class="fa-solid fa-arrow-down"></i></button>
+                                <button onclick="loadPostToEdit(${post.id})" class="px-2 py-1 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-md text-[10px] font-bold transition-all flex items-center gap-1"><i class="fa-solid fa-pen-to-square"></i> Edit</button>
+                                <button onclick="deleteFeedPost(${post.id})" class="px-2 py-1 bg-red-50 hover:bg-red-500 text-red-600 hover:text-white border border-red-200 rounded-md text-[10px] font-bold transition-all flex items-center gap-1"><i class="fa-solid fa-trash-can"></i> Delete</button>
                             </div>
                         </div>
                     </div>
                 `;
             });
-        }
+        };
 
-        window.renderAdminPostsList = renderAdminPostsList;
-
-        function loadPostToEdit(postId) {
+        window.loadPostToEdit = function(postId) {
             const post = feedPosts.find(p => p.id === postId);
             if (!post) return;
 
@@ -2862,11 +2642,9 @@
             }
 
             switchFeedSubTab('create');
-        }
+        };
 
-        window.loadPostToEdit = loadPostToEdit;
-
-        function resetPostForm() {
+        window.resetPostForm = function() {
             document.getElementById('editPostId').value = '';
             document.getElementById('postFormTitle').value = '';
             document.getElementById('postFormFile').value = '';
@@ -2878,26 +2656,16 @@
             document.getElementById('btnCancelPostEdit').classList.add('hidden');
 
             const previewContainer = document.getElementById('postImagePreviewContainer');
-            if (previewContainer) {
-                previewContainer.classList.add('hidden');
-            }
-        }
+            if (previewContainer) previewContainer.classList.add('hidden');
+        };
 
-        window.resetPostForm = resetPostForm;
+        window.deleteFeedPost = async function(postId) {
+            await deleteDoc(doc(db, "posts", String(postId)));
+            showNotification('Post deleted from Firebase!', 'warning');
+        };
 
-        function deleteFeedPost(postId) {
-            feedPosts = feedPosts.filter(p => p.id !== postId);
-            workingFeedPosts = JSON.parse(JSON.stringify(feedPosts));
-            renderAdminPostsList();
-            renderCustomerSocialFeeds();
-            showNotification('Post deleted successfully!', 'warning');
-        }
-
-        window.deleteFeedPost = deleteFeedPost;
-
-        function handleFeedPostSubmit(event) {
+        window.handleFeedPostSubmit = async function(event) {
             event.preventDefault();
-
             const editId = document.getElementById('editPostId').value;
             const title = document.getElementById('postFormTitle').value.trim();
             const image = document.getElementById('postFormImage').value.trim();
@@ -2914,11 +2682,12 @@
                     feedPosts[postIdx].title = title;
                     feedPosts[postIdx].image = image;
                     feedPosts[postIdx].desc = desc;
-                    showNotification('Post changes saved successfully!');
+                    await setDoc(doc(db, "posts", String(editId)), feedPosts[postIdx], { merge: true });
+                    showNotification('Post updated in Firebase!');
                 }
             } else {
                 const newPostId = feedPosts.length > 0 ? Math.max(...feedPosts.map(p => p.id)) + 1 : 101;
-                feedPosts.unshift({
+                const newPostObj = {
                     id: newPostId,
                     title,
                     image,
@@ -2926,37 +2695,24 @@
                     likes: 0,
                     isLiked: false,
                     comments: []
-                });
+                };
+                await setDoc(doc(db, "posts", String(newPostId)), newPostObj);
                 showNotification('New post broadcasted live!');
             }
 
-            workingFeedPosts = JSON.parse(JSON.stringify(feedPosts));
             resetPostForm();
-            renderAdminPostsList();
-            renderCustomerSocialFeeds();
             switchFeedSubTab('list');
-        }
+        };
 
-        window.handleFeedPostSubmit = handleFeedPostSubmit;
-
-        // 4. Render Registered Customers CRM Directory
-        function renderRegisteredUsers(usersToShow = registeredUsers) {
+        window.renderRegisteredUsers = function(usersToShow = registeredUsers) {
             const tableBody = document.getElementById('registeredUsersRows');
             const badge = document.getElementById('adminUsersCountBadge');
-            
             if (!tableBody) return;
             if (badge) badge.innerText = registeredUsers.length;
 
             tableBody.innerHTML = '';
-            
             if (usersToShow.length === 0) {
-                tableBody.innerHTML = `
-                    <tr>
-                        <td colspan="5" class="p-4 text-center text-slate-400 font-bold italic text-xs">
-                            No registered customer found.
-                        </td>
-                    </tr>
-                `;
+                tableBody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-400 font-bold italic text-xs">No registered customer found.</td></tr>`;
                 return;
             }
 
@@ -2965,79 +2721,54 @@
                     <tr class="hover:bg-slate-50 transition-colors">
                         <td class="p-2.5 align-middle">
                             <div class="flex items-center gap-1.5">
-                                <div class="w-6 h-6 rounded-full bg-orange-500/10 text-orange-600 font-black text-[10px] flex items-center justify-center uppercase shrink-0">
-                                    ${user.name.charAt(0)}
-                                </div>
+                                <div class="w-6 h-6 rounded-full bg-orange-500/10 text-orange-600 font-black text-[10px] flex items-center justify-center uppercase shrink-0">${user.name ? user.name.charAt(0) : 'U'}</div>
                                 <span class="font-extrabold text-slate-900 text-[11px] truncate max-w-[90px]">${user.name}</span>
                             </div>
                         </td>
-                        <td class="p-2.5 align-middle text-[11px]">
-                            <a href="tel:${user.phone}" class="text-sky-600 font-bold hover:underline">
-                                ${user.phone}
-                            </a>
-                        </td>
-                        <td class="p-2.5 align-middle text-[10px] text-slate-500 max-w-[100px] truncate" title="${user.location}">
-                            ${user.location}
-                        </td>
-                        <td class="p-2.5 align-middle text-[10px] text-slate-500 max-w-[90px] truncate" title="${user.email}">
-                            ${user.email}
-                        </td>
+                        <td class="p-2.5 align-middle text-[11px]"><a href="tel:${user.phone}" class="text-sky-600 font-bold hover:underline">${user.phone}</a></td>
+                        <td class="p-2.5 align-middle text-[10px] text-slate-500 max-w-[100px] truncate" title="${user.location}">${user.location}</td>
+                        <td class="p-2.5 align-middle text-[10px] text-slate-500 max-w-[90px] truncate" title="${user.email}">${user.email}</td>
                         <td class="p-2.5 align-middle text-center space-x-1 whitespace-nowrap">
-                            <button onclick="copyCustomerAddress('${user.location.replace(/'/g, "\\'")}')" class="w-6 h-6 inline-flex items-center justify-center bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg transition-all" title="Copy Address">
-                                <i class="fa-solid fa-copy text-[9px]"></i>
-                            </button>
-                            <button onclick="removeCustomerRecord(${idx})" class="w-6 h-6 inline-flex items-center justify-center bg-red-50 hover:bg-red-500 hover:text-white text-red-500 rounded-lg transition-all" title="Delete Account">
-                                <i class="fa-solid fa-trash-can text-[9px]"></i>
-                            </button>
+                            <button onclick="copyCustomerAddress('${(user.location || '').replace(/'/g, "\\'")}')" class="w-6 h-6 inline-flex items-center justify-center bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg transition-all" title="Copy Address"><i class="fa-solid fa-copy text-[9px]"></i></button>
+                            <button onclick="removeCustomerRecord(${idx})" class="w-6 h-6 inline-flex items-center justify-center bg-red-50 hover:bg-red-500 hover:text-white text-red-500 rounded-lg transition-all" title="Delete Account"><i class="fa-solid fa-trash-can text-[9px]"></i></button>
                         </td>
                     </tr>
                 `;
             });
-        }
+        };
 
-        window.renderRegisteredUsers = renderRegisteredUsers;
-
-        function copyCustomerAddress(address) {
+        window.copyCustomerAddress = function(address) {
             document.execCommand('copy');
             showNotification('Address copied to clipboard!');
-        }
+        };
 
-        window.copyCustomerAddress = copyCustomerAddress;
+        window.removeCustomerRecord = async function(idx) {
+            if (registeredUsers[idx]) {
+                const userDoc = registeredUsers[idx];
+                if (userDoc.firebaseDocId) {
+                    await deleteDoc(doc(db, "users", userDoc.firebaseDocId));
+                }
+                showNotification('Account removed from CRM database.', 'warning');
+            }
+        };
 
-        function removeCustomerRecord(idx) {
-            registeredUsers.splice(idx, 1);
-            updateUserAccountDisplay();
-            renderRegisteredUsers();
-            showNotification('Account removed from CRM database.', 'warning');
-        }
-
-        window.removeCustomerRecord = removeCustomerRecord;
-
-        function searchUsers(keyword) {
+        window.searchUsers = function(keyword) {
             const filtered = registeredUsers.filter(u => 
-                u.name.toLowerCase().includes(keyword.toLowerCase()) || 
-                u.phone.includes(keyword) || 
-                u.location.toLowerCase().includes(keyword.toLowerCase()) ||
-                u.email.toLowerCase().includes(keyword.toLowerCase())
+                (u.name || '').toLowerCase().includes(keyword.toLowerCase()) || 
+                (u.phone || '').includes(keyword) || 
+                (u.location || '').toLowerCase().includes(keyword.toLowerCase()) ||
+                (u.email || '').toLowerCase().includes(keyword.toLowerCase())
             );
             renderRegisteredUsers(filtered);
-        }
+        };
 
-        window.searchUsers = searchUsers;
-
-        function deleteFoodCatalog(id) {
-            if (cartItems[id]) {
-                delete cartItems[id];
-            }
-            menuData = menuData.filter(x => x.id != id);
-            workingMenuData = JSON.parse(JSON.stringify(menuData));
-            renderAdminCatalog();
+        window.deleteFoodCatalog = async function(id) {
+            if (cartItems[id]) delete cartItems[id];
+            await deleteDoc(doc(db, "menu", String(id)));
             showNotification('Item removed from catalog.');
-        }
+        };
 
-        window.deleteFoodCatalog = deleteFoodCatalog;
-
-        function loadFoodToEdit(id) {
+        window.loadFoodToEdit = function(id) {
             const item = menuData.find(x => x.id == id);
             if (!item) return;
 
@@ -3052,11 +2783,9 @@
             document.getElementById('foodFormSubmitBtn').innerHTML = '<i class="fa-solid fa-save mr-1"></i> Save Changes';
 
             switchCatalogSubTab('add');
-        }
+        };
 
-        window.loadFoodToEdit = loadFoodToEdit;
-
-        function handleFoodFormSubmit(event) {
+        window.handleFoodFormSubmit = async function(event) {
             event.preventDefault();
 
             const editId = document.getElementById('editFoodId').value;
@@ -3071,43 +2800,31 @@
                 return;
             }
 
-            if (!image) {
-                image = 'https://placehold.co/400x300/FF5A36/ffffff?text=ACP';
-            }
+            if (!image) image = 'https://placehold.co/400x300/FF5A36/ffffff?text=ACP';
 
             if (editId) {
-                const index = menuData.findIndex(x => x.id == editId);
-                if (index !== -1) {
-                    menuData[index] = { id: parseInt(editId), name, price, image, desc, category };
-                    showNotification('Changes saved successfully!');
-                }
+                const updatedItem = { id: parseInt(editId), name, price, image, desc, category };
+                await setDoc(doc(db, "menu", String(editId)), updatedItem);
+                showNotification('Product updated in Firebase!');
             } else {
                 const newId = menuData.length > 0 ? Math.max(...menuData.map(x => x.id)) + 1 : 1;
-                menuData.push({ id: newId, name, price, image, desc, category });
-                showNotification('Product successfully added to the catalog!');
+                const newItem = { id: newId, name, price, image, desc, category };
+                await setDoc(doc(db, "menu", String(newId)), newItem);
+                showNotification('Product added to Firebase!');
             }
 
-            workingMenuData = JSON.parse(JSON.stringify(menuData));
-            renderAdminCatalog();
-            renderCustomerMenu();
-            renderLocalMenu();
-            renderDrinksMenu();
             resetAdminForm();
             switchCatalogSubTab('list');
-        }
+        };
 
-        window.handleFoodFormSubmit = handleFoodFormSubmit;
-
-        function resetAdminForm() {
+        window.resetAdminForm = function() {
             document.getElementById('editFoodId').value = '';
             document.getElementById('adminFoodForm').reset();
             document.getElementById('formPanelTitle').innerText = 'Add New Food Item';
             document.getElementById('foodFormSubmitBtn').innerHTML = '<i class="fa-solid fa-save mr-1"></i> Save Product';
-        }
+        };
 
-        window.resetAdminForm = resetAdminForm;
-
-        function generateStoreInvoice() {
+        window.generateStoreInvoice = function() {
             const modalOverlay = document.getElementById('invoiceModalOverlay');
             const invoiceTableBody = document.getElementById('invoiceTableRows');
             const keys = Object.keys(cartItems);
@@ -3136,39 +2853,27 @@
                 }
             });
 
-            const dateObj = new Date();
-            const lblInvDate = document.getElementById('lblInvDate');
-            if (lblInvDate) {
-                lblInvDate.innerText = dateObj.toLocaleDateString('en-US', {
+            if (document.getElementById('lblInvDate')) {
+                document.getElementById('lblInvDate').innerText = new Date().toLocaleDateString('en-US', {
                     year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit'
                 });
             }
 
-            const lblTxnId = document.getElementById('lblTxnId');
-            if (lblTxnId) {
-                lblTxnId.innerText = '#ACP-' + Math.floor(1000 + Math.random() * 9000);
+            if (document.getElementById('lblTxnId')) {
+                document.getElementById('lblTxnId').innerText = '#ACP-' + Math.floor(1000 + Math.random() * 9000);
             }
 
-            const lblSub = document.getElementById('lblSub');
-            if (lblSub) lblSub.innerText = 'Rs. ' + totalAmount;
-
+            if (document.getElementById('lblSub')) document.getElementById('lblSub').innerText = 'Rs. ' + totalAmount;
             if (modalOverlay) modalOverlay.style.display = 'flex';
-        }
+        };
 
-        window.generateStoreInvoice = generateStoreInvoice;
-
-        function closeReceiptAndScrollToMenu() {
+        window.closeReceiptAndScrollToMenu = function() {
             const modalOverlay = document.getElementById('invoiceModalOverlay');
-            if (modalOverlay) {
-                modalOverlay.style.display = 'none';
-            }
-        }
+            if (modalOverlay) modalOverlay.style.display = 'none';
+        };
 
-        window.closeReceiptAndScrollToMenu = closeReceiptAndScrollToMenu;
-
-        function downloadInvoiceJPG() {
+        window.downloadInvoiceJPG = function() {
             const element = document.getElementById('receiptContainer');
-            
             const options = {
                 scale: 4,
                 useCORS: true,
@@ -3182,7 +2887,6 @@
             };
 
             showNotification('Generating ultra-high-res receipt image...');
-            
             html2canvas(element, options).then(canvas => {
                 const link = document.createElement('a');
                 link.download = 'Alqadri-HighRes-Receipt.jpg';
@@ -3190,521 +2894,8 @@
                 link.click();
                 showNotification('High-resolution JPG saved successfully!');
             }).catch(err => {
-                console.error("JPG capture error: ", err);
                 showNotification('Failed to generate crisp JPG receipt.', 'warning');
             });
-        }
-
-        window.downloadInvoiceJPG = downloadInvoiceJPG;
-    </script>
-
-    <!-- Unified Modular Script for Live Cloud Database Configuration -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getDatabase, ref, set, push, onValue, update, remove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
-        import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js";
-
-        // =========================================================================
-        // YOUR ACTIVE WEB APP'S FIREBASE CONFIGURATION
-        // =========================================================================
-        const firebaseConfig = {
-            apiKey: "AIzaSyCnTvjumYj8qXN8rsQtmkGOAmNuJDummBI",
-            authDomain: "alfa-corex.firebaseapp.com",
-            databaseURL: "https://alfa-corex-default-rtdb.firebaseio.com", // Points to your Realtime Database node
-            projectId: "alfa-corex",
-            storageBucket: "alfa-corex.firebasestorage.app",
-            messagingSenderId: "137972735130",
-            appId: "1:137972735130:web:8edac3d79ebea4046b1323",
-            measurementId: "G-FERT7LM1W6"
-        };
-
-        // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
-        const db = getDatabase(app);
-        const analytics = getAnalytics(app);
-
-        // Bind global variables clearly onto window namespace for ES scope safety
-        if (typeof menuData !== 'undefined') window.menuData = menuData;
-        if (typeof feedPosts !== 'undefined') window.feedPosts = feedPosts;
-        if (typeof ordersList !== 'undefined') window.ordersList = ordersList;
-        if (typeof registeredUsers !== 'undefined') window.registeredUsers = registeredUsers;
-        if (typeof currentUser !== 'undefined') window.currentUser = currentUser;
-        if (typeof cartItems !== 'undefined') window.cartItems = cartItems;
-        if (typeof workingMenuData !== 'undefined') window.workingMenuData = workingMenuData;
-        if (typeof workingFeedPosts !== 'undefined') window.workingFeedPosts = workingFeedPosts;
-
-        // Clone offline default lists for first-time database autoseeding
-        const initialMenuData = JSON.parse(JSON.stringify(window.menuData || []));
-        const initialFeedPosts = JSON.parse(JSON.stringify(window.feedPosts || []));
-
-        // -------------------------------------------------------------------------
-        // A. REAL-TIME DATA LISTENERS (READS)
-        // -------------------------------------------------------------------------
-
-        // Live Food Catalog Sync
-        onValue(ref(db, 'menuData'), (snapshot) => {
-            const data = snapshot.val();
-            let parsedData = [];
-            if (data) {
-                parsedData = Array.isArray(data) ? data.filter(Boolean) : Object.values(data);
-            } else {
-                parsedData = initialMenuData;
-                set(ref(db, 'menuData'), initialMenuData);
-            }
-            
-            window.menuData.length = 0;
-            window.menuData.push(...parsedData);
-            
-            window.workingMenuData.length = 0;
-            window.workingMenuData.push(...JSON.parse(JSON.stringify(window.menuData)));
-
-            if (typeof window.renderCustomerMenu === 'function') window.renderCustomerMenu();
-            if (typeof window.renderLocalMenu === 'function') window.renderLocalMenu();
-            if (typeof window.renderDrinksMenu === 'function') window.renderDrinksMenu();
-            if (typeof window.renderAdminCatalog === 'function') window.renderAdminCatalog();
-        });
-
-        // Live Social Feed Sync
-        onValue(ref(db, 'feedPosts'), (snapshot) => {
-            const data = snapshot.val();
-            let parsedData = [];
-            if (data) {
-                parsedData = Array.isArray(data) ? data.filter(Boolean) : Object.values(data);
-                parsedData.forEach(post => {
-                    if (!post.comments) post.comments = [];
-                    else if (!Array.isArray(post.comments)) post.comments = Object.values(post.comments);
-                });
-            } else {
-                parsedData = initialFeedPosts;
-                set(ref(db, 'feedPosts'), initialFeedPosts);
-            }
-
-            window.feedPosts.length = 0;
-            window.feedPosts.push(...parsedData);
-
-            window.workingFeedPosts.length = 0;
-            window.workingFeedPosts.push(...JSON.parse(JSON.stringify(window.feedPosts)));
-
-            if (typeof window.renderCustomerSocialFeeds === 'function') window.renderCustomerSocialFeeds();
-            if (typeof window.renderAdminPostsList === 'function') window.renderAdminPostsList();
-        });
-
-        // Live Placed Orders List Sync
-        onValue(ref(db, 'ordersList'), (snapshot) => {
-            const data = snapshot.val();
-            let parsedData = [];
-            if (data) {
-                parsedData = Array.isArray(data) ? data.filter(Boolean) : Object.values(data);
-                parsedData.forEach(ord => {
-                    if (!ord.items) ord.items = [];
-                    else if (!Array.isArray(ord.items)) ord.items = Object.values(ord.items);
-                });
-            }
-
-            window.ordersList.length = 0;
-            window.ordersList.push(...parsedData);
-
-            if (typeof window.renderAdminOrdersList === 'function') window.renderAdminOrdersList();
-        });
-
-        // Live Registered Customers List Sync
-        onValue(ref(db, 'registeredUsers'), (snapshot) => {
-            const data = snapshot.val();
-            let parsedData = [];
-            if (data) {
-                parsedData = Array.isArray(data) ? data.filter(Boolean) : Object.values(data);
-            }
-
-            window.registeredUsers.length = 0;
-            window.registeredUsers.push(...parsedData);
-
-            if (typeof window.renderRegisteredUsers === 'function') window.renderRegisteredUsers();
-            if (typeof window.updateUserAccountDisplay === 'function') window.updateUserAccountDisplay();
-        });
-
-        // -------------------------------------------------------------------------
-        // B. OVERRIDDEN EVENT HANDLERS (WRITES)
-        // -------------------------------------------------------------------------
-
-        // Customer checkout order submission
-        window.finalizeOrderAndSendWhatsApp = function() {
-            const keys = Object.keys(window.cartItems);
-            if (keys.length === 0) return;
-
-            const name = document.getElementById('checkoutName').value.trim();
-            const phone = document.getElementById('checkoutPhone').value.trim();
-            const location = document.getElementById('checkoutLocation').value.trim();
-
-            if (!name || !phone || !location) {
-                window.showNotification('Please fill in Name, Phone and Location.', 'warning');
-                return;
-            }
-
-            const orderId = '#ACP-' + Math.floor(1000 + Math.random() * 9000);
-            let itemsDetail = [];
-            let grandTotal = 0;
-
-            keys.forEach(id => {
-                const item = window.menuData.find(x => x.id == id);
-                if (item) {
-                    const qty = window.cartItems[id];
-                    const total = item.price * qty;
-                    grandTotal += total;
-                    itemsDetail.push({ name: item.name, qty: qty, price: item.price, total: total });
-                }
-            });
-
-            const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            const dateStr = new Date().toLocaleDateString();
-
-            const newOrder = {
-                id: orderId,
-                customerName: name,
-                phone: phone,
-                location: location,
-                date: dateStr,
-                time: timeStr,
-                items: itemsDetail,
-                total: grandTotal,
-                status: 'Pending'
-            };
-
-            // Write order payload to Firebase
-            push(ref(db, 'ordersList'), newOrder).then(() => {
-                let waMsg = `*🛒 NEW ORDER - ALQADRI CHASKA POINT*\n`;
-                waMsg += `*Order ID:* ${orderId}\n`;
-                waMsg += `*Customer:* ${name}\n`;
-                waMsg += `*Phone:* ${phone}\n`;
-                waMsg += `*Location:* ${location}\n\n`;
-                waMsg += `*Items Ordered:*\n`;
-                itemsDetail.forEach(it => {
-                    waMsg += `• ${it.name} x${it.qty} = Rs. ${it.total}\n`;
-                });
-                waMsg += `\n*Grand Total:* Rs. ${grandTotal}\n`;
-                waMsg += `Thank you! Please prepare my order.`;
-
-                const whatsappUrl = `https://wa.me/923102434222?text=${encodeURIComponent(waMsg)}`;
-
-                window.closeCheckoutConfirmModal();
-                window.showNotification(`Order ${orderId} submitted! Opening WhatsApp...`);
-                window.addOrderNotification(`Order Placed (${orderId})`, `Order sent to WhatsApp & kitchen for approval.`);
-
-                // Empty offline cart context
-                window.cartItems = {};
-                window.renderCustomerMenu();
-                window.renderLocalMenu();
-                window.renderDrinksMenu();
-                window.renderCartSummary();
-
-                window.open(whatsappUrl, '_blank');
-            }).catch(err => {
-                console.error(err);
-                window.showNotification('Order transmission failed on cloud database.', 'warning');
-            });
-        };
-
-        // User account registration
-        window.registerUser = function() {
-            const name = document.getElementById('regName').value.trim();
-            const phone = document.getElementById('regPhone').value.trim();
-            const loc = document.getElementById('regLocation').value.trim();
-            const email = document.getElementById('regEmail').value.trim() || 'No Email';
-            
-            if(!name || !phone || !loc) {
-                window.showNotification('Please fill in Name, Phone, and Location fields.', 'warning');
-                return;
-            }
-
-            const newUser = { name, phone, location: loc, email };
-            
-            push(ref(db, 'registeredUsers'), newUser).then(() => {
-                window.currentUser = newUser; 
-                window.updateUserAccountDisplay();
-                window.showNotification(`Welcome, ${name}! Account registered.`);
-                window.closeUserModal();
-                
-                document.getElementById('regName').value = '';
-                document.getElementById('regPhone').value = '';
-                document.getElementById('regLocation').value = '';
-                document.getElementById('regEmail').value = '';
-
-                window.renderCustomerSocialFeeds();
-            }).catch(err => {
-                console.error(err);
-                window.showNotification('Cloud database registration failed.', 'warning');
-            });
-        };
-
-        // Approved order update (Admin Console)
-        window.approveAdminOrder = function(index) {
-            const order = window.ordersList[index];
-            if (!order) return;
-
-            onValue(ref(db, 'ordersList'), (snapshot) => {
-                const data = snapshot.val();
-                if (data) {
-                    Object.keys(data).forEach(key => {
-                        if (data[key].id === order.id) {
-                            update(ref(db, `ordersList/${key}`), { status: 'Approved' }).then(() => {
-                                window.showNotification(`Order ${order.id} approved!`);
-                                window.addOrderNotification(`Order Approved (${order.id})`, `Kitchen approved order ${order.id}! Fresh food preparation started.`, true);
-                            });
-                        }
-                    });
-                }
-            }, { onlyOnce: true });
-        };
-
-        // Clear order record (Admin Console)
-        window.removeAdminOrder = function(index) {
-            const order = window.ordersList[index];
-            if (!order) return;
-
-            onValue(ref(db, 'ordersList'), (snapshot) => {
-                const data = snapshot.val();
-                if (data) {
-                    Object.keys(data).forEach(key => {
-                        if (data[key].id === order.id) {
-                            remove(ref(db, `ordersList/${key}`)).then(() => {
-                                window.showNotification('Order record cleared.');
-                            });
-                        }
-                    });
-                }
-            }, { onlyOnce: true });
-        };
-
-        // Save food item added / modified (Admin Console)
-        window.handleFoodFormSubmit = function(event) {
-            event.preventDefault();
-
-            const editId = document.getElementById('editFoodId').value;
-            const name = document.getElementById('foodFormName').value.trim();
-            const price = parseInt(document.getElementById('foodFormPrice').value);
-            let image = document.getElementById('foodFormImage').value.trim();
-            const desc = document.getElementById('foodFormDesc').value.trim();
-            const category = document.getElementById('foodFormCategory').value;
-
-            if (!name || isNaN(price)) {
-                window.showNotification('Please fill in required name and price fields.', 'warning');
-                return;
-            }
-
-            if (!image) {
-                image = 'https://placehold.co/400x300/FF5A36/ffffff?text=ACP';
-            }
-
-            if (editId) {
-                onValue(ref(db, 'menuData'), (snapshot) => {
-                    const data = snapshot.val();
-                    if (data) {
-                        Object.keys(data).forEach(key => {
-                            if (data[key].id == editId) {
-                                update(ref(db, `menuData/${key}`), { name, price, image, desc, category }).then(() => {
-                                    window.showNotification('Changes saved successfully!');
-                                });
-                            }
-                        });
-                    }
-                }, { onlyOnce: true });
-            } else {
-                const newId = window.menuData.length > 0 ? Math.max(...window.menuData.map(x => x.id)) + 1 : 1;
-                const newItem = { id: newId, name, price, image, desc, category };
-                push(ref(db, 'menuData'), newItem).then(() => {
-                    window.showNotification('Product successfully added to the catalog!');
-                });
-            }
-
-            window.resetAdminForm();
-            window.switchCatalogSubTab('list');
-        };
-
-        // Remove item from food catalog (Admin Console)
-        window.deleteFoodCatalog = function(id) {
-            if (window.cartItems[id]) {
-                delete window.cartItems[id];
-            }
-            
-            onValue(ref(db, 'menuData'), (snapshot) => {
-                const data = snapshot.val();
-                if (data) {
-                    Object.keys(data).forEach(key => {
-                        if (data[key].id == id) {
-                            remove(ref(db, `menuData/${key}`)).then(() => {
-                                window.showNotification('Item removed from catalog.');
-                            });
-                        }
-                    });
-                }
-            }, { onlyOnce: true });
-        };
-
-        // Bulk save manual catalog reorder drag sequence (Admin Console)
-        window.saveCatalogOrderChanges = function() {
-            set(ref(db, 'menuData'), window.workingMenuData).then(() => {
-                const updateBar = document.getElementById('catalogUpdateBar');
-                if (updateBar) updateBar.classList.add('hidden');
-                window.showNotification('Catalog order updated successfully!');
-            });
-        };
-
-        // Save deal post added / modified (Admin Console)
-        window.handleFeedPostSubmit = function(event) {
-            event.preventDefault();
-
-            const editId = document.getElementById('editPostId').value;
-            const title = document.getElementById('postFormTitle').value.trim();
-            const image = document.getElementById('postFormImage').value.trim();
-            const desc = document.getElementById('postFormDesc').value.trim();
-
-            if (!title || !image || !desc) {
-                window.showNotification('Please fill in required post details.', 'warning');
-                return;
-            }
-
-            if (editId) {
-                onValue(ref(db, 'feedPosts'), (snapshot) => {
-                    const data = snapshot.val();
-                    if (data) {
-                        Object.keys(data).forEach(key => {
-                            if (data[key].id == editId) {
-                                update(ref(db, `feedPosts/${key}`), { title, image, desc }).then(() => {
-                                    window.showNotification('Post changes saved successfully!');
-                                });
-                            }
-                        });
-                    }
-                }, { onlyOnce: true });
-            } else {
-                const newPostId = window.feedPosts.length > 0 ? Math.max(...window.feedPosts.map(p => p.id)) + 1 : 101;
-                const newPost = {
-                    id: newPostId,
-                    title,
-                    image,
-                    desc,
-                    likes: 0,
-                    isLiked: false,
-                    comments: []
-                };
-                push(ref(db, 'feedPosts'), newPost).then(() => {
-                    window.showNotification('New post broadcasted live!');
-                });
-            }
-
-            window.resetPostForm();
-            window.switchFeedSubTab('list');
-        };
-
-        // Delete active social deal post (Admin Console)
-        window.deleteFeedPost = function(postId) {
-            onValue(ref(db, 'feedPosts'), (snapshot) => {
-                const data = snapshot.val();
-                if (data) {
-                    Object.keys(data).forEach(key => {
-                        if (data[key].id == postId) {
-                            remove(ref(db, `feedPosts/${key}`)).then(() => {
-                                window.showNotification('Post deleted successfully!', 'warning');
-                            });
-                        }
-                    });
-                }
-            }, { onlyOnce: true });
-        };
-
-        // Bulk save manual deal post reorder sequence (Admin Console)
-        window.savePostOrderChanges = function() {
-            set(ref(db, 'feedPosts'), window.workingFeedPosts).then(() => {
-                const updateBar = document.getElementById('postUpdateBar');
-                if (updateBar) updateBar.classList.add('hidden');
-                window.showNotification('Feed post order updated successfully!');
-            });
-        };
-
-        // Toggle like increments
-        window.likePost = function(id) {
-            const post = window.feedPosts.find(p => p.id === id);
-            if (!post) return;
-
-            post.isLiked = !post.isLiked;
-            const incremental = post.isLiked ? 1 : -1;
-            const newLikesCount = Math.max(0, post.likes + incremental);
-
-            onValue(ref(db, 'feedPosts'), (snapshot) => {
-                const data = snapshot.val();
-                if (data) {
-                    Object.keys(data).forEach(key => {
-                        if (data[key].id == id) {
-                            update(ref(db, `feedPosts/${key}`), { likes: newLikesCount }).then(() => {
-                                if (post.isLiked) {
-                                    window.showNotification('Liked this post! ♥');
-                                }
-                            });
-                        }
-                    });
-                }
-            }, { onlyOnce: true });
-        };
-
-        // Sync and push comment list
-        window.submitComment = function(id) {
-            const post = window.feedPosts.find(p => p.id === id);
-            const input = document.getElementById(`comment-input-${id}`);
-            
-            if (!post || !input) return;
-
-            const commentText = input.value.trim();
-            if (!commentText) return;
-
-            let commenterName = "";
-
-            if (window.currentUser) {
-                commenterName = window.currentUser.name;
-            } else if (window.guestSessionName) {
-                commenterName = window.guestSessionName;
-            } else {
-                window.openGuestNameModal();
-                return;
-            }
-
-            const newComment = { commenter: commenterName, text: commentText };
-            
-            onValue(ref(db, 'feedPosts'), (snapshot) => {
-                const data = snapshot.val();
-                if (data) {
-                    Object.keys(data).forEach(key => {
-                        if (data[key].id == id) {
-                            const existingComments = data[key].comments ? Object.values(data[key].comments) : [];
-                            existingComments.push(newComment);
-                            update(ref(db, `feedPosts/${key}`), { comments: existingComments }).then(() => {
-                                input.value = '';
-                            });
-                        }
-                    });
-                }
-            }, { onlyOnce: true });
-        };
-
-        // Remove user registration from CRM database (Admin Console)
-        window.removeCustomerRecord = function(idx) {
-            const user = window.registeredUsers[idx];
-            if (!user) return;
-
-            onValue(ref(db, 'registeredUsers'), (snapshot) => {
-                const data = snapshot.val();
-                if (data) {
-                    Object.keys(data).forEach(key => {
-                        if (data[key].phone === user.phone) {
-                            remove(ref(db, `registeredUsers/${key}`)).then(() => {
-                                window.showNotification('Account removed from CRM database.', 'warning');
-                                if (window.currentUser && window.currentUser.phone === user.phone) {
-                                    window.currentUser = null;
-                                    window.updateUserAccountDisplay();
-                                }
-                            });
-                        }
-                    });
-                }
-            }, { onlyOnce: true });
         };
     </script>
 </body>
