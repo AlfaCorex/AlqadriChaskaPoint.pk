@@ -1,10 +1,17 @@
 
+
 <!DOCTYPE html>
 <html lang="en" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ACP Premium Fast Food & Traditional Twist</title>
+    
+    <!-- Clear Old Cache Files & Force Clean Reloads -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+
     <!-- Import elegant fonts from Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,500&display=swap" rel="stylesheet">
     <!-- FontAwesome Icons for stunning social media and action icons -->
@@ -14,6 +21,11 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <!-- Tailwind CSS for modern responsive layout helper utilities -->
     <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Firebase Compat SDKs (For global browser compatibility) -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics-compat.js"></script>
 
     <style>
         :root {
@@ -1268,7 +1280,7 @@
 
                 <div id="subSecFeedCreate" class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-3">
                     <div class="border-b border-slate-100 pb-2">
-                        <h3 id="postFormHeading" class="text-xs font-black text-slate-950 flex items-center gap-2">
+                        <h3 id="postFormHeading" class="text-xs font-black text-slate-955 flex items-center gap-2">
                             <i class="fa-solid fa-paper-plane text-orange-500"></i> Broadcast / Edit Post
                         </h3>
                     </div>
@@ -1336,7 +1348,7 @@
             <div id="admin-sec-users" class="hidden">
                 <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-3">
                     <div class="border-b border-slate-100 pb-3">
-                        <h3 class="text-xs font-black text-slate-950 flex items-center gap-2">
+                        <h3 class="text-xs font-black text-slate-955 flex items-center gap-2">
                             <i class="fa-solid fa-id-card text-sky-500"></i> Registered Customer Base
                         </h3>
                         <div class="relative w-full text-xs font-bold mt-2">
@@ -1496,7 +1508,42 @@
         </div>
     </div>
 
+    <!-- JavaScript Backend Configuration & State Machine -->
     <script>
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyCnTvjumYj8qXN8rsQtmkGOAmNuJDummBI",
+            authDomain: "alfa-corex.firebaseapp.com",
+            projectId: "alfa-corex",
+            storageBucket: "alfa-corex.firebasestorage.app",
+            messagingSenderId: "137972735130",
+            appId: "1:137972735130:web:8edac3d79ebea4046b1323",
+            measurementId: "G-FERT7LM1W6"
+        };
+
+        // Initialize Firebase Compat
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        // Safe Initialization of Firebase Analytics to prevent ad-blockers from stopping execution
+        let analytics;
+        try {
+            analytics = firebase.analytics();
+        } catch (e) {
+            console.warn("Analytics initialization was safely bypassed to prevent halting: ", e);
+        }
+
+        // Safe clearing of persistence cache
+        try {
+            db.clearPersistence().then(() => {
+                console.log("Firestore offline database cache was cleaned successfully.");
+            }).catch((err) => {
+                console.warn("Firestore cache could not be cleared on load:", err);
+            });
+        } catch (e) {
+            console.warn("Persistence clearing bypassed: ", e);
+        }
+
         let cartItems = {};
         let notificationsHistory = [];
         let expandedComments = {}; 
@@ -1505,42 +1552,65 @@
         let currentUser = null; 
         let guestSessionName = ""; 
         let activeAdminCatalogFilter = 'all';
-        let sharedPostText = ""; // Holds post formatting for desktop clipboard sharing
+        let sharedPostText = ""; 
 
-        // Staging arrays for pending sort changes before confirmation update
+        // Working variables initialized
         let workingMenuData = [];
         let workingFeedPosts = [];
 
-        // Food Menu Data (Emptied per user request)
+        // Real-time State synchronized from Firestore Collections
         let menuData = [];
-
-        // Placed Orders Log Database
         let ordersList = [];
-
-        // Registered Customers CRM Database
         let registeredUsers = [];
-
-        // Pre-populated Social Feed Board (Emptied per user request)
         let feedPosts = [];
 
-        window.addEventListener('DOMContentLoaded', () => {
-            const savedUser = localStorage.getItem('acp_current_user');
-            if (savedUser) {
-                try {
-                    currentUser = JSON.parse(savedUser);
-                } catch(e) {
-                    currentUser = null;
-                }
-            }
-
-            updateUserAccountDisplay();
+        // Real-time listener for the 'menu' catalog collection
+        db.collection('menu').orderBy('order', 'asc').onSnapshot(snapshot => {
+            menuData = [];
+            snapshot.forEach(doc => {
+                let data = doc.data();
+                data.id = doc.id; // Map Document ID smoothly
+                menuData.push(data);
+            });
             renderCustomerMenu();
             renderLocalMenu();
             renderDrinksMenu();
             renderCartSummary();
+        }, err => console.error("Menu snapshot error: ", err));
+
+        // Real-time listener for the 'orders' collection
+        db.collection('orders').orderBy('timestamp', 'desc').onSnapshot(snapshot => {
+            ordersList = [];
+            snapshot.forEach(doc => {
+                let data = doc.data();
+                data.firestoreId = doc.id;
+                ordersList.push(data);
+            });
+            renderAdminOrdersList();
+        }, err => console.error("Orders snapshot error: ", err));
+
+        // Real-time listener for the 'users' (CRM registration) collection
+        db.collection('users').onSnapshot(snapshot => {
+            registeredUsers = [];
+            snapshot.forEach(doc => {
+                let data = doc.data();
+                data.firestoreId = doc.id;
+                registeredUsers.push(data);
+            });
+            renderRegisteredUsers();
+        }, err => console.error("Users snapshot error: ", err));
+
+        // Real-time listener for the 'posts' (social feeds) collection
+        db.collection('posts').orderBy('order', 'asc').onSnapshot(snapshot => {
+            feedPosts = [];
+            snapshot.forEach(doc => {
+                let data = doc.data();
+                data.id = doc.id;
+                feedPosts.push(data);
+            });
             renderCustomerSocialFeeds();
-            renderDynamicFooter();
-        });
+        }, err => console.error("Posts snapshot error: ", err));
+
 
         // Trigger Guest Name Pop-up Modal
         function openGuestNameModal() {
@@ -1548,7 +1618,6 @@
             if (modal) modal.classList.remove('hidden');
         }
 
-        // Close Guest Name Pop-up Modal
         function closeGuestNameModal() {
             const modal = document.getElementById('guestNameModal');
             if (modal) modal.classList.add('hidden');
@@ -1777,9 +1846,9 @@
                                 <div class="card-price-compact !mb-0 !mt-0">Rs. ${item.price}</div>
                             </div>
                             <div class="selector-box-compact mt-1">
-                                <button class="btn-qty-mini" onclick="updateQty(${item.id}, -1)">-</button>
+                                <button class="btn-qty-mini" onclick="updateQty('${item.id}', -1)">-</button>
                                 <span class="qty-val-mini" id="qty-${item.id}">${currentQty}</span>
-                                <button class="btn-qty-mini" onclick="updateQty(${item.id}, 1)">+</button>
+                                <button class="btn-qty-mini" onclick="updateQty('${item.id}', 1)">+</button>
                             </div>
                         </div>
                     </div>
@@ -1822,9 +1891,9 @@
                         </div>
                         
                         <div class="selector-box-compact w-full text-center mt-1">
-                            <button class="btn-qty-mini !w-5 !h-5" onclick="updateQty(${item.id}, -1)">-</button>
+                            <button class="btn-qty-mini !w-5 !h-5" onclick="updateQty('${item.id}', -1)">-</button>
                             <span class="qty-val-mini !w-4 !text-[10px]" id="qty-local-${item.id}">${currentQty}</span>
-                            <button class="btn-qty-mini !w-5 !h-5" onclick="updateQty(${item.id}, 1)">+</button>
+                            <button class="btn-qty-mini !w-5 !h-5" onclick="updateQty('${item.id}', 1)">+</button>
                         </div>
                     </div>
                 `;
@@ -1866,9 +1935,9 @@
                         </div>
                         
                         <div class="selector-box-compact w-full text-center mt-1">
-                            <button class="btn-qty-mini !w-5 !h-5" onclick="updateQty(${item.id}, -1)">-</button>
+                            <button class="btn-qty-mini !w-5 !h-5" onclick="updateQty('${item.id}', -1)">-</button>
                             <span class="qty-val-mini !w-4 !text-[10px]" id="qty-drink-${item.id}">${currentQty}</span>
-                            <button class="btn-qty-mini !w-5 !h-5" onclick="updateQty(${item.id}, 1)">+</button>
+                            <button class="btn-qty-mini !w-5 !h-5" onclick="updateQty('${item.id}', 1)">+</button>
                         </div>
                     </div>
                 `;
@@ -1907,13 +1976,24 @@
             return count;
         }
 
-        // Like toggle logic on comments
+        // Helper function to update comments array structure on Firestore
+        function updatePostCommentsInFirestore(postId, commentsArray) {
+            db.collection('posts').doc(postId.toString()).update({
+                comments: commentsArray
+            }).catch(err => {
+                console.error("Error writing comment updates directly to database:", err);
+                showNotification('Error updating comment state', 'warning');
+            });
+        }
+
+        // Like toggle logic on comments with Firestore Write Sync
         function likeComment(postId, commentIndex) {
-            const post = feedPosts.find(p => p.id === postId);
+            const post = feedPosts.find(p => p.id == postId);
             if (!post || !post.comments[commentIndex]) return;
 
             let identifier = currentUser ? currentUser.phone : (guestSessionName || "guest_session");
-            const comment = post.comments[commentIndex];
+            const commentsCopy = JSON.parse(JSON.stringify(post.comments));
+            const comment = commentsCopy[commentIndex];
             
             if (!comment.likedUsers) comment.likedUsers = [];
             if (!comment.dislikedUsers) comment.dislikedUsers = [];
@@ -1935,28 +2015,27 @@
                 comment.likes = (comment.likes || 0) + 1;
                 showNotification('Liked comment!');
             }
-            renderCustomerSocialFeeds();
+            updatePostCommentsInFirestore(postId, commentsCopy);
         }
 
-        // Dislike toggle logic on comments
+        // Dislike toggle logic on comments with Firestore Write Sync
         function dislikeComment(postId, commentIndex) {
-            const post = feedPosts.find(p => p.id === postId);
+            const post = feedPosts.find(p => p.id == postId);
             if (!post || !post.comments[commentIndex]) return;
 
             let identifier = currentUser ? currentUser.phone : (guestSessionName || "guest_session");
-            const comment = post.comments[commentIndex];
+            const commentsCopy = JSON.parse(JSON.stringify(post.comments));
+            const comment = commentsCopy[commentIndex];
             
             if (!comment.likedUsers) comment.likedUsers = [];
             if (!comment.dislikedUsers) comment.dislikedUsers = [];
 
             if (comment.dislikedUsers.includes(identifier)) {
-                // If clicked again, remove the dislike (toggle behavior)
                 const idx = comment.dislikedUsers.indexOf(identifier);
                 comment.dislikedUsers.splice(idx, 1);
                 comment.dislikes = Math.max(0, (comment.dislikes || 1) - 1);
                 showNotification('Dislike removed from comment.', 'warning');
             } else {
-                // Clicking once dislikes and removes any existing like
                 const lIdx = comment.likedUsers.indexOf(identifier);
                 if (lIdx !== -1) {
                     comment.likedUsers.splice(lIdx, 1);
@@ -1966,16 +2045,17 @@
                 comment.dislikes = (comment.dislikes || 0) + 1;
                 showNotification('Disliked comment.');
             }
-            renderCustomerSocialFeeds();
+            updatePostCommentsInFirestore(postId, commentsCopy);
         }
 
-        // Like toggle logic on nested replies (sub-comments)
+        // Like toggle logic on nested replies (sub-comments) with Firestore Write Sync
         function likeReply(postId, commentIndex, replyIndex) {
-            const post = feedPosts.find(p => p.id === postId);
+            const post = feedPosts.find(p => p.id == postId);
             if (!post || !post.comments[commentIndex] || !post.comments[commentIndex].replies[replyIndex]) return;
 
             let identifier = currentUser ? currentUser.phone : (guestSessionName || "guest_session");
-            const reply = post.comments[commentIndex].replies[replyIndex];
+            const commentsCopy = JSON.parse(JSON.stringify(post.comments));
+            const reply = commentsCopy[commentIndex].replies[replyIndex];
             
             if (!reply.likedUsers) reply.likedUsers = [];
             if (!reply.dislikedUsers) reply.dislikedUsers = [];
@@ -1995,16 +2075,17 @@
                 reply.likes = (reply.likes || 0) + 1;
                 showNotification('Liked reply!');
             }
-            renderCustomerSocialFeeds();
+            updatePostCommentsInFirestore(postId, commentsCopy);
         }
 
-        // Dislike toggle logic on nested replies (sub-comments)
+        // Dislike toggle logic on nested replies (sub-comments) with Firestore Write Sync
         function dislikeReply(postId, commentIndex, replyIndex) {
-            const post = feedPosts.find(p => p.id === postId);
+            const post = feedPosts.find(p => p.id == postId);
             if (!post || !post.comments[commentIndex] || !post.comments[commentIndex].replies[replyIndex]) return;
 
             let identifier = currentUser ? currentUser.phone : (guestSessionName || "guest_session");
-            const reply = post.comments[commentIndex].replies[replyIndex];
+            const commentsCopy = JSON.parse(JSON.stringify(post.comments));
+            const reply = commentsCopy[commentIndex].replies[replyIndex];
             
             if (!reply.likedUsers) reply.likedUsers = [];
             if (!reply.dislikedUsers) reply.dislikedUsers = [];
@@ -2024,20 +2105,25 @@
                 reply.dislikes = (reply.dislikes || 0) + 1;
                 showNotification('Disliked reply.');
             }
-            renderCustomerSocialFeeds();
+            updatePostCommentsInFirestore(postId, commentsCopy);
         }
 
+        // Comment removal triggers updates on server Comments array
         function deleteComment(postId, commentIndex) {
-            const post = feedPosts.find(p => p.id === postId);
+            const post = feedPosts.find(p => p.id == postId);
             if (post && post.comments[commentIndex]) {
                 const comment = post.comments[commentIndex];
                 let currentIdentifier = currentUser ? currentUser.name : guestSessionName;
                 
                 if (currentIdentifier && currentIdentifier === comment.commenter) {
-                    post.comments.splice(commentIndex, 1);
-                    showNotification('Your comment was deleted successfully!', 'warning');
-                    renderCustomerSocialFeeds();
-                    renderAdminPostsList();
+                    const commentsCopy = JSON.parse(JSON.stringify(post.comments));
+                    commentsCopy.splice(commentIndex, 1);
+                    
+                    db.collection('posts').doc(postId.toString()).update({
+                        comments: commentsCopy
+                    }).then(() => {
+                        showNotification('Your comment was deleted successfully!', 'warning');
+                    });
                 } else {
                     showNotification('You can only delete your own comments.', 'warning');
                 }
@@ -2108,7 +2194,7 @@
 
                     let currentIdentifier = currentUser ? currentUser.name : guestSessionName;
                     let canDelete = currentIdentifier && (currentIdentifier === c.commenter);
-                    let deleteBtnHtml = canDelete ? `<button onclick="deleteComment(${post.id}, ${actualIndex})" class="text-red-400 hover:text-red-600 ml-2" title="Delete comment"><i class="fa-solid fa-trash-can text-[10px]"></i></button>` : '';
+                    let deleteBtnHtml = canDelete ? `<button onclick="deleteComment('${post.id}', ${actualIndex})" class="text-red-400 hover:text-red-600 ml-2" title="Delete comment"><i class="fa-solid fa-trash-can text-[10px]"></i></button>` : '';
 
                     let likesCount = c.likes || 0;
                     let dislikesCount = c.dislikes || 0;
@@ -2149,13 +2235,13 @@
                                             
                                             <!-- Sub-comment action toolbar with functional toggle likes -->
                                             <div class="flex items-center gap-3.5 text-[10px] text-slate-500 pt-0.5">
-                                                <button onclick="likeReply(${post.id}, ${actualIndex}, ${repIdx})" class="flex items-center gap-1 hover:text-slate-800 transition-all">
+                                                <button onclick="likeReply('${post.id}', ${actualIndex}, ${repIdx})" class="flex items-center gap-1 hover:text-slate-800 transition-all">
                                                     <i class="fa-regular fa-thumbs-up"></i> <span>${repLikes}</span>
                                                 </button>
-                                                <button onclick="dislikeReply(${post.id}, ${actualIndex}, ${repIdx})" class="flex items-center gap-1 hover:text-slate-800 transition-all">
+                                                <button onclick="dislikeReply('${post.id}', ${actualIndex}, ${repIdx})" class="flex items-center gap-1 hover:text-slate-800 transition-all">
                                                     <i class="fa-regular fa-thumbs-down"></i> <span>${repDislikes}</span>
                                                 </button>
-                                                <button onclick="openUserReplyModal(${post.id}, ${actualIndex}, '${rep.commenter.replace(/'/g, "\\'")}')" class="font-bold hover:text-primary transition-all">Reply</button>
+                                                <button onclick="openUserReplyModal('${post.id}', ${actualIndex}, '${rep.commenter.replace(/'/g, "\\'")}')" class="font-bold hover:text-primary transition-all">Reply</button>
                                             </div>
                                         </div>
                                     </div>
@@ -2172,7 +2258,7 @@
                             `;
                         } else {
                             repliesHtml += `
-                                <button onclick="openUserReplyModal(${post.id}, ${actualIndex}, '${c.commenter.replace(/'/g, "\\'")}')" class="text-[10px] font-extrabold text-slate-500 hover:text-[#FF5A36] mt-1 ml-8 block">
+                                <button onclick="openUserReplyModal('${post.id}', ${actualIndex}, '${c.commenter.replace(/'/g, "\\'")}')" class="text-[10px] font-extrabold text-slate-500 hover:text-[#FF5A36] mt-1 ml-8 block">
                                     <i class="fa-solid fa-reply mr-1"></i> Reply
                                 </button>
                             `;
@@ -2196,9 +2282,9 @@
                                     </div>
                                     <p class="text-xs text-slate-700 leading-relaxed whitespace-pre-line">${formatReplyText(c.text)}</p>
                                     <div class="flex items-center gap-4 text-xs text-slate-500 pt-0.5">
-                                        <button onclick="likeComment(${post.id}, ${actualIndex})" class="flex items-center gap-1 hover:text-slate-800 transition-all"><i class="fa-regular fa-thumbs-up"></i> <span>${likesCount}</span></button>
-                                        <button onclick="dislikeComment(${post.id}, ${actualIndex})" class="flex items-center gap-1 hover:text-slate-800 transition-all"><i class="fa-regular fa-thumbs-down"></i> <span>${dislikesCount}</span></button>
-                                        <button onclick="openUserReplyModal(${post.id}, ${actualIndex}, '${c.commenter.replace(/'/g, "\\'")}')" class="font-bold hover:text-primary transition-all">Reply</button>
+                                        <button onclick="likeComment('${post.id}', ${actualIndex})" class="flex items-center gap-1 hover:text-slate-800 transition-all"><i class="fa-regular fa-thumbs-up"></i> <span>${likesCount}</span></button>
+                                        <button onclick="dislikeComment('${post.id}', ${actualIndex})" class="flex items-center gap-1 hover:text-slate-800 transition-all"><i class="fa-regular fa-thumbs-down"></i> <span>${dislikesCount}</span></button>
+                                        <button onclick="openUserReplyModal('${post.id}', ${actualIndex}, '${c.commenter.replace(/'/g, "\\'")}')" class="font-bold hover:text-primary transition-all">Reply</button>
                                         <button class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-ellipsis"></i></button>
                                     </div>
                                 </div>
@@ -2212,7 +2298,7 @@
                 if (post.comments.length > 2) {
                     const btnText = isExpanded ? 'Show Less Comments' : `Show More Comments (${post.comments.length - 2})`;
                     toggleBtnHtml = `
-                        <button onclick="toggleComments(${post.id})" class="text-[10px] font-extrabold text-[#FF5A36] hover:underline mt-2 block">
+                        <button onclick="toggleComments('${post.id}')" class="text-[10px] font-extrabold text-[#FF5A36] hover:underline mt-2 block">
                             ${btnText}
                         </button>
                     `;
@@ -2225,7 +2311,7 @@
                             <div class="text-[9px] text-slate-400 font-bold mb-1 flex items-center gap-1">
                                 <i class="fa-solid fa-user-check text-emerald-500"></i> Commenting as <span class="text-slate-800 font-extrabold">${currentUser.name}</span>
                             </div>
-                            <form onsubmit="event.preventDefault(); submitComment(${post.id});" class="flex gap-2">
+                            <form onsubmit="event.preventDefault(); submitComment('${post.id}');" class="flex gap-2">
                                 <input type="text" id="comment-input-${post.id}" required placeholder="Add a sweet foodie comment..." class="flex-1 px-3 py-2 bg-white border border-slate-200 rounded-lg outline-none text-[11px] font-bold text-slate-800 placeholder-slate-400 focus:border-[#FF5A36]">
                                 <button type="submit" class="bg-[#FF5A36] hover:bg-[#E04825] text-white px-3 rounded-lg text-xs font-black transition-all shadow-sm">
                                     Send
@@ -2240,7 +2326,7 @@
                                 <span><i class="fa-solid fa-user-pen text-[#FF5A36]"></i> Commenting as Guest: <span class="text-slate-800 font-extrabold">${guestSessionName}</span></span>
                                 <button type="button" onclick="resetGuestSessionName()" class="text-[9px] text-[#FF5A36] hover:underline">Change Name</button>
                             </div>
-                            <form onsubmit="event.preventDefault(); submitComment(${post.id});" class="flex gap-2">
+                            <form onsubmit="event.preventDefault(); submitComment('${post.id}');" class="flex gap-2">
                                 <input type="text" id="comment-input-${post.id}" required placeholder="Write your comment..." class="flex-1 px-3 py-2 bg-white border border-slate-200 rounded-lg outline-none text-[11px] font-bold text-slate-800 placeholder-slate-400 focus:border-[#FF5A36]">
                                 <button type="submit" class="bg-[#FF5A36] hover:bg-[#E04825] text-white px-3 rounded-lg text-xs font-black transition-all shadow-sm">
                                     Post
@@ -2298,11 +2384,11 @@
                         </div>
 
                         <div class="px-4 py-3 border-t border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
-                            <button onclick="likePost(${post.id})" class="flex items-center gap-1.5 text-xs font-extrabold text-slate-600 hover:text-rose-500 transition-all">
+                            <button onclick="likePost('${post.id}')" class="flex items-center gap-1.5 text-xs font-extrabold text-slate-600 hover:text-rose-500 transition-all">
                                 <i class="${heartIcon} ${heartColor} text-sm"></i>
                                 <span id="post-likes-count-${post.id}">${post.likes}</span>
                             </button>
-                            <button onclick="focusCommentInput(${post.id})" class="flex items-center gap-1.5 text-xs font-extrabold text-slate-600 hover:text-sky-500 transition-all">
+                            <button onclick="focusCommentInput('${post.id}')" class="flex items-center gap-1.5 text-xs font-extrabold text-slate-600 hover:text-sky-500 transition-all">
                                 <i class="fa-regular fa-comment text-sm"></i>
                                 <span>${totalCommentsCount}</span>
                             </button>
@@ -2313,7 +2399,7 @@
                             </button>
 
                             <!-- Functional native / hybrid share triggers here -->
-                            <button onclick="sharePost(${post.id}, '${post.title.replace(/'/g, "\\'")}', '${post.desc.replace(/\r?\n/g, " ").replace(/'/g, "\\'")}')" class="flex items-center gap-1.5 text-xs font-extrabold text-slate-600 hover:text-emerald-500 transition-all">
+                            <button onclick="sharePost('${post.id}', '${post.title.replace(/'/g, "\\'")}', '${post.desc.replace(/\r?\n/g, " ").replace(/'/g, "\\'")}')" class="flex items-center gap-1.5 text-xs font-extrabold text-slate-600 hover:text-emerald-500 transition-all">
                                 <i class="fa-solid fa-share text-sm"></i>
                                 <span>Share</span>
                             </button>
@@ -2325,7 +2411,7 @@
                                     <span>Comments</span> 
                                     <span class="bg-slate-200 text-slate-700 px-1.5 py-0.5 rounded-full text-[10px] font-bold">${totalCommentsCount}</span>
                                 </h5>
-                                <div onclick="toggleCommentSort(${post.id})" class="text-[10px] text-slate-500 font-bold flex items-center gap-1 cursor-pointer hover:text-slate-800 transition-all" title="Click to switch sort order">
+                                <div onclick="toggleCommentSort('${post.id}')" class="text-[10px] text-slate-500 font-bold flex items-center gap-1 cursor-pointer hover:text-slate-800 transition-all" title="Click to switch sort order">
                                     <span>${currentSortLabel}</span> <i class="fa-solid fa-chevron-down text-[8px]"></i>
                                 </div>
                             </div>
@@ -2345,7 +2431,7 @@
 
         // Direct Reply to Comment from Write Your Comment box
         function openUserReplyModal(postId, commentIndex, commenterName) {
-            const post = feedPosts.find(p => p.id === postId);
+            const post = feedPosts.find(p => p.id == postId);
             if (!post || !post.comments[commentIndex]) return;
 
             let commentInput = document.getElementById(`comment-input-${postId}`);
@@ -2394,10 +2480,12 @@
             document.getElementById('shareModal').classList.remove('hidden');
         }
 
+        // Close Custom Sharing Popup Overlay
         function closeShareModal() {
             document.getElementById('shareModal').classList.add('hidden');
         }
 
+        // Fallback Clipboard copy link configuration
         function copyShareLink() {
             if (navigator.clipboard && navigator.clipboard.writeText) {
                 navigator.clipboard.writeText(sharedPostText).then(() => {
@@ -2445,18 +2533,19 @@
         }
 
         function likePost(id) {
-            const post = feedPosts.find(p => p.id === id);
+            const post = feedPosts.find(p => p.id == id);
             if (!post) return;
 
-            post.isLiked = !post.isLiked;
-            if (post.isLiked) {
-                post.likes += 1;
-                showNotification('Liked this post! ♥');
-            } else {
-                post.likes -= 1;
-            }
-            renderCustomerSocialFeeds();
-            renderAdminPostsList();
+            let updatedIsLiked = !post.isLiked;
+            let updatedLikes = updatedIsLiked ? (post.likes + 1) : Math.max(0, post.likes - 1);
+
+            db.collection('posts').doc(id.toString()).update({
+                isLiked: updatedIsLiked,
+                likes: updatedLikes
+            })
+            .then(() => {
+                showNotification(updatedIsLiked ? 'Liked this post! ♥' : 'Like removed from post.');
+            });
         }
 
         function focusCommentInput(id) {
@@ -2470,7 +2559,7 @@
         }
 
         function submitComment(id) {
-            const post = feedPosts.find(p => p.id === id);
+            const post = feedPosts.find(p => p.id == id);
             const input = document.getElementById(`comment-input-${id}`);
             
             if (!post || !input) return;
@@ -2488,13 +2577,15 @@
                 return;
             }
 
+            // Create a deep copy of the comments array to modify and push back to server
+            let updatedComments = JSON.parse(JSON.stringify(post.comments));
+
             const replyToIndex = input.dataset.replyToIndex;
             if (replyToIndex !== undefined && replyToIndex !== "") {
                 const idx = parseInt(replyToIndex);
-                if (post.comments[idx]) {
-                    if (!post.comments[idx].replies) post.comments[idx].replies = [];
-                    
-                    post.comments[idx].replies.push({
+                if (updatedComments[idx]) {
+                    if (!updatedComments[idx].replies) updatedComments[idx].replies = [];
+                    updatedComments[idx].replies.push({
                         commenter: commenterName,
                         text: commentText,
                         isAdmin: false,
@@ -2506,7 +2597,7 @@
                 }
                 delete input.dataset.replyToIndex;
             } else {
-                post.comments.push({ 
+                updatedComments.push({ 
                     commenter: commenterName, 
                     text: commentText, 
                     isAdmin: false, 
@@ -2519,9 +2610,16 @@
                 });
             }
 
-            input.value = '';
-            renderCustomerSocialFeeds();
-            renderAdminPostsList();
+            db.collection('posts').doc(id.toString()).update({
+                comments: updatedComments
+            })
+            .then(() => {
+                input.value = '';
+                showNotification('Comment posted successfully!');
+            })
+            .catch(err => {
+                showNotification('Comment failed to post', 'warning');
+            });
         }
 
         function showNotification(message, type = 'success') {
@@ -2651,7 +2749,7 @@
             document.getElementById('checkoutConfirmModal').classList.add('hidden');
         }
 
-        // Finalize Order: Add to Admin Panel & Redirect to WhatsApp
+        // Finalize Order: Add to Admin Panel & Redirect to WhatsApp with Firestore Sync
         function finalizeOrderAndSendWhatsApp() {
             const keys = Object.keys(cartItems);
             if (keys.length === 0) return;
@@ -2682,8 +2780,8 @@
             const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
             const dateStr = new Date().toLocaleDateString();
 
-            // Record in Admin Orders Database
-            ordersList.unshift({
+            // Structure Order Data payload
+            let orderPayload = {
                 id: orderId,
                 customerName: name,
                 phone: phone,
@@ -2692,48 +2790,57 @@
                 time: timeStr,
                 items: itemsDetail,
                 total: grandTotal,
-                status: 'Pending'
-            });
+                status: 'Pending',
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            };
 
-            // Construct formatted WhatsApp message
-            let waMsg = `*🛒 NEW ORDER - ALQADRI CHASKA POINT*\n`;
-            waMsg += `*Order ID:* ${orderId}\n`;
-            waMsg += `*Customer:* ${name}\n`;
-            waMsg += `*Phone:* ${phone}\n`;
-            waMsg += `*Location:* ${location}\n\n`;
-            waMsg += `*Items Ordered:*\n`;
-            itemsDetail.forEach(it => {
-                waMsg += `• ${it.name} x${it.qty} = Rs. ${it.total}\n`;
-            });
-            waMsg += `\n*Grand Total:* Rs. ${grandTotal}\n`;
-            waMsg += `Thank you! Please prepare my order.`;
+            // Write checkout configuration straight to database
+            db.collection('orders').add(orderPayload)
+              .then(() => {
+                  let waMsg = `*🛒 NEW ORDER - ALQADRI CHASKA POINT*\n`;
+                  waMsg += `*Order ID:* ${orderId}\n`;
+                  waMsg += `*Customer:* ${name}\n`;
+                  waMsg += `*Phone:* ${phone}\n`;
+                  waMsg += `*Location:* ${location}\n\n`;
+                  waMsg += `*Items Ordered:*\n`;
+                  itemsDetail.forEach(it => {
+                      waMsg += `• ${it.name} x${it.qty} = Rs. ${it.total}\n`;
+                  });
+                  waMsg += `\n*Grand Total:* Rs. ${grandTotal}\n`;
+                  waMsg += `Thank you! Please prepare my order.`;
 
-            const whatsappUrl = `https://wa.me/923102434222?text=${encodeURIComponent(waMsg)}`;
+                  const whatsappUrl = `https://wa.me/923102434222?text=${encodeURIComponent(waMsg)}`;
 
-            closeCheckoutConfirmModal();
-            showNotification(`Order ${orderId} submitted! Opening WhatsApp...`);
-            addOrderNotification(`Order Placed (${orderId})`, `Order sent to WhatsApp & kitchen for approval.`);
+                  closeCheckoutConfirmModal();
+                  showNotification(`Order ${orderId} submitted! Opening WhatsApp...`);
+                  addOrderNotification(`Order Placed (${orderId})`, `Order sent to WhatsApp & kitchen for approval.`);
 
-            // Clear Cart
-            cartItems = {};
-            renderCustomerMenu();
-            renderLocalMenu();
-            renderDrinksMenu();
-            renderCartSummary();
-            renderAdminOrdersList();
+                  // Clear Cart
+                  cartItems = {};
+                  renderCustomerMenu();
+                  renderLocalMenu();
+                  renderDrinksMenu();
+                  renderCartSummary();
 
-            // Open WhatsApp automatically
-            window.open(whatsappUrl, '_blank');
+                  // Open WhatsApp automatically
+                  window.open(whatsappUrl, '_blank');
+              })
+              .catch(err => {
+                  console.error("Order submission failure: ", err);
+                  showNotification('Order checkouts currently down. Please contact support.', 'warning');
+              });
         }
 
-        // Admin Approval Action Function
+        // Admin Approval Action Function with Database Sync
         function approveAdminOrder(index) {
-            if (ordersList[index]) {
-                ordersList[index].status = 'Approved';
-                const ord = ordersList[index];
-                showNotification(`Order ${ord.id} approved!`);
-                addOrderNotification(`Order Approved (${ord.id})`, `Kitchen approved order ${ord.id}! Fresh food preparation started.`, true);
-                renderAdminOrdersList();
+            let ord = ordersList[index];
+            if (ord && ord.firestoreId) {
+                db.collection('orders').doc(ord.firestoreId).update({
+                    status: 'Approved'
+                }).then(() => {
+                    showNotification(`Order ${ord.id} approved!`);
+                    addOrderNotification(`Order Approved (${ord.id})`, `Kitchen approved order ${ord.id}! Fresh food preparation started.`, true);
+                }).catch(err => console.error("Error approving order:", err));
             }
         }
 
@@ -2899,7 +3006,7 @@
             }
         }
 
-        // Register First-Time User with permanent local storage session
+        // Register First-Time User with permanent local storage session synced with Database
         function registerUser() {
             const name = document.getElementById('regName').value.trim();
             const phone = document.getElementById('regPhone').value.trim();
@@ -2912,22 +3019,28 @@
             }
 
             const newUser = { name, phone, location: loc, email };
-            registeredUsers.push(newUser);
-            currentUser = newUser; 
-            localStorage.setItem('acp_current_user', JSON.stringify(currentUser));
 
-            updateUserAccountDisplay();
-            
-            showNotification(`Welcome, ${name}! Account registered.`);
-            closeUserModal();
-            
-            document.getElementById('regName').value = '';
-            document.getElementById('regPhone').value = '';
-            document.getElementById('regLocation').value = '';
-            document.getElementById('regEmail').value = '';
+            db.collection('users').add(newUser)
+              .then((docRef) => {
+                  currentUser = newUser; 
+                  currentUser.firestoreId = docRef.id;
+                  localStorage.setItem('acp_current_user', JSON.stringify(currentUser));
 
-            renderRegisteredUsers();
-            renderCustomerSocialFeeds();
+                  updateUserAccountDisplay();
+                  showNotification(`Welcome, ${name}! Account registered.`);
+                  closeUserModal();
+                  
+                  document.getElementById('regName').value = '';
+                  document.getElementById('regPhone').value = '';
+                  document.getElementById('regLocation').value = '';
+                  document.getElementById('regEmail').value = '';
+
+                  renderCustomerSocialFeeds();
+              })
+              .catch(err => {
+                  console.error("User registration error: ", err);
+                  showNotification('Failed to register user to cloud backend.', 'warning');
+              });
         }
 
         function logoutUser() {
@@ -3151,10 +3264,14 @@
             });
         }
 
+        // Delete order from database inside admin view
         function removeAdminOrder(index) {
-            ordersList.splice(index, 1);
-            renderAdminOrdersList();
-            showNotification('Order record cleared.');
+            let ord = ordersList[index];
+            if (ord && ord.firestoreId) {
+                db.collection('orders').doc(ord.firestoreId).delete()
+                  .then(() => showNotification('Order record cleared.'))
+                  .catch(err => console.error("Error clearing order:", err));
+            }
         }
 
         function handleImageUpload(event) {
@@ -3226,9 +3343,9 @@
             renderAdminCatalog();
         }
 
-        // Reorder Catalog Item Up or Down
+        // Reorder Catalog Item Up or Down in Staging array
         function moveCatalogItem(id, direction) {
-            const index = workingMenuData.findIndex(x => x.id === id);
+            const index = workingMenuData.findIndex(x => x.id == id);
             if (index === -1) return;
 
             const targetIndex = direction === 'up' ? index - 1 : index + 1;
@@ -3244,21 +3361,29 @@
             if (updateBar) updateBar.classList.remove('hidden');
         }
 
+        // Commit Reordered Catalog parameters directly to Firestore
         function saveCatalogOrderChanges() {
-            menuData = JSON.parse(JSON.stringify(workingMenuData));
-            renderAdminCatalog();
-            renderCustomerMenu();
-            renderLocalMenu();
-            renderDrinksMenu();
+            let batch = db.batch();
+            workingMenuData.forEach((item, index) => {
+                let ref = db.collection('menu').doc(item.id);
+                batch.update(ref, { order: index });
+            });
 
-            const updateBar = document.getElementById('catalogUpdateBar');
-            if (updateBar) updateBar.classList.add('hidden');
-            showNotification('Catalog order updated successfully!');
+            batch.commit()
+              .then(() => {
+                  showNotification('Catalog order updated successfully!');
+                  const updateBar = document.getElementById('catalogUpdateBar');
+                  if (updateBar) updateBar.classList.add('hidden');
+              })
+              .catch(err => {
+                  console.error("Batch write catalog failure: ", err);
+                  showNotification('Failed to update catalog order on server.', 'warning');
+              });
         }
 
-        // Reorder Feed Post Up or Down
+        // Reorder Feed Post Up or Down in Staging array
         function movePostItem(id, direction) {
-            const index = workingFeedPosts.findIndex(p => p.id === id);
+            const index = workingFeedPosts.findIndex(p => p.id == id);
             if (index === -1) return;
 
             const targetIndex = direction === 'up' ? index - 1 : index + 1;
@@ -3274,14 +3399,24 @@
             if (updateBar) updateBar.classList.remove('hidden');
         }
 
+        // Commit Reordered Feed post parameters directly to Firestore
         function savePostOrderChanges() {
-            feedPosts = JSON.parse(JSON.stringify(workingFeedPosts));
-            renderAdminPostsList();
-            renderCustomerSocialFeeds();
+            let batch = db.batch();
+            workingFeedPosts.forEach((post, index) => {
+                let ref = db.collection('posts').doc(post.id);
+                batch.update(ref, { order: index });
+            });
 
-            const updateBar = document.getElementById('postUpdateBar');
-            if (updateBar) updateBar.classList.add('hidden');
-            showNotification('Feed post order updated successfully!');
+            batch.commit()
+              .then(() => {
+                  showNotification('Feed post order updated successfully!');
+                  const updateBar = document.getElementById('postUpdateBar');
+                  if (updateBar) updateBar.classList.add('hidden');
+              })
+              .catch(err => {
+                  console.error("Batch write feed posts failure: ", err);
+                  showNotification('Failed to update feed layout order on server.', 'warning');
+              });
         }
 
         // 2. Render Food Catalog in Admin Panel
@@ -3329,16 +3464,16 @@
                         </td>
                         <td class="p-2.5 text-right font-black text-slate-800">Rs. ${item.price}</td>
                         <td class="p-2.5 text-right space-x-1 whitespace-nowrap">
-                            <button onclick="moveCatalogItem(${item.id}, 'up')" class="w-7 h-7 inline-flex items-center justify-center bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg transition-all font-bold" title="Move Up">
+                            <button onclick="moveCatalogItem('${item.id}', 'up')" class="w-7 h-7 inline-flex items-center justify-center bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg transition-all font-bold" title="Move Up">
                                 <i class="fa-solid fa-arrow-up text-[10px]"></i>
                             </button>
-                            <button onclick="moveCatalogItem(${item.id}, 'down')" class="w-7 h-7 inline-flex items-center justify-center bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg transition-all font-bold" title="Move Down">
+                            <button onclick="moveCatalogItem('${item.id}', 'down')" class="w-7 h-7 inline-flex items-center justify-center bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg transition-all font-bold" title="Move Down">
                                 <i class="fa-solid fa-arrow-down text-[10px]"></i>
                             </button>
-                            <button onclick="loadFoodToEdit(${item.id})" class="w-7 h-7 inline-flex items-center justify-center bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg transition-all font-bold" title="Edit Item">
+                            <button onclick="loadFoodToEdit('${item.id}')" class="w-7 h-7 inline-flex items-center justify-center bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg transition-all font-bold" title="Edit Item">
                                 <i class="fa-solid fa-pencil text-[10px]"></i>
                             </button>
-                            <button onclick="deleteFoodCatalog(${item.id})" class="w-7 h-7 inline-flex items-center justify-center bg-red-50 text-red-500 hover:bg-red-500 hover:text-white rounded-lg transition-all font-bold" title="Delete Item">
+                            <button onclick="deleteFoodCatalog('${item.id}')" class="w-7 h-7 inline-flex items-center justify-center bg-red-50 text-red-500 hover:bg-red-500 hover:text-white rounded-lg transition-all font-bold" title="Delete Item">
                                 <i class="fa-solid fa-trash text-[10px]"></i>
                             </button>
                         </td>
@@ -3390,16 +3525,16 @@
                         </div>
 
                         <div class="flex justify-end gap-1 pt-1.5 border-t border-slate-200">
-                            <button onclick="movePostItem(${post.id}, 'up')" class="px-2 py-1 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-md text-[10px] font-bold transition-all flex items-center gap-1" title="Move Up">
+                            <button onclick="movePostItem('${post.id}', 'up')" class="px-2 py-1 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-md text-[10px] font-bold transition-all flex items-center gap-1" title="Move Up">
                                 <i class="fa-solid fa-arrow-up"></i>
                             </button>
-                            <button onclick="movePostItem(${post.id}, 'down')" class="px-2 py-1 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-md text-[10px] font-bold transition-all flex items-center gap-1" title="Move Down">
+                            <button onclick="movePostItem('${post.id}', 'down')" class="px-2 py-1 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-md text-[10px] font-bold transition-all flex items-center gap-1" title="Move Down">
                                 <i class="fa-solid fa-arrow-down"></i>
                             </button>
-                            <button onclick="loadPostToEdit(${post.id})" class="px-2 py-1 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-md text-[10px] font-bold transition-all flex items-center gap-1">
+                            <button onclick="loadPostToEdit('${post.id}')" class="px-2 py-1 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-md text-[10px] font-bold transition-all flex items-center gap-1">
                                 <i class="fa-solid fa-pen-to-square"></i> Edit
                             </button>
-                            <button onclick="deleteFeedPost(${post.id})" class="px-2 py-1 bg-red-50 hover:bg-red-500 text-red-600 hover:text-white border border-red-200 rounded-md text-[10px] font-bold transition-all flex items-center gap-1">
+                            <button onclick="deleteFeedPost('${post.id}')" class="px-2 py-1 bg-red-50 hover:bg-red-500 text-red-600 hover:text-white border border-red-200 rounded-md text-[10px] font-bold transition-all flex items-center gap-1">
                                 <i class="fa-solid fa-trash-can"></i> Delete
                             </button>
                         </div>
@@ -3409,7 +3544,7 @@
         }
 
         function loadPostToEdit(postId) {
-            const post = feedPosts.find(p => p.id === postId);
+            const post = feedPosts.find(p => p.id == postId);
             if (!post) return;
 
             document.getElementById('editPostId').value = post.id;
@@ -3448,14 +3583,17 @@
             }
         }
 
+        // Delete post inside Firestore posts collection
         function deleteFeedPost(postId) {
-            feedPosts = feedPosts.filter(p => p.id !== postId);
-            workingFeedPosts = JSON.parse(JSON.stringify(feedPosts));
-            renderAdminPostsList();
-            renderCustomerSocialFeeds();
-            showNotification('Post deleted successfully!', 'warning');
+            db.collection('posts').doc(postId.toString()).delete()
+              .then(() => showNotification('Post deleted successfully!', 'warning'))
+              .catch(err => {
+                  console.error("Delete post failure: ", err);
+                  showNotification('Error deleting post on server.', 'warning');
+              });
         }
 
+        // Form post handler synchronized with Cloud Firestore
         function handleFeedPostSubmit(event) {
             event.preventDefault();
 
@@ -3471,35 +3609,35 @@
 
             const adminAuthorName = "Alqadri Chaska Point";
 
-            if (editId) {
-                const postIdx = feedPosts.findIndex(p => p.id == editId);
-                if (postIdx !== -1) {
-                    feedPosts[postIdx].title = title;
-                    feedPosts[postIdx].image = image;
-                    feedPosts[postIdx].desc = desc;
-                    feedPosts[postIdx].authorName = adminAuthorName;
-                    showNotification('Post changes saved successfully!');
-                }
-            } else {
-                const newPostId = feedPosts.length > 0 ? Math.max(...feedPosts.map(p => p.id)) + 1 : 101;
-                feedPosts.unshift({
-                    id: newPostId,
-                    title,
-                    image,
-                    desc,
-                    authorName: adminAuthorName,
-                    likes: 0,
-                    isLiked: false,
-                    comments: []
-                });
-                showNotification('New post broadcasted live!');
-            }
+            let payload = {
+                title: title,
+                image: image,
+                desc: desc,
+                authorName: adminAuthorName
+            };
 
-            workingFeedPosts = JSON.parse(JSON.stringify(feedPosts));
-            resetPostForm();
-            renderAdminPostsList();
-            renderCustomerSocialFeeds();
-            switchFeedSubTab('list');
+            if (editId) {
+                db.collection('posts').doc(editId.toString()).update(payload)
+                  .then(() => {
+                      showNotification('Post changes saved successfully!');
+                      resetPostForm();
+                      switchFeedSubTab('list');
+                  })
+                  .catch(err => showNotification('Failed to update post.', 'warning'));
+            } else {
+                payload.likes = 0;
+                payload.isLiked = false;
+                payload.comments = [];
+                payload.order = Date.now();
+
+                db.collection('posts').add(payload)
+                  .then(() => {
+                      showNotification('New post broadcasted live!');
+                      resetPostForm();
+                      switchFeedSubTab('list');
+                  })
+                  .catch(err => showNotification('Failed to publish post.', 'warning'));
+            }
         }
 
         // 4. Render Registered Customers CRM Directory
@@ -3563,11 +3701,14 @@
             showNotification('Address copied to clipboard!');
         }
 
+        // Delete user record from cloud Firestore
         function removeCustomerRecord(idx) {
-            registeredUsers.splice(idx, 1);
-            updateUserAccountDisplay();
-            renderRegisteredUsers();
-            showNotification('Account removed from CRM database.', 'warning');
+            let user = registeredUsers[idx];
+            if (user && user.firestoreId) {
+                db.collection('users').doc(user.firestoreId).delete()
+                  .then(() => showNotification('Account removed from CRM database.', 'warning'))
+                  .catch(err => console.error("Error deleting customer doc:", err));
+            }
         }
 
         function searchUsers(keyword) {
@@ -3580,14 +3721,19 @@
             renderRegisteredUsers(filtered);
         }
 
+        // Delete item from cloud Firestore catalog collection
         function deleteFoodCatalog(id) {
             if (cartItems[id]) {
                 delete cartItems[id];
             }
-            menuData = menuData.filter(x => x.id != id);
-            workingMenuData = JSON.parse(JSON.stringify(menuData));
-            renderAdminCatalog();
-            showNotification('Item removed from catalog.');
+            db.collection('menu').doc(id.toString()).delete()
+              .then(() => {
+                  showNotification('Item removed from catalog.');
+              })
+              .catch(err => {
+                  console.error("Error removing catalog item: ", err);
+                  showNotification('Failed to remove catalog item on server.', 'warning');
+              });
         }
 
         function loadFoodToEdit(id) {
@@ -3607,6 +3753,7 @@
             switchCatalogSubTab('add');
         }
 
+        // Handles menu modifications directly writing payloads to server
         function handleFoodFormSubmit(event) {
             event.preventDefault();
 
@@ -3626,25 +3773,32 @@
                 image = 'https://placehold.co/400x300/FF5A36/ffffff?text=ACP';
             }
 
-            if (editId) {
-                const index = menuData.findIndex(x => x.id == editId);
-                if (index !== -1) {
-                    menuData[index] = { id: parseInt(editId), name, price, image, desc, category };
-                    showNotification('Changes saved successfully!');
-                }
-            } else {
-                const newId = menuData.length > 0 ? Math.max(...menuData.map(x => x.id)) + 1 : 1;
-                menuData.push({ id: newId, name, price, image, desc, category });
-                showNotification('Product successfully added to the catalog!');
-            }
+            let payload = {
+                name: name,
+                price: price,
+                image: image,
+                desc: desc,
+                category: category
+            };
 
-            workingMenuData = JSON.parse(JSON.stringify(menuData));
-            renderAdminCatalog();
-            renderCustomerMenu();
-            renderLocalMenu();
-            renderDrinksMenu();
-            resetAdminForm();
-            switchCatalogSubTab('list');
+            if (editId) {
+                db.collection('menu').doc(editId.toString()).update(payload)
+                  .then(() => {
+                      showNotification('Changes saved successfully!');
+                      resetAdminForm();
+                      switchCatalogSubTab('list');
+                  })
+                  .catch(err => showNotification('Error editing menu item.', 'warning'));
+            } else {
+                payload.order = Date.now();
+                db.collection('menu').add(payload)
+                  .then(() => {
+                      showNotification('Product successfully added to the catalog!');
+                      resetAdminForm();
+                      switchCatalogSubTab('list');
+                  })
+                  .catch(err => showNotification('Error adding catalog product.', 'warning'));
+            }
         }
 
         function resetAdminForm() {
@@ -3737,6 +3891,26 @@
                 showNotification('Failed to generate crisp JPG receipt.', 'warning');
             });
         }
+
+        // On Load initialization safely reading saved session credentials
+        window.addEventListener('DOMContentLoaded', () => {
+            const savedUser = localStorage.getItem('acp_current_user');
+            if (savedUser) {
+                try {
+                    currentUser = JSON.parse(savedUser);
+                } catch(e) {
+                    currentUser = null;
+                }
+            }
+
+            updateUserAccountDisplay();
+            renderCustomerMenu();
+            renderLocalMenu();
+            renderDrinksMenu();
+            renderCartSummary();
+            renderCustomerSocialFeeds();
+            renderDynamicFooter();
+        });
     </script>
 </body>
 </html>
