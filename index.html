@@ -5,6 +5,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ACP Premium Fast Food & Traditional Twist</title>
+    
+    <!-- Clear Old Cache Files & Force Clean Reloads -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+
     <!-- Import elegant fonts from Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,500&display=swap" rel="stylesheet">
     <!-- FontAwesome Icons for stunning social media and action icons -->
@@ -14,6 +20,11 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <!-- Tailwind CSS for modern responsive layout helper utilities -->
     <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Firebase Compat SDKs (For global browser compatibility) -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics-compat.js"></script>
 
     <style>
         :root {
@@ -35,6 +46,74 @@
             --shadow-md: 0 10px 25px -5px rgba(15, 23, 42, 0.05), 0 8px 16px -6px rgba(15, 23, 42, 0.03);
             --shadow-lg: 0 20px 40px -15px rgba(255, 90, 54, 0.12);
             --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* User-provided Glow on Hover Animation Effect Code for Co-Founder and Admin Footer Cards */
+        .glow-on-hover {
+            width: 46%;
+            max-width: 190px;
+            height: 72px;
+            border: none;
+            outline: none;
+            color: #fff;
+            background: #111;
+            cursor: pointer;
+            position: relative;
+            z-index: 0;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 6px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+
+        .glow-on-hover:before {
+            content: '';
+            background: linear-gradient(45deg, #ff0000, #ff7300, #fffb00, #48ff00, #00ffd5, #002bff, #7a00ff, #ff00c8, #ff0000);
+            position: absolute;
+            top: -2px;
+            left:-2px;
+            background-size: 400%;
+            z-index: -1;
+            filter: blur(5px);
+            width: calc(100% + 4px);
+            height: calc(100% + 4px);
+            animation: glowing 20s linear infinite;
+            opacity: 0;
+            transition: opacity .3s ease-in-out;
+            border-radius: 12px;
+        }
+
+        .glow-on-hover:active {
+            color: #000;
+        }
+
+        .glow-on-hover:active:after {
+            background: transparent;
+        }
+
+        .glow-on-hover:hover:before {
+            opacity: 1;
+        }
+
+        .glow-on-hover:after {
+            z-index: -1;
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: #111;
+            left: 0;
+            top: 0;
+            border-radius: 12px;
+        }
+
+        @keyframes glowing {
+            0% { background-position: 0 0; }
+            50% { background-position: 400% 0; }
+            100% { background-position: 0 0; }
         }
 
         /* PREMIUM SWITCH BOX LITE GLOW EFFECTS */
@@ -178,15 +257,16 @@
             background: rgba(250, 250, 249, 0.95);
             backdrop-filter: blur(14px);
             -webkit-backdrop-filter: blur(14px);
-            border-bottom: 1px solid rgba(226, 232, 240, 0.85);
+            border-bottom: 2px solid rgba(226, 232, 240, 0.95);
+            box-shadow: 0 4px 12px -2px rgba(15, 23, 42, 0.05);
             transition: var(--transition);
         }
 
         .header-content {
-            padding: 12px 16px;
+            padding: 10px 16px;
             display: flex;
-            align-items: center;
-            justify-content: space-between;
+            flex-direction: column;
+            gap: 10px;
         }
 
         .header-brand {
@@ -194,23 +274,45 @@
             align-items: center;
             gap: 8px;
             text-decoration: none;
-            flex-shrink: 1;
             min-width: 0;
         }
 
-        .header-logo {
-            height: 34px;
+        .header-logo-container {
+            position: relative;
             width: 34px;
+            height: 34px;
+            background: linear-gradient(135deg, #FF5A36, #F97316);
             border-radius: 50%;
-            object-fit: cover;
-            border: 2px solid var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ffffff;
             box-shadow: var(--shadow-sm);
+            border: 2px solid #ffffff;
             flex-shrink: 0;
+            font-size: 0.85rem;
+        }
+
+        .header-logo-badge {
+            position: absolute;
+            bottom: -2px;
+            right: -2px;
+            background-color: var(--secondary);
+            color: #ffffff;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            font-size: 7px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1.5px solid #ffffff;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.2);
         }
 
         .header-title-text {
             font-family: 'Playfair Display', serif;
-            font-size: 0.85rem;
+            font-size: 0.95rem;
             font-weight: 800;
             color: var(--secondary);
             letter-spacing: -0.3px;
@@ -578,21 +680,26 @@
     <div id="customer-page" class="app-container shadow-2xl">
         
         <header class="app-header no-print">
-            <div class="header-content flex flex-col gap-2.5 py-2.5">
-                <div class="flex items-center justify-between w-full gap-1">
+            <div class="header-content">
+                <div class="flex items-center justify-between w-full">
                     <a href="#" class="header-brand">
-                        <img src="https://images.unsplash.com/photo-1550547660-d9450f859349?q=80&w=200&auto=format&fit=crop" alt="Logo" class="header-logo" onerror="this.src='https://placehold.co/100x100/FF5A36/ffffff?text=ACP'">
+                        <div class="header-logo-container">
+                            <i class="fa-solid fa-utensils text-sm"></i>
+                            <div class="header-logo-badge" title="Fast Food & Twist">
+                                <i class="fa-solid fa-burger"></i>
+                            </div>
+                        </div>
                         <span class="header-title-text font-serif">Alqadri Chaska Point</span>
                     </a>
                     
-                    <div class="flex items-center gap-1.5 shrink-0">
+                    <div class="flex items-center gap-2">
                         <!-- Notification Bell Icon -->
                         <button onclick="openNotificationsModal()" class="p-1.5 text-slate-700 hover:text-primary transition-all relative" title="Notifications">
-                            <i class="fa-solid fa-bell text-lg"></i>
+                            <i class="fa-solid fa-bell text-base"></i>
                             <span id="navBellBadge" class="absolute top-0.5 right-0.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white hidden animate-pulse"></span>
                         </button>
 
-                        <!-- User Account Icon displaying Full Name Spelling -->
+                        <!-- User Account Icon displaying only First Spelling -->
                         <button id="navUserBtn" onclick="openUserModal()" class="transition-all" title="User Account">
                             <!-- Dynamic Content Rendered by JS -->
                         </button>
@@ -600,11 +707,11 @@
                 </div>
 
                 <!-- Navigation Switcher Buttons -->
-                <div class="flex items-center justify-center gap-2 w-full px-1">
-                    <button id="tabBtnStore" onclick="switchCustomerTab('store')" class="btn-tab-effect btn-tab-active flex-1 max-w-[180px] flex items-center justify-center gap-1.5 py-2 px-3 text-[11px] font-black rounded-xl border border-[#FF5A36] bg-[#FF5A36] text-white shadow-md active:scale-95">
+                <div class="flex items-center justify-center gap-3 w-full">
+                    <button id="tabBtnStore" onclick="switchCustomerTab('store')" class="btn-tab-effect btn-tab-active flex-1 max-w-[180px] flex items-center justify-center gap-2 py-2 px-4 text-xs font-black rounded-xl border border-[#FF5A36] bg-[#FF5A36] text-white shadow-md active:scale-95">
                         <i class="fa-solid fa-utensils"></i> Order Menu
                     </button>
-                    <button id="tabBtnFeeds" onclick="switchCustomerTab('feeds')" class="btn-tab-effect btn-tab-inactive flex-1 max-w-[180px] flex items-center justify-center gap-1.5 py-2 px-3 text-[11px] font-black rounded-xl border border-slate-200 bg-white text-slate-700 shadow-sm relative active:scale-95">
+                    <button id="tabBtnFeeds" onclick="switchCustomerTab('feeds')" class="btn-tab-effect btn-tab-inactive flex-1 max-w-[180px] flex items-center justify-center gap-2 py-2 px-4 text-xs font-black rounded-xl border border-slate-200 bg-white text-slate-700 shadow-sm relative active:scale-95">
                         <i class="fa-solid fa-rss text-orange-500"></i> Social Feed
                         <span class="absolute -top-1 -right-1 w-2 h-2 bg-rose-500 rounded-full animate-ping"></span>
                         <span class="absolute -top-1 -right-1 w-2 h-2 bg-rose-500 rounded-full"></span>
@@ -654,7 +761,7 @@
                 <!-- Professional Partition Line -->
                 <hr class="border-t-2 border-slate-200/80 my-5">
 
-                <!-- Category 3: Cold Drinks & Beverages Section (5 Featured Drinks) -->
+                <!-- Category 3: Cold Drinks & Beverages Section -->
                 <div>
                     <h2 class="section-header-compact">
                         <span class="section-indicator"></span>Cold Drinks & Beverages
@@ -768,71 +875,37 @@
             </div>
         </div>
 
-        <!-- Customer Footer Section -->
-        <footer class="bg-slate-900 text-slate-400 p-6 text-center text-xs space-y-5 no-print mt-8 border-t-2 border-primary">
-            <div class="font-serif text-white font-black text-base tracking-wide">
-                Alqadri Chaska Point
-            </div>
-            
-            <div class="space-y-3">
-                <div class="flex justify-center items-center gap-2"><i class="fa-solid fa-location-dot text-rose-500"></i> Jalal Balagan Main Road, Gujranwala</div>
-                
-                <!-- Social Channels Grid Icons -->
-                <div class="flex justify-center items-center gap-3 pt-1">
-                    <a href="https://wa.me/923102434222" target="_blank" class="w-8 h-8 bg-[#25D366] text-white rounded-full flex items-center justify-center shadow-sm social-glow-wa transition-all text-xs border border-slate-800" title="Chat on WhatsApp">
-                        <i class="fa-brands fa-whatsapp text-sm"></i>
-                    </a>
-                    <a href="https://facebook.com/alqadrichaskapoint" target="_blank" class="w-8 h-8 bg-[#1877F2] text-white rounded-full flex items-center justify-center shadow-sm social-glow-fb transition-all text-xs border border-slate-800" title="Visit Facebook Page">
-                        <i class="fa-brands fa-facebook-f text-xs"></i>
-                    </a>
-                    <a href="https://instagram.com/alqadrichaskapoint" target="_blank" class="w-8 h-8 bg-gradient-to-tr from-[#f9ce34] via-[#ee2a7b] to-[#6228d7] text-white rounded-full flex items-center justify-center shadow-sm social-glow-ig transition-all text-xs border border-slate-800" title="Follow us on Instagram">
-                        <i class="fa-brands fa-instagram text-xs"></i>
-                    </a>
-                    <a href="https://tiktok.com/@alqadrichaskapoint" target="_blank" class="w-8 h-8 bg-[#010101] text-white rounded-full flex items-center justify-center shadow-sm social-glow-tt transition-all text-xs border border-slate-800" title="Follow us on TikTok">
-                        <i class="fa-brands fa-tiktok text-xs"></i>
-                    </a>
-                </div>
-
-                <div class="flex justify-center items-center gap-2 mt-2 bg-slate-800/50 py-2 px-5 rounded-full w-fit mx-auto border border-slate-700/50 shadow-lg">
-                    <i class="fa-solid fa-phone text-primary animate-ring text-[11px]"></i> 
-                    <span class="text-slate-300 text-xs">Hotline:</span> 
-                    <a href="tel:03102434222" class="hotline-highlight text-sm">0310-2434222</a>
-                </div>
-            </div>
-
-            <!-- Admin Portal Centered -->
-            <div class="pt-2 flex justify-center">
-                <button onclick="openAdminPortal()" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-full bg-slate-850/80 border border-slate-800 text-slate-300 hover:text-white hover:border-[#FF5A36] hover:bg-slate-800 transition-all text-[11px] font-black tracking-wider uppercase shadow-md" title="Admin Control Dashboard">
-                    <i class="fa-solid fa-shield-halved text-primary"></i> Admin Portal
-                </button>
-            </div>
-
-            <div class="pt-4 border-t border-slate-800 text-[10px] text-slate-500 text-center">
-                <span>&copy; 2026 ACP Premium Fast Food. All rights reserved.</span>
-            </div>
+        <!-- Customer Footer Section updated dynamically per page view -->
+        <footer id="mainFooterSection" class="bg-slate-900 text-slate-300 p-6 text-center space-y-4 no-print mt-8 border-t-2 border-primary">
+            <!-- Dynamic footer content injected by JS -->
         </footer>
 
     </div>
 
     <!-- ORDER CONFIRMATION CHECKOUT POP-UP MODAL (Theme Colored) -->
     <div id="checkoutConfirmModal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-md z-[10000] hidden flex items-center justify-center p-4" onclick="closeCheckoutConfirmModal()">
-        <div class="bg-white rounded-[24px] max-w-sm w-full p-5 border border-slate-200 relative shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
+        <div class="bg-white rounded-[24px] max-w-sm w-full p-5 border border-slate-200 relative shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto text-center" onclick="event.stopPropagation()">
             <button onclick="closeCheckoutConfirmModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
                 <i class="fa-solid fa-circle-xmark text-xl"></i>
             </button>
 
-            <div class="flex items-center gap-3 border-b border-slate-100 pb-3">
-                <div class="w-10 h-10 bg-orange-100 text-[#FF5A36] rounded-full flex items-center justify-center text-lg shrink-0">
-                    <i class="fa-solid fa-cart-check"></i>
+            <!-- Confirm Order Details center-aligned with confirmation icon -->
+            <div class="flex flex-col items-center justify-center border-b border-slate-100 pb-3">
+                <div class="w-10 h-10 bg-orange-100 text-[#FF5A36] rounded-full flex items-center justify-center text-lg shrink-0 mb-1">
+                    <i class="fa-solid fa-circle-check"></i>
                 </div>
-                <div>
-                    <h3 class="text-sm font-extrabold text-slate-900">Confirm Order Details</h3>
-                    <p class="text-[10px] text-slate-400">Review selected items & delivery address</p>
-                </div>
+                <h3 class="text-sm font-extrabold text-slate-900">Confirm Order Details</h3>
+                <p class="text-[10px] text-slate-400">Review selected items & delivery address</p>
+            </div>
+
+            <!-- Home Delivery Note made a little smaller and centered -->
+            <div class="bg-amber-50 border border-amber-200 text-amber-800 p-2 rounded-xl text-[10px] font-bold flex items-center justify-center gap-1.5 text-center mx-auto max-w-[280px]">
+                <i class="fa-solid fa-triangle-exclamation text-amber-600"></i>
+                <span>Note: Home delivery facility is not available.</span>
             </div>
 
             <!-- Items & Balance Summary -->
-            <div class="bg-slate-50 p-3 rounded-2xl border border-slate-200 space-y-2">
+            <div class="bg-slate-50 p-3 rounded-2xl border border-slate-200 space-y-2 text-left">
                 <div id="checkoutModalItemsList" class="space-y-1 max-h-32 overflow-y-auto pr-1">
                     <!-- Dynamic Item Lines -->
                 </div>
@@ -842,25 +915,28 @@
                 </div>
             </div>
 
-            <!-- Customer Name & Location Form -->
-            <form onsubmit="event.preventDefault(); finalizeOrderAndSendWhatsApp();" class="space-y-3">
-                <div>
-                    <label class="block text-slate-500 mb-1 uppercase text-[9px] font-bold tracking-wider">Your Full Name *</label>
-                    <input type="text" id="checkoutName" required placeholder="Enter Your Name *" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none text-xs font-bold text-slate-800 focus:border-[#FF5A36]">
+            <!-- Customer Name & Location Form with distance before confirm & place order button -->
+            <form onsubmit="event.preventDefault(); finalizeOrderAndSendWhatsApp();" class="space-y-3 text-left">
+                <div class="space-y-2.5 pb-2">
+                    <div>
+                        <label class="block text-slate-500 mb-1 uppercase text-[9px] font-bold tracking-wider">Your Full Name *</label>
+                        <input type="text" id="checkoutName" required placeholder="Enter Your Name *" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none text-xs font-bold text-slate-800 focus:border-[#FF5A36]">
+                    </div>
+
+                    <div>
+                        <label class="block text-slate-500 mb-1 uppercase text-[9px] font-bold tracking-wider">Phone Number *</label>
+                        <input type="tel" id="checkoutPhone" required placeholder="03XXXXXXXXX *" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none text-xs font-bold text-slate-800 focus:border-[#FF5A36]">
+                    </div>
+
+                    <div>
+                        <label class="block text-slate-500 mb-1 uppercase text-[9px] tracking-wider">Delivery Location / Address *</label>
+                        <input type="text" id="checkoutLocation" required placeholder="Street / Colony / Area in Gujranwala *" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none text-xs font-bold text-slate-800 focus:border-[#FF5A36]">
+                    </div>
                 </div>
 
-                <div>
-                    <label class="block text-slate-500 mb-1 uppercase text-[9px] font-bold tracking-wider">Phone Number *</label>
-                    <input type="tel" id="checkoutPhone" required placeholder="03XXXXXXXXX *" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none text-xs font-bold text-slate-800 focus:border-[#FF5A36]">
-                </div>
-
-                <div>
-                    <label class="block text-slate-500 mb-1 uppercase text-[9px] font-bold tracking-wider">Delivery Location / Address *</label>
-                    <input type="text" id="checkoutLocation" required placeholder="Street / Colony / Area in Gujranwala *" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none text-xs font-bold text-slate-800 focus:border-[#FF5A36]">
-                </div>
-
-                <button type="submit" class="w-full py-3 bg-[#FF5A36] hover:bg-[#E04825] text-white font-extrabold rounded-xl text-xs transition-all shadow-md flex items-center justify-center gap-2 mt-2">
-                    <i class="fa-brands fa-whatsapp text-base"></i> Confirm & Send via WhatsApp
+                <!-- Confirm and place order button with spacing -->
+                <button type="submit" class="w-full py-3 bg-[#FF5A36] hover:bg-[#E04825] text-white font-extrabold rounded-xl text-xs transition-all shadow-md flex items-center justify-center gap-2 mt-4">
+                    <i class="fa-brands fa-whatsapp text-base"></i> Confirm and place order
                 </button>
             </form>
         </div>
@@ -1021,7 +1097,7 @@
     <div id="admin-page" class="hidden min-h-screen bg-slate-50 w-full relative z-[1000] pb-20">
         <div class="max-w-[480px] mx-auto p-4">
             
-            <!-- Mobile Dashboard Banner -->
+            <!-- Mobile Dashboard Banner matching original style -->
             <div class="flex justify-between items-center bg-slate-900 text-white p-4 rounded-2xl shadow-xl mb-4">
                 <div class="flex items-center gap-3">
                     <div class="w-10 h-10 rounded-xl bg-[#FF5A36] flex items-center justify-center text-white text-lg shadow-lg border border-slate-800 shrink-0">
@@ -1125,10 +1201,10 @@
                         </table>
                     </div>
 
-                    <!-- Catalog Update Action Button Centered & Medium Size -->
+                    <!-- Catalog Update Action Button Centered -->
                     <div id="catalogUpdateBar" class="hidden pt-3 flex justify-center">
-                        <button onclick="saveCatalogOrderChanges()" class="py-2 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs transition-all shadow-sm flex items-center gap-1.5 active:scale-95">
-                            <i class="fa-solid fa-circle-check text-xs"></i> Save Catalog Order Changes
+                        <button onclick="saveCatalogOrderChanges()" class="py-2.5 px-5 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold rounded-xl text-xs transition-all shadow-md flex items-center gap-2 active:scale-95">
+                            <i class="fa-solid fa-circle-check text-sm"></i> Save Catalog Order Changes
                         </button>
                     </div>
                 </div>
@@ -1203,7 +1279,7 @@
 
                 <div id="subSecFeedCreate" class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-3">
                     <div class="border-b border-slate-100 pb-2">
-                        <h3 id="postFormHeading" class="text-xs font-black text-slate-950 flex items-center gap-2">
+                        <h3 id="postFormHeading" class="text-xs font-black text-slate-955 flex items-center gap-2">
                             <i class="fa-solid fa-paper-plane text-orange-500"></i> Broadcast / Edit Post
                         </h3>
                     </div>
@@ -1231,7 +1307,7 @@
 
                         <div>
                             <label class="block text-slate-500 mb-1 uppercase text-[9px] tracking-wider">Description *</label>
-                            <textarea id="postFormDesc" required rows="3" placeholder="Write details of your deal..." class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none text-xs resize-none"></textarea>
+                            <textarea id="postFormDesc" required rows="3" placeholder="Write details of your deal..." class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none text-xs resize-y"></textarea>
                         </div>
 
                         <div class="flex gap-2 pt-1">
@@ -1257,17 +1333,17 @@
                         <!-- Dynamic Post Cards Injected Here -->
                     </div>
 
-                    <!-- Post Update Action Button Centered & Medium Size -->
+                    <!-- Post Update Action Button Centered -->
                     <div id="postUpdateBar" class="hidden pt-3 flex justify-center">
-                        <button onclick="savePostOrderChanges()" class="py-2 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs transition-all shadow-sm flex items-center gap-1.5 active:scale-95">
-                            <i class="fa-solid fa-circle-check text-xs"></i> Save Post Order Changes
+                        <button onclick="savePostOrderChanges()" class="py-2.5 px-5 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold rounded-xl text-xs transition-all shadow-md flex items-center gap-2 active:scale-95">
+                            <i class="fa-solid fa-circle-check text-sm"></i> Save Post Order Changes
                         </button>
                     </div>
                 </div>
 
             </div>
 
-            <!-- CATEGORY 4: REGISTERED CUSTOMERS CRM DIRECTORY (Includes Name, Phone, Location, Email) -->
+            <!-- CATEGORY 4: REGISTERED CUSTOMERS CRM DIRECTORY -->
             <div id="admin-sec-users" class="hidden">
                 <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-3">
                     <div class="border-b border-slate-100 pb-3">
@@ -1361,196 +1437,224 @@
         </div>
     </div>
 
-    <!-- FIREBASE MODULE INTEGRATION & REALTIME FIRESTORE PERSISTENCE -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-        import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-analytics.js";
-        import { 
-            getFirestore, 
-            collection, 
-            doc, 
-            setDoc, 
-            getDocs, 
-            addDoc, 
-            updateDoc, 
-            deleteDoc, 
-            onSnapshot 
-        } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+    <!-- User Comment Reply Modal -->
+    <div id="userReplyModal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-md z-[10000] hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-[24px] max-w-xs w-full p-6 border border-slate-200 relative shadow-2xl space-y-3">
+            <button onclick="closeUserReplyModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
+                <i class="fa-solid fa-circle-xmark text-xl"></i>
+            </button>
+            <div class="flex items-center gap-2 border-b border-slate-100 pb-2">
+                <div class="w-8 h-8 rounded-full bg-orange-100 text-[#FF5A36] flex items-center justify-center text-sm font-bold">
+                    <i class="fa-solid fa-reply"></i>
+                </div>
+                <div>
+                    <h3 class="text-xs font-black text-slate-900">Reply to Comment</h3>
+                    <p class="text-[9px] text-slate-400" id="userReplyTargetTitle">Reply thread</p>
+                </div>
+            </div>
+            <form onsubmit="event.preventDefault(); submitUserReply();" class="space-y-3">
+                <input type="hidden" id="userReplyPostId">
+                <input type="hidden" id="userReplyCommentIndex">
+                <div>
+                    <textarea id="userReplyText" required rows="3" placeholder="Write your reply..." class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none text-xs resize-none"></textarea>
+                </div>
+                <button type="submit" class="w-full py-2.5 bg-[#FF5A36] hover:bg-[#E04825] text-white font-bold rounded-xl text-xs transition-all shadow-md">
+                    Post Reply
+                </button>
+            </form>
+        </div>
+    </div>
 
-        // Firebase Configuration
+    <!-- Share Overlay Sheet Modal fallback -->
+    <div id="shareModal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-md z-[10001] hidden flex items-center justify-center p-4" onclick="closeShareModal()">
+        <div class="bg-white rounded-[24px] max-w-xs w-full p-5 border border-slate-200 relative shadow-2xl space-y-4 text-center" onclick="event.stopPropagation()">
+            <button onclick="closeShareModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
+                <i class="fa-solid fa-circle-xmark text-xl"></i>
+            </button>
+            <div class="flex flex-col items-center">
+                <div class="w-10 h-10 bg-orange-100 text-[#FF5A36] rounded-full flex items-center justify-center text-lg mb-2">
+                    <i class="fa-solid fa-share-nodes"></i>
+                </div>
+                <h3 class="text-xs font-black text-slate-900">Share This Deal</h3>
+                <p class="text-[9px] text-slate-400">Choose your favorite platform to share</p>
+            </div>
+            <div class="grid grid-cols-4 gap-3 py-2">
+                <a id="shareWA" target="_blank" class="flex flex-col items-center gap-1 cursor-pointer">
+                    <div class="w-10 h-10 bg-[#25D366] text-white rounded-full flex items-center justify-center text-lg shadow hover:scale-105 transition-all">
+                        <i class="fa-brands fa-whatsapp text-lg"></i>
+                    </div>
+                    <span class="text-[9px] font-bold text-slate-600 font-sans">WhatsApp</span>
+                </a>
+                <a id="shareFB" target="_blank" class="flex flex-col items-center gap-1 cursor-pointer">
+                    <div class="w-10 h-10 bg-[#1877F2] text-white rounded-full flex items-center justify-center text-lg shadow hover:scale-105 transition-all">
+                        <i class="fa-brands fa-facebook-f text-base"></i>
+                    </div>
+                    <span class="text-[9px] font-bold text-slate-600 font-sans">Facebook</span>
+                </a>
+                <a id="shareTW" target="_blank" class="flex flex-col items-center gap-1 cursor-pointer">
+                    <div class="w-10 h-10 bg-[#111111] text-white rounded-full flex items-center justify-center text-lg shadow hover:scale-105 transition-all">
+                        <i class="fa-brands fa-x-twitter text-base"></i>
+                    </div>
+                    <span class="text-[9px] font-bold text-slate-600 font-sans">X / Twitter</span>
+                </a>
+                <button onclick="copyShareLink()" class="flex flex-col items-center gap-1">
+                    <div class="w-10 h-10 bg-slate-800 text-white rounded-full flex items-center justify-center text-lg shadow hover:scale-105 transition-all">
+                        <i class="fa-solid fa-link text-base"></i>
+                    </div>
+                    <span class="text-[9px] font-bold text-slate-600 font-sans">Copy Link</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Backend Configuration & State Machine -->
+    <script>
+        // Your web app's Firebase configuration
         const firebaseConfig = {
-          apiKey: "AIzaSyCnTvjumYj8qXN8rsQtmkGOAmNuJDummBI",
-          authDomain: "alfa-corex.firebaseapp.com",
-          projectId: "alfa-corex",
-          storageBucket: "alfa-corex.firebasestorage.app",
-          messagingSenderId: "137972735130",
-          appId: "1:137972735130:web:8edac3d79ebea4046b1323",
-          measurementId: "G-FERT7LM1W6"
+            apiKey: "AIzaSyCnTvjumYj8qXN8rsQtmkGOAmNuJDummBI",
+            authDomain: "alfa-corex.firebaseapp.com",
+            projectId: "alfa-corex",
+            storageBucket: "alfa-corex.firebasestorage.app",
+            messagingSenderId: "137972735130",
+            appId: "1:137972735130:web:8edac3d79ebea4046b1323",
+            measurementId: "G-FERT7LM1W6"
         };
 
-        // Initialize Firebase SDK
-        const app = initializeApp(firebaseConfig);
-        const analytics = getAnalytics(app);
-        const db = getFirestore(app);
+        // Initialize Firebase Compat
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const analytics = firebase.analytics();
 
-        // Global Application State Variables
+        // Clear Persistence Storage on Load to avoid rendering outdated/cached static state.
+        db.clearPersistence().then(() => {
+            console.log("Firestore offline database cache was cleaned successfully.");
+        }).catch((err) => {
+            console.warn("Firestore cache could not be cleared on load:", err);
+        });
+
         let cartItems = {};
         let notificationsHistory = [];
         let expandedComments = {}; 
+        let commentSortModes = {}; 
+        let expandedReplies = {}; 
         let currentUser = null; 
         let guestSessionName = ""; 
         let activeAdminCatalogFilter = 'all';
+        let sharedPostText = ""; 
 
+        // Working variables initialized
         let workingMenuData = [];
         let workingFeedPosts = [];
 
-        // Seed Default Food Items
-        let menuData = [
-            { id: 1, name: 'Chicken Shaurma', desc: 'Juicy roasted chicken wrap with secret garlic dressing sauce.', price: 180, image: 'https://images.unsplash.com/photo-1561651823-34feb02250e4?q=80&w=600&auto=format&fit=crop', category: 'fast' },
-            { id: 2, name: 'Zinger Burger', desc: 'Crispy fried chicken breast inside toasted sesame buns with lettuce.', price: 280, image: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?q=80&w=600&auto=format&fit=crop', category: 'fast' },
-            { id: 3, name: 'Club Sandwich', desc: 'Triple layered toasted bread stuffed with egg, chicken and cheese.', price: 250, image: 'https://images.unsplash.com/photo-1525351484163-7529414344d8?q=80&w=600&auto=format&fit=crop', category: 'fast' },
-            { id: 4, name: 'Masala Fries', desc: 'Golden skin-on potato chips dusted in hot local secret spices.', price: 120, image: 'https://images.unsplash.com/photo-1573080496219-bb080dd4f877?q=80&w=600&auto=format&fit=crop', category: 'fast' },
-            { id: 5, name: 'Desi Samosa', desc: 'Classic golden pastry cone stuffed with rich spiced math potato.', price: 50, image: 'https://images.unsplash.com/photo-1601050690597-df0568f70950?q=80&w=400&auto=format&fit=crop', category: 'local' },
-            { id: 6, name: 'Gulab Jamun', desc: 'Warm traditional golden milk balls soaked inside heavy sweet syrup.', price: 60, image: 'https://images.unsplash.com/photo-1596509183058-27d075256ec5?q=80&w=400&auto=format&fit=crop', category: 'local' },
-            { id: 7, name: 'Warm Jalebi', desc: 'Crisp spiral treats dripping with delicious hot sugary liquid syrup.', price: 80, image: 'https://images.unsplash.com/photo-1589301760014-d929f3979dbc?q=80&w=400&auto=format&fit=crop', category: 'local' },
-            { id: 8, name: 'Fresh Barfi', desc: 'Premium sweet milk cake blocks topped with fresh dry pistachios.', price: 90, image: 'https://images.unsplash.com/photo-1605197586541-8936aa8019fb?q=80&w=400&auto=format&fit=crop', category: 'local' },
-            { id: 9, name: 'Pepsi 500ml', desc: 'Ice-cold carbonated soft drink.', price: 90, image: 'https://images.unsplash.com/photo-1629203851122-3726ecdf080e?q=80&w=400&auto=format&fit=crop', category: 'drinks' },
-            { id: 10, name: '7Up 500ml', desc: 'Crisp lemon-lime sparkling drink.', price: 90, image: 'https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?q=80&w=400&auto=format&fit=crop', category: 'drinks' },
-            { id: 11, name: 'Sting Energy Drink', desc: 'High energy berry boost drink.', price: 100, image: 'https://images.unsplash.com/photo-1622483767028-3f66f32aef97?q=80&w=400&auto=format&fit=crop', category: 'drinks' },
-            { id: 12, name: 'Fresh Mint Lemonade', desc: 'Homemade chilled lemon juice with crushed mint.', price: 120, image: 'https://images.unsplash.com/photo-1513558161293-cdaf765ed2fd?q=80&w=400&auto=format&fit=crop', category: 'drinks' },
-            { id: 13, name: 'Sweet Yogurt Lassi', desc: 'Traditional rich creamy yogurt drink.', price: 110, image: 'https://images.unsplash.com/photo-1571006682881-22920272b123?q=80&w=400&auto=format&fit=crop', category: 'drinks' }
-        ];
-
+        // Real-time State synchronized from Firestore Collections
+        let menuData = [];
         let ordersList = [];
         let registeredUsers = [];
+        let feedPosts = [];
 
-        // Seed Default Posts
-        let feedPosts = [
-            { 
-                id: 101, 
-                title: "🔥 Special Friday Jalebi & Samosa Extravaganza!", 
-                image: "https://images.unsplash.com/photo-1589301760014-d929f3979dbc?q=80&w=600&auto=format&fit=crop", 
-                desc: "Get free hot crispy spiral Jalebi on buying three Potato Samosas today! Perfect treat for the afternoon in Gujranwala.", 
-                likes: 42, 
-                isLiked: false,
-                comments: [
-                    { commenter: "Muhammad Arslan", text: "Best Jalebi in Gujranwala town, recommended!" },
-                    { commenter: "Zainab Bibi", text: "Are you guys delivering to Sialkot bypass?" }
-                ]
-            },
-            { 
-                id: 102, 
-                title: "🍔 Weekend Double-Decker Zinger Feast!", 
-                image: "https://images.unsplash.com/photo-1568901346375-23c9450c58cd?q=80&w=600&auto=format&fit=crop", 
-                desc: "Our double layered crispy fried chicken burger is hitting high records! Prepared fresh with Alqadri special spicy mayo.", 
-                likes: 89, 
-                isLiked: false,
-                comments: [
-                    { commenter: "Yasir Khan", text: "Very crunchy and extremely juicy chicken breast!" }
-                ]
-            }
-        ];
-
-        // Sync Firestore Collections Live
-        function initFirestoreSync() {
-            // 1. Menu Sync
-            onSnapshot(collection(db, "menu"), (snapshot) => {
-                if (snapshot.empty) {
-                    menuData.forEach(item => setDoc(doc(db, "menu", String(item.id)), item));
-                } else {
-                    menuData = snapshot.docs.map(doc => doc.data());
-                    workingMenuData = JSON.parse(JSON.stringify(menuData));
-                    renderCustomerMenu();
-                    renderLocalMenu();
-                    renderDrinksMenu();
-                    renderAdminCatalog();
-                }
+        // Real-time listener for the 'menu' catalog collection
+        db.collection('menu').orderBy('order', 'asc').onSnapshot(snapshot => {
+            menuData = [];
+            snapshot.forEach(doc => {
+                let data = doc.data();
+                data.id = doc.id; // Map Document ID smoothly
+                menuData.push(data);
             });
-
-            // 2. Orders Sync
-            onSnapshot(collection(db, "orders"), (snapshot) => {
-                ordersList = snapshot.docs.map(doc => ({ firebaseDocId: doc.id, ...doc.data() }));
-                renderAdminOrdersList();
-            });
-
-            // 3. Posts Sync
-            onSnapshot(collection(db, "posts"), (snapshot) => {
-                if (snapshot.empty) {
-                    feedPosts.forEach(post => setDoc(doc(db, "posts", String(post.id)), post));
-                } else {
-                    feedPosts = snapshot.docs.map(doc => ({ firebaseDocId: doc.id, ...doc.data() }));
-                    workingFeedPosts = JSON.parse(JSON.stringify(feedPosts));
-                    renderCustomerSocialFeeds();
-                    renderAdminPostsList();
-                }
-            });
-
-            // 4. Users Sync
-            onSnapshot(collection(db, "users"), (snapshot) => {
-                registeredUsers = snapshot.docs.map(doc => ({ firebaseDocId: doc.id, ...doc.data() }));
-                renderRegisteredUsers();
-            });
-        }
-
-        window.addEventListener('DOMContentLoaded', () => {
-            updateUserAccountDisplay();
             renderCustomerMenu();
             renderLocalMenu();
             renderDrinksMenu();
             renderCartSummary();
-            renderCustomerSocialFeeds();
-            initFirestoreSync();
-        });
+        }, err => console.error("Menu snapshot error: ", err));
 
-        // Functions attached to Window scope to keep HTML handlers working
-        window.openGuestNameModal = function() {
+        // Real-time listener for the 'orders' collection
+        db.collection('orders').orderBy('timestamp', 'desc').onSnapshot(snapshot => {
+            ordersList = [];
+            snapshot.forEach(doc => {
+                let data = doc.data();
+                data.firestoreId = doc.id;
+                ordersList.push(data);
+            });
+            renderAdminOrdersList();
+        }, err => console.error("Orders snapshot error: ", err));
+
+        // Real-time listener for the 'users' (CRM registration) collection
+        db.collection('users').onSnapshot(snapshot => {
+            registeredUsers = [];
+            snapshot.forEach(doc => {
+                let data = doc.data();
+                data.firestoreId = doc.id;
+                registeredUsers.push(data);
+            });
+            renderRegisteredUsers();
+        }, err => console.error("Users snapshot error: ", err));
+
+        // Real-time listener for the 'posts' (social feeds) collection
+        db.collection('posts').orderBy('order', 'asc').onSnapshot(snapshot => {
+            feedPosts = [];
+            snapshot.forEach(doc => {
+                let data = doc.data();
+                data.id = doc.id;
+                feedPosts.push(data);
+            });
+            renderCustomerSocialFeeds();
+        }, err => console.error("Posts snapshot error: ", err));
+
+
+        // Trigger Guest Name Pop-up Modal
+        function openGuestNameModal() {
             const modal = document.getElementById('guestNameModal');
             if (modal) modal.classList.remove('hidden');
-        };
+        }
 
-        window.closeGuestNameModal = function() {
+        function closeGuestNameModal() {
             const modal = document.getElementById('guestNameModal');
             if (modal) modal.classList.add('hidden');
-        };
+        }
 
-        window.saveGuestNameFromPopup = function() {
+        function saveGuestNameFromPopup() {
             const input = document.getElementById('popupGuestNameInput');
             if (!input) return;
+
             const val = input.value.trim();
             if (!val) return;
+
             guestSessionName = val;
             closeGuestNameModal();
             renderCustomerSocialFeeds();
-        };
+        }
 
-        window.resetGuestSessionName = function() {
+        function resetGuestSessionName() {
             guestSessionName = "";
             renderCustomerSocialFeeds();
-        };
+        }
 
-        window.updateUserAccountDisplay = function() {
+        // Display only the first spelling of the user's name on the header icon
+        function updateUserAccountDisplay() {
             const userBtn = document.getElementById('navUserBtn');
             if (!userBtn) return;
 
             if (currentUser) {
+                const fullName = currentUser.name ? currentUser.name.trim() : 'User';
+                const firstSpelling = fullName.split(' ')[0];
                 userBtn.innerHTML = `
-                    <div class="flex items-center gap-1.5 px-2.5 py-1 bg-orange-50 border border-orange-200/80 rounded-full shadow-sm hover:bg-orange-100 transition-all cursor-pointer">
-                        <i class="fa-solid fa-circle-user text-primary text-base shrink-0"></i>
-                        <span class="text-xs font-black text-slate-800 tracking-tight max-w-[110px] truncate">${currentUser.name}</span>
-                        <span class="w-2 h-2 bg-emerald-500 rounded-full shrink-0"></span>
+                    <div class="flex items-center gap-1.5 px-2 py-0.5 bg-orange-50 border border-orange-200/80 rounded-full shadow-sm hover:bg-orange-100 transition-all cursor-pointer">
+                        <i class="fa-solid fa-circle-user text-primary text-sm shrink-0"></i>
+                        <span class="text-[11px] font-black text-slate-800 tracking-tight max-w-[90px] truncate">${firstSpelling}</span>
+                        <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full shrink-0"></span>
                     </div>
                 `;
             } else {
                 userBtn.innerHTML = `
-                    <div class="flex items-center gap-1.5 px-2 py-1 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded-full transition-all cursor-pointer">
+                    <div class="flex items-center gap-1 px-2.5 py-1 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded-full transition-all cursor-pointer">
                         <i class="fa-solid fa-circle-user text-slate-500 text-sm shrink-0"></i>
                         <span class="text-[11px] font-bold text-slate-700">Sign In</span>
                     </div>
                 `;
             }
-        };
+        }
 
-        window.switchCustomerTab = function(tabName) {
+        // Toggle Main User View Tabs & Render dynamic footer per tab view
+        function switchCustomerTab(tabName) {
             const storeBtn = document.getElementById('tabBtnStore');
             const feedsBtn = document.getElementById('tabBtnFeeds');
             const viewStore = document.getElementById('view-store');
@@ -1562,35 +1666,163 @@
                 viewStore.classList.remove('hidden');
                 viewFeeds.classList.add('hidden');
                 heroSec.classList.remove('hidden');
-                storeBtn.className = "btn-tab-effect btn-tab-active flex-1 max-w-[180px] flex items-center justify-center gap-1.5 py-2 px-3 text-[11px] font-black rounded-xl border border-[#FF5A36] bg-[#FF5A36] text-white shadow-md active:scale-95";
-                feedsBtn.className = "btn-tab-effect btn-tab-inactive flex-1 max-w-[180px] flex items-center justify-center gap-1.5 py-2 px-3 text-[11px] font-black rounded-xl border border-slate-200 bg-white text-slate-700 shadow-sm relative active:scale-95";
+                storeBtn.className = "btn-tab-effect btn-tab-active flex-1 max-w-[180px] flex items-center justify-center gap-2 py-2 px-4 text-xs font-black rounded-xl border border-[#FF5A36] bg-[#FF5A36] text-white shadow-md active:scale-95";
+                feedsBtn.className = "btn-tab-effect btn-tab-inactive flex-1 max-w-[180px] flex items-center justify-center gap-2 py-2 px-4 text-xs font-black rounded-xl border border-slate-200 bg-white text-slate-700 shadow-sm relative active:scale-95";
+                
+                // Keep icons correctly color-coded
+                storeBtn.innerHTML = `<i class="fa-solid fa-utensils text-white"></i> Order Menu`;
+                feedsBtn.innerHTML = `
+                    <i class="fa-solid fa-rss text-orange-500"></i> Social Feed
+                    <span class="absolute -top-1 -right-1 w-2 h-2 bg-rose-500 rounded-full animate-ping"></span>
+                    <span class="absolute -top-1 -right-1 w-2 h-2 bg-rose-500 rounded-full"></span>
+                `;
+                
                 renderCartSummary();
             } else {
                 viewStore.classList.add('hidden');
                 viewFeeds.classList.remove('hidden');
                 heroSec.classList.add('hidden');
-                feedsBtn.className = "btn-tab-effect btn-tab-active flex-1 max-w-[180px] flex items-center justify-center gap-1.5 py-2 px-3 text-[11px] font-black rounded-xl border border-[#FF5A36] bg-[#FF5A36] text-white shadow-md relative active:scale-95";
-                storeBtn.className = "btn-tab-effect btn-tab-inactive flex-1 max-w-[180px] flex items-center justify-center gap-1.5 py-2 px-3 text-[11px] font-black rounded-xl border border-slate-200 bg-white text-slate-700 shadow-sm active:scale-95";
+                feedsBtn.className = "btn-tab-effect btn-tab-active flex-1 max-w-[180px] flex items-center justify-center gap-2 py-2 px-4 text-xs font-black rounded-xl border border-[#FF5A36] bg-[#FF5A36] text-white shadow-md relative active:scale-95";
+                storeBtn.className = "btn-tab-effect btn-tab-inactive flex-1 max-w-[180px] flex items-center justify-center gap-2 py-2 px-4 text-xs font-black rounded-xl border border-slate-200 bg-white text-slate-700 shadow-sm active:scale-95";
                 
+                // Feeds active: icon becomes white inside the tab selection
+                feedsBtn.innerHTML = `
+                    <i class="fa-solid fa-rss text-white"></i> Social Feed
+                    <span class="absolute -top-1 -right-1 w-2 h-2 bg-rose-500 rounded-full animate-ping"></span>
+                    <span class="absolute -top-1 -right-1 w-2 h-2 bg-rose-500 rounded-full"></span>
+                `;
+                storeBtn.innerHTML = `<i class="fa-solid fa-utensils text-[#FF5A36]"></i> Order Menu`;
+
                 if (floatingCartBar) {
                     floatingCartBar.classList.add('translate-y-24', 'opacity-0', 'pointer-events-none');
                     floatingCartBar.classList.remove('translate-y-0', 'opacity-100', 'pointer-events-auto');
                 }
             }
+            renderDynamicFooter();
             window.scrollTo(0,0);
-        };
+        }
 
-        window.renderCustomerMenu = function() {
+        // Dynamic footer content depending on whether Order Menu or Social Feed is active
+        function renderDynamicFooter() {
+            const footerEl = document.getElementById('mainFooterSection');
+            if (!footerEl) return;
+
+            const viewStore = document.getElementById('view-store');
+            const isStoreActive = viewStore && !viewStore.classList.contains('hidden');
+
+            let socialIconsHtml = `
+                <div class="flex justify-center items-center gap-3">
+                    <a href="https://wa.me/923102434222" target="_blank" class="w-8 h-8 bg-[#25D366] text-white rounded-full flex items-center justify-center shadow-sm social-glow-wa transition-all text-xs border border-slate-800" title="Chat on WhatsApp">
+                        <i class="fa-brands fa-whatsapp text-sm"></i>
+                    </a>
+                    <a href="https://facebook.com/alqadrichaskapoint" target="_blank" class="w-8 h-8 bg-[#1877F2] text-white rounded-full flex items-center justify-center shadow-sm social-glow-fb transition-all text-xs border border-slate-800" title="Visit Facebook Page">
+                        <i class="fa-brands fa-facebook-f text-xs"></i>
+                    </a>
+                    <a href="https://instagram.com/alqadrichaskapoint" target="_blank" class="w-8 h-8 bg-gradient-to-tr from-[#f9ce34] via-[#ee2a7b] to-[#6228d7] text-white rounded-full flex items-center justify-center shadow-sm social-glow-ig transition-all text-xs border border-slate-800" title="Follow us on Instagram">
+                        <i class="fa-brands fa-instagram text-xs"></i>
+                    </a>
+                    <a href="https://tiktok.com/@alqadrichaskapoint" target="_blank" class="w-8 h-8 bg-[#010101] text-white rounded-full flex items-center justify-center shadow-sm social-glow-tt transition-all text-xs border border-slate-800" title="Follow us on TikTok">
+                        <i class="fa-brands fa-tiktok text-xs"></i>
+                    </a>
+                </div>
+            `;
+
+            let hotlineHtml = `
+                <div class="flex justify-center items-center gap-2 bg-slate-800/50 py-2 px-5 rounded-full w-fit mx-auto border border-slate-700/50 shadow-lg">
+                    <i class="fa-solid fa-phone text-primary animate-ring text-[11px]"></i> 
+                    <span class="text-slate-300 text-xs font-sans">Hotline:</span> 
+                    <a href="tel:03102434222" class="hotline-highlight text-sm">0310-2434222</a>
+                </div>
+            `;
+
+            let locationHtml = `
+                <div class="flex justify-center items-center gap-2 text-xs font-semibold text-slate-300 pt-1">
+                    <i class="fa-solid fa-location-dot text-rose-500"></i> Jalal Balagan Main Road, Gujranwala
+                </div>
+            `;
+
+            // Reduced size for admin portal button
+            let adminPortalBtnHtml = `
+                <div class="pt-3 mt-1 border-t border-slate-800/80 flex justify-center">
+                    <button onclick="openAdminPortal()" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-slate-800 border border-slate-700 text-slate-300 hover:text-white hover:border-[#FF5A36] hover:bg-slate-750 transition-all text-[9px] font-extrabold tracking-wider uppercase shadow" title="Admin Control Dashboard">
+                        <i class="fa-solid fa-shield-halved text-primary text-[10px]"></i> Admin Portal
+                    </button>
+                </div>
+            `;
+
+            let copyrightHtml = `
+                <div class="pt-2 text-[10px] text-slate-500 text-center">
+                    <span>&copy; 2026 ACP Premium Fast Food. All rights reserved.</span>
+                </div>
+            `;
+
+            if (isStoreActive) {
+                // Front page footer: Icons made smaller, names use a clean prominent sans-serif styling with optimal spacing.
+                footerEl.innerHTML = `
+                    <div class="flex flex-wrap justify-center items-center gap-2 text-xs text-white py-1">
+                        <div class="glow-on-hover flex flex-col items-center justify-center text-center p-1 rounded-xl">
+                            <i class="fa-solid fa-user-tie text-primary text-xs mb-1.5 shrink-0"></i>
+                            <span class="font-black text-white text-[12.5px] whitespace-nowrap tracking-wide leading-none shrink-0">Mohsin Ali Raza</span>
+                            <span class="text-[8px] text-orange-400 font-black uppercase tracking-wider mt-1 shrink-0 leading-none">Co-Founder</span>
+                        </div>
+                        <div class="glow-on-hover flex flex-col items-center justify-center text-center p-1 rounded-xl">
+                            <i class="fa-solid fa-user-gear text-primary text-xs mb-1.5 shrink-0"></i>
+                            <span class="font-black text-white text-[12.5px] whitespace-nowrap tracking-wide leading-none shrink-0">Wasif Ali</span>
+                            <span class="text-[8px] text-orange-400 font-black uppercase tracking-wider mt-1 shrink-0 leading-none">Admin</span>
+                        </div>
+                    </div>
+                    <div class="space-y-3 pt-2">
+                        ${socialIconsHtml}
+                        ${hotlineHtml}
+                        ${locationHtml}
+                    </div>
+                    ${adminPortalBtnHtml}
+                    ${copyrightHtml}
+                `;
+            } else {
+                // Second page footer (Social feed)
+                footerEl.innerHTML = `
+                    <div class="font-serif text-white font-extrabold text-base leading-snug tracking-wide max-w-[340px] mx-auto">
+                        Thank you for visiting our website
+                    </div>
+                    <div class="font-serif font-black text-xl tracking-wide max-w-[340px] mx-auto" style="color: #FF5A36;">
+                        Al-Qadri Chaska Point
+                    </div>
+                    <hr class="border-t border-slate-800 w-32 mx-auto my-2.5">
+                    <p class="text-sm text-slate-100 font-bold leading-relaxed max-w-[360px] mx-auto pt-1">
+                        Stay connected with our latest food deals, tasty recipes, and special announcements.<br>
+                        Don't miss exciting offers and fresh updates from our restaurant. 🍔🍟
+                    </p>
+                    ${adminPortalBtnHtml}
+                    ${copyrightHtml}
+                `;
+            }
+        }
+
+        // Render Fast Food catalog
+        function renderCustomerMenu() {
             const container = document.getElementById('menuGridContainer');
             if (!container) return;
+
             container.innerHTML = '';
             const fastFoodItems = menuData.filter(x => x.category === 'fast');
+
+            if(fastFoodItems.length === 0) {
+                container.innerHTML = `<div class="col-span-3 py-6 text-center text-xs text-slate-400 italic bg-white rounded-xl border border-slate-200">No fast food items added yet. Admin can add items from the panel.</div>`;
+                return;
+            }
 
             fastFoodItems.forEach(item => {
                 const currentQty = cartItems[item.id] || 0;
                 const isSelected = currentQty > 0;
-                const cardOutline = isSelected ? 'border-2 border-[#FF5A36] ring-2 ring-[#FF5A36]/20 bg-orange-50/20' : 'border border-slate-200 bg-white';
-                const checkBadge = isSelected ? `<div class="absolute top-1.5 right-1.5 bg-[#FF5A36] text-white w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-black shadow-md z-10"><i class="fa-solid fa-check"></i></div>` : '';
+
+                const cardOutline = isSelected 
+                    ? 'border-2 border-[#FF5A36] ring-2 ring-[#FF5A36]/20 bg-orange-50/20' 
+                    : 'border border-slate-200 bg-white';
+
+                const checkBadge = isSelected 
+                    ? `<div class="absolute top-1.5 right-1.5 bg-[#FF5A36] text-white w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-black shadow-md z-10"><i class="fa-solid fa-check"></i></div>` 
+                    : '';
 
                 container.innerHTML += `
                     <div class="portrait-card relative ${cardOutline}" id="customer-card-${item.id}">
@@ -1602,27 +1834,40 @@
                                 <div class="card-price-compact !mb-0 !mt-0">Rs. ${item.price}</div>
                             </div>
                             <div class="selector-box-compact mt-1">
-                                <button class="btn-qty-mini" onclick="updateQty(${item.id}, -1)">-</button>
+                                <button class="btn-qty-mini" onclick="updateQty('${item.id}', -1)">-</button>
                                 <span class="qty-val-mini" id="qty-${item.id}">${currentQty}</span>
-                                <button class="btn-qty-mini" onclick="updateQty(${item.id}, 1)">+</button>
+                                <button class="btn-qty-mini" onclick="updateQty('${item.id}', 1)">+</button>
                             </div>
                         </div>
                     </div>
                 `;
             });
-        };
+        }
 
-        window.renderLocalMenu = function() {
+        // Render Local Delicacies inside Customer store
+        function renderLocalMenu() {
             const container = document.getElementById('localMenuGridContainer');
             if (!container) return;
+
             container.innerHTML = '';
             const localItems = menuData.filter(x => x.category === 'local');
+
+            if(localItems.length === 0) {
+                container.innerHTML = `<div class="col-span-4 py-6 text-center text-xs text-slate-400 italic bg-white rounded-xl border border-slate-200">No local items added yet.</div>`;
+                return;
+            }
 
             localItems.forEach(item => {
                 const currentQty = cartItems[item.id] || 0;
                 const isSelected = currentQty > 0;
-                const cardOutline = isSelected ? 'border-2 border-[#FF5A36] ring-2 ring-[#FF5A36]/20 bg-orange-50/20' : 'border border-slate-200 bg-white';
-                const checkBadge = isSelected ? `<div class="absolute top-1 right-1 bg-[#FF5A36] text-white w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-black shadow-md z-10"><i class="fa-solid fa-check"></i></div>` : '';
+
+                const cardOutline = isSelected 
+                    ? 'border-2 border-[#FF5A36] ring-2 ring-[#FF5A36]/20 bg-orange-50/20' 
+                    : 'border border-slate-200 bg-white';
+
+                const checkBadge = isSelected 
+                    ? `<div class="absolute top-1 right-1 bg-[#FF5A36] text-white w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-black shadow-md z-10"><i class="fa-solid fa-check"></i></div>` 
+                    : '';
 
                 container.innerHTML += `
                     <div class="local-mini-card relative ${cardOutline}" id="local-card-${item.id}">
@@ -1632,27 +1877,41 @@
                             <h3 class="local-title-compact !mb-0">${item.name}</h3>
                             <div class="local-price-compact !mb-0 !mt-0">Rs. ${item.price}</div>
                         </div>
+                        
                         <div class="selector-box-compact w-full text-center mt-1">
-                            <button class="btn-qty-mini !w-5 !h-5" onclick="updateQty(${item.id}, -1)">-</button>
+                            <button class="btn-qty-mini !w-5 !h-5" onclick="updateQty('${item.id}', -1)">-</button>
                             <span class="qty-val-mini !w-4 !text-[10px]" id="qty-local-${item.id}">${currentQty}</span>
-                            <button class="btn-qty-mini !w-5 !h-5" onclick="updateQty(${item.id}, 1)">+</button>
+                            <button class="btn-qty-mini !w-5 !h-5" onclick="updateQty('${item.id}', 1)">+</button>
                         </div>
                     </div>
                 `;
             });
-        };
+        }
 
-        window.renderDrinksMenu = function() {
+        // Render Cold Drinks inside Customer store
+        function renderDrinksMenu() {
             const container = document.getElementById('drinksMenuGridContainer');
             if (!container) return;
+
             container.innerHTML = '';
             const drinkItems = menuData.filter(x => x.category === 'drinks');
+
+            if(drinkItems.length === 0) {
+                container.innerHTML = `<div class="col-span-4 py-6 text-center text-xs text-slate-400 italic bg-white rounded-xl border border-slate-200">No drinks added yet.</div>`;
+                return;
+            }
 
             drinkItems.forEach(item => {
                 const currentQty = cartItems[item.id] || 0;
                 const isSelected = currentQty > 0;
-                const cardOutline = isSelected ? 'border-2 border-[#FF5A36] ring-2 ring-[#FF5A36]/20 bg-orange-50/20' : 'border border-slate-200 bg-white';
-                const checkBadge = isSelected ? `<div class="absolute top-1 right-1 bg-[#FF5A36] text-white w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-black shadow-md z-10"><i class="fa-solid fa-check"></i></div>` : '';
+
+                const cardOutline = isSelected 
+                    ? 'border-2 border-[#FF5A36] ring-2 ring-[#FF5A36]/20 bg-orange-50/20' 
+                    : 'border border-slate-200 bg-white';
+
+                const checkBadge = isSelected 
+                    ? `<div class="absolute top-1 right-1 bg-[#FF5A36] text-white w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-black shadow-md z-10"><i class="fa-solid fa-check"></i></div>` 
+                    : '';
 
                 container.innerHTML += `
                     <div class="local-mini-card relative ${cardOutline}" id="drink-card-${item.id}">
@@ -1662,24 +1921,225 @@
                             <h3 class="local-title-compact !mb-0">${item.name}</h3>
                             <div class="local-price-compact !mb-0 !mt-0">Rs. ${item.price}</div>
                         </div>
+                        
                         <div class="selector-box-compact w-full text-center mt-1">
-                            <button class="btn-qty-mini !w-5 !h-5" onclick="updateQty(${item.id}, -1)">-</button>
+                            <button class="btn-qty-mini !w-5 !h-5" onclick="updateQty('${item.id}', -1)">-</button>
                             <span class="qty-val-mini !w-4 !text-[10px]" id="qty-drink-${item.id}">${currentQty}</span>
-                            <button class="btn-qty-mini !w-5 !h-5" onclick="updateQty(${item.id}, 1)">+</button>
+                            <button class="btn-qty-mini !w-5 !h-5" onclick="updateQty('${item.id}', 1)">+</button>
                         </div>
                     </div>
                 `;
             });
-        };
+        }
 
-        window.toggleComments = function(postId) {
+        // Toggle Comments Expansion
+        function toggleComments(postId) {
             expandedComments[postId] = !expandedComments[postId];
             renderCustomerSocialFeeds();
-        };
+        }
 
-        window.renderCustomerSocialFeeds = function() {
+        // Toggle comment sort mode ('recent' or 'oldest')
+        function toggleCommentSort(postId) {
+            let current = commentSortModes[postId] || 'recent';
+            commentSortModes[postId] = current === 'recent' ? 'oldest' : 'recent';
+            renderCustomerSocialFeeds();
+        }
+
+        // Toggle visibility of nested replies for a specific comment key
+        function toggleNestedReplies(key) {
+            expandedReplies[key] = !expandedReplies[key];
+            renderCustomerSocialFeeds();
+        }
+
+        // Helper to count total comments including nested replies
+        function getTotalCommentsCount(post) {
+            let count = post.comments ? post.comments.length : 0;
+            if (post.comments) {
+                post.comments.forEach(c => {
+                    if (c.replies) {
+                        count += c.replies.length;
+                    }
+                });
+            }
+            return count;
+        }
+
+        // Helper function to update comments array structure on Firestore
+        function updatePostCommentsInFirestore(postId, commentsArray) {
+            db.collection('posts').doc(postId.toString()).update({
+                comments: commentsArray
+            }).catch(err => {
+                console.error("Error writing comment updates directly to database:", err);
+                showNotification('Error updating comment state', 'warning');
+            });
+        }
+
+        // Like toggle logic on comments with Firestore Write Sync
+        function likeComment(postId, commentIndex) {
+            const post = feedPosts.find(p => p.id == postId);
+            if (!post || !post.comments[commentIndex]) return;
+
+            let identifier = currentUser ? currentUser.phone : (guestSessionName || "guest_session");
+            const commentsCopy = JSON.parse(JSON.stringify(post.comments));
+            const comment = commentsCopy[commentIndex];
+            
+            if (!comment.likedUsers) comment.likedUsers = [];
+            if (!comment.dislikedUsers) comment.dislikedUsers = [];
+
+            if (comment.likedUsers.includes(identifier)) {
+                const idx = comment.likedUsers.indexOf(identifier);
+                comment.likedUsers.splice(idx, 1);
+                comment.likes = Math.max(0, (comment.likes || 1) - 1);
+                showNotification('Like removed from comment.', 'warning');
+            } else {
+                const disIdx = comment.dislikedUsers.indexOf(identifier);
+                if (disIdx !== -1) {
+                    comment.dislikedUsers.splice(disIdx, 1);
+                    comment.dislikes = Math.max(0, (comment.dislikes || 1) - 1);
+                }
+                comment.likedUsers.push(identifier);
+                comment.likes = (comment.likes || 0) + 1;
+                showNotification('Liked comment!');
+            }
+            updatePostCommentsInFirestore(postId, commentsCopy);
+        }
+
+        // Dislike toggle logic on comments with Firestore Write Sync
+        function dislikeComment(postId, commentIndex) {
+            const post = feedPosts.find(p => p.id == postId);
+            if (!post || !post.comments[commentIndex]) return;
+
+            let identifier = currentUser ? currentUser.phone : (guestSessionName || "guest_session");
+            const commentsCopy = JSON.parse(JSON.stringify(post.comments));
+            const comment = commentsCopy[commentIndex];
+            
+            if (!comment.likedUsers) comment.likedUsers = [];
+            if (!comment.dislikedUsers) comment.dislikedUsers = [];
+
+            if (comment.dislikedUsers.includes(identifier)) {
+                const idx = comment.dislikedUsers.indexOf(identifier);
+                comment.dislikedUsers.splice(idx, 1);
+                comment.dislikes = Math.max(0, (comment.dislikes || 1) - 1);
+                showNotification('Dislike removed from comment.', 'warning');
+            } else {
+                const lIdx = comment.likedUsers.indexOf(identifier);
+                if (lIdx !== -1) {
+                    comment.likedUsers.splice(lIdx, 1);
+                    comment.likes = Math.max(0, (comment.likes || 1) - 1);
+                }
+                comment.dislikedUsers.push(identifier);
+                comment.dislikes = (comment.dislikes || 0) + 1;
+                showNotification('Disliked comment.');
+            }
+            updatePostCommentsInFirestore(postId, commentsCopy);
+        }
+
+        // Like toggle logic on nested replies (sub-comments) with Firestore Write Sync
+        function likeReply(postId, commentIndex, replyIndex) {
+            const post = feedPosts.find(p => p.id == postId);
+            if (!post || !post.comments[commentIndex] || !post.comments[commentIndex].replies[replyIndex]) return;
+
+            let identifier = currentUser ? currentUser.phone : (guestSessionName || "guest_session");
+            const commentsCopy = JSON.parse(JSON.stringify(post.comments));
+            const reply = commentsCopy[commentIndex].replies[replyIndex];
+            
+            if (!reply.likedUsers) reply.likedUsers = [];
+            if (!reply.dislikedUsers) reply.dislikedUsers = [];
+
+            if (reply.likedUsers.includes(identifier)) {
+                const idx = reply.likedUsers.indexOf(identifier);
+                reply.likedUsers.splice(idx, 1);
+                reply.likes = Math.max(0, (reply.likes || 1) - 1);
+                showNotification('Like removed from reply.', 'warning');
+            } else {
+                const disIdx = reply.dislikedUsers.indexOf(identifier);
+                if (disIdx !== -1) {
+                    reply.dislikedUsers.splice(disIdx, 1);
+                    reply.dislikes = Math.max(0, (reply.dislikes || 1) - 1);
+                }
+                reply.likedUsers.push(identifier);
+                reply.likes = (reply.likes || 0) + 1;
+                showNotification('Liked reply!');
+            }
+            updatePostCommentsInFirestore(postId, commentsCopy);
+        }
+
+        // Dislike toggle logic on nested replies (sub-comments) with Firestore Write Sync
+        function dislikeReply(postId, commentIndex, replyIndex) {
+            const post = feedPosts.find(p => p.id == postId);
+            if (!post || !post.comments[commentIndex] || !post.comments[commentIndex].replies[replyIndex]) return;
+
+            let identifier = currentUser ? currentUser.phone : (guestSessionName || "guest_session");
+            const commentsCopy = JSON.parse(JSON.stringify(post.comments));
+            const reply = commentsCopy[commentIndex].replies[replyIndex];
+            
+            if (!reply.likedUsers) reply.likedUsers = [];
+            if (!reply.dislikedUsers) reply.dislikedUsers = [];
+
+            if (reply.dislikedUsers.includes(identifier)) {
+                const idx = reply.dislikedUsers.indexOf(identifier);
+                reply.dislikedUsers.splice(idx, 1);
+                reply.dislikes = Math.max(0, (reply.dislikes || 1) - 1);
+                showNotification('Dislike removed from reply.', 'warning');
+            } else {
+                const lIdx = reply.likedUsers.indexOf(identifier);
+                if (lIdx !== -1) {
+                    reply.likedUsers.splice(lIdx, 1);
+                    reply.likes = Math.max(0, (reply.likes || 1) - 1);
+                }
+                reply.dislikedUsers.push(identifier);
+                reply.dislikes = (reply.dislikes || 0) + 1;
+                showNotification('Disliked reply.');
+            }
+            updatePostCommentsInFirestore(postId, commentsCopy);
+        }
+
+        // Comment removal triggers updates on server Comments array
+        function deleteComment(postId, commentIndex) {
+            const post = feedPosts.find(p => p.id == postId);
+            if (post && post.comments[commentIndex]) {
+                const comment = post.comments[commentIndex];
+                let currentIdentifier = currentUser ? currentUser.name : guestSessionName;
+                
+                if (currentIdentifier && currentIdentifier === comment.commenter) {
+                    const commentsCopy = JSON.parse(JSON.stringify(post.comments));
+                    commentsCopy.splice(commentIndex, 1);
+                    
+                    db.collection('posts').doc(postId.toString()).update({
+                        comments: commentsCopy
+                    }).then(() => {
+                        showNotification('Your comment was deleted successfully!', 'warning');
+                    });
+                } else {
+                    showNotification('You can only delete your own comments.', 'warning');
+                }
+            }
+        }
+
+        function formatCommentTime(timestamp) {
+            if (!timestamp) return 'Just now';
+            const diffMs = Date.now() - timestamp;
+            const diffMins = Math.floor(diffMs / (1000 * 60));
+            const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+            const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+            if (diffMins < 1) return 'Just now';
+            if (diffMins < 60) return `${diffMins} minutes ago`;
+            if (diffHours < 24) return `${diffHours} hours ago`;
+            if (diffDays === 1) return '1 day ago';
+            return `${diffDays} days ago`;
+        }
+
+        // Highlights ONLY the mentioned user's name with @ in the reply text with distinct color
+        function formatReplyText(text) {
+            if (!text) return '';
+            return text.replace(/^(@[^:]+:)/, '<span class="text-[#FF5A36] font-extrabold">$1</span>');
+        }
+
+        function renderCustomerSocialFeeds() {
             const container = document.getElementById('feedPostsContainer');
             if (!container) return;
+
             container.innerHTML = '';
             
             if(feedPosts.length === 0) {
@@ -1695,75 +2155,204 @@
             feedPosts.forEach(post => {
                 const heartColor = post.isLiked ? 'text-rose-500 scale-125' : 'text-slate-400';
                 const heartIcon = post.isLiked ? 'fa-solid fa-heart' : 'fa-regular fa-heart';
+                
                 const isExpanded = !!expandedComments[post.id];
-                const visibleComments = isExpanded ? (post.comments || []) : (post.comments || []).slice(0, 2);
+                const sortMode = commentSortModes[post.id] || 'recent';
+                
+                let sortedComments = [...post.comments];
+                if (sortMode === 'recent') {
+                    sortedComments.reverse(); // Newest first
+                } else {
+                    sortedComments.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0)); // Oldest first
+                }
+
+                const visibleComments = isExpanded ? sortedComments : sortedComments.slice(0, 2);
+                const totalCommentsCount = getTotalCommentsCount(post);
 
                 let commentItemsHtml = '';
-                visibleComments.forEach(c => {
+                visibleComments.forEach((c) => {
+                    const actualIndex = post.comments.indexOf(c);
+                    
+                    let adminBadge = '';
+                    if (c.isAdmin) {
+                        adminBadge = `<span class="inline-flex items-center text-blue-500 ml-1 text-xs" title="Verified Admin"><i class="fa-solid fa-circle-check"></i></span>`;
+                    }
+
+                    let currentIdentifier = currentUser ? currentUser.name : guestSessionName;
+                    let canDelete = currentIdentifier && (currentIdentifier === c.commenter);
+                    let deleteBtnHtml = canDelete ? `<button onclick="deleteComment('${post.id}', ${actualIndex})" class="text-red-400 hover:text-red-600 ml-2" title="Delete comment"><i class="fa-solid fa-trash-can text-[10px]"></i></button>` : '';
+
+                    let likesCount = c.likes || 0;
+                    let dislikesCount = c.dislikes || 0;
+                    let timeAgo = formatCommentTime(c.timestamp);
+
+                    let replyKey = `${post.id}_${actualIndex}`;
+                    let isRepliesExpanded = !!expandedReplies[replyKey];
+                    let repliesHtml = '';
+
+                    if (c.replies && c.replies.length > 0) {
+                        let totalReplies = c.replies.length;
+                        let visibleReplies = isRepliesExpanded ? c.replies : [c.replies[0]]; // Show first reply by default, others hidden
+
+                        visibleReplies.forEach((rep, repIdx) => {
+                            let repAdminBadge = rep.isAdmin ? `<span class="inline-flex items-center text-blue-500 ml-1 text-xs" title="Verified Admin"><i class="fa-solid fa-circle-check"></i></span>` : '';
+                            let formattedReplyText = formatReplyText(rep.text);
+                            
+                            // Nested reply likes configuration
+                            let repLikes = rep.likes || 0;
+                            let repDislikes = rep.dislikes || 0;
+
+                            repliesHtml += `
+                                <div class="relative pl-6 mt-3">
+                                    <div class="absolute left-2 top-0 bottom-3 w-3 border-l-2 border-b-2 border-slate-300 rounded-bl-lg"></div>
+                                    <div class="flex items-start gap-2.5">
+                                        <div class="w-7 h-7 rounded-full bg-primary text-white flex items-center justify-center font-bold text-[10px] shrink-0 shadow-sm">
+                                            <i class="fa-solid fa-utensils"></i>
+                                        </div>
+                                        <div class="flex-1 space-y-1">
+                                            <div class="flex items-center justify-between text-xs">
+                                                <div class="flex items-center gap-1.5">
+                                                    <span class="font-extrabold text-slate-900">${rep.commenter}</span>
+                                                    ${repAdminBadge}
+                                                    <span class="text-slate-400 text-[10px]">Just now</span>
+                                                </div>
+                                            </div>
+                                            <p class="text-xs text-slate-700 leading-relaxed whitespace-pre-line">${formattedReplyText}</p>
+                                            
+                                            <!-- Sub-comment action toolbar with functional toggle likes -->
+                                            <div class="flex items-center gap-3.5 text-[10px] text-slate-500 pt-0.5">
+                                                <button onclick="likeReply('${post.id}', ${actualIndex}, ${repIdx})" class="flex items-center gap-1 hover:text-slate-800 transition-all">
+                                                    <i class="fa-regular fa-thumbs-up"></i> <span>${repLikes}</span>
+                                                </button>
+                                                <button onclick="dislikeReply('${post.id}', ${actualIndex}, ${repIdx})" class="flex items-center gap-1 hover:text-slate-800 transition-all">
+                                                    <i class="fa-regular fa-thumbs-down"></i> <span>${repDislikes}</span>
+                                                </button>
+                                                <button onclick="openUserReplyModal('${post.id}', ${actualIndex}, '${rep.commenter.replace(/'/g, "\\'")}')" class="font-bold hover:text-primary transition-all">Reply</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                        });
+
+                        if (totalReplies > 1) {
+                            let replyToggleText = isRepliesExpanded ? 'Hide replies' : `View ${totalReplies - 1} more replies`;
+                            repliesHtml += `
+                                <button onclick="toggleNestedReplies('${replyKey}')" class="text-[10px] font-extrabold text-[#FF5A36] hover:underline mt-2 ml-8 block">
+                                    <i class="fa-solid fa-reply mr-1"></i> ${replyToggleText}
+                                </button>
+                            `;
+                        } else {
+                            repliesHtml += `
+                                <button onclick="openUserReplyModal('${post.id}', ${actualIndex}, '${c.commenter.replace(/'/g, "\\'")}')" class="text-[10px] font-extrabold text-slate-500 hover:text-[#FF5A36] mt-1 ml-8 block">
+                                    <i class="fa-solid fa-reply mr-1"></i> Reply
+                                </button>
+                            `;
+                        }
+                    }
+
                     commentItemsHtml += `
-                        <div class="bg-slate-100 p-2 rounded-xl text-[11px] leading-relaxed">
-                            <span class="font-extrabold text-slate-900 block">${c.commenter}</span>
-                            <span class="text-slate-600 font-medium">${c.text}</span>
+                        <div class="space-y-3 pt-2 text-left">
+                            <div class="flex items-start gap-2.5">
+                                <div class="w-7 h-7 rounded-full bg-slate-300 text-slate-700 flex items-center justify-center font-bold text-[10px] shrink-0 uppercase">
+                                    ${c.commenter.charAt(0)}
+                                </div>
+                                <div class="flex-1 space-y-1">
+                                    <div class="flex items-center justify-between text-xs">
+                                        <div class="flex items-center gap-1.5">
+                                            <span class="font-extrabold text-slate-900">${c.commenter}</span>
+                                            ${adminBadge}
+                                            <span class="text-slate-400 text-[10px]">${timeAgo}</span>
+                                        </div>
+                                        ${deleteBtnHtml}
+                                    </div>
+                                    <p class="text-xs text-slate-700 leading-relaxed whitespace-pre-line">${formatReplyText(c.text)}</p>
+                                    <div class="flex items-center gap-4 text-xs text-slate-500 pt-0.5">
+                                        <button onclick="likeComment('${post.id}', ${actualIndex})" class="flex items-center gap-1 hover:text-slate-800 transition-all"><i class="fa-regular fa-thumbs-up"></i> <span>${likesCount}</span></button>
+                                        <button onclick="dislikeComment('${post.id}', ${actualIndex})" class="flex items-center gap-1 hover:text-slate-800 transition-all"><i class="fa-regular fa-thumbs-down"></i> <span>${dislikesCount}</span></button>
+                                        <button onclick="openUserReplyModal('${post.id}', ${actualIndex}, '${c.commenter.replace(/'/g, "\\'")}')" class="font-bold hover:text-primary transition-all">Reply</button>
+                                        <button class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-ellipsis"></i></button>
+                                    </div>
+                                </div>
+                            </div>
+                            ${repliesHtml}
                         </div>
                     `;
                 });
 
                 let toggleBtnHtml = '';
-                if ((post.comments || []).length > 2) {
+                if (post.comments.length > 2) {
                     const btnText = isExpanded ? 'Show Less Comments' : `Show More Comments (${post.comments.length - 2})`;
-                    toggleBtnHtml = `<button onclick="toggleComments(${post.id})" class="text-[10px] font-extrabold text-[#FF5A36] hover:underline mt-1 block">${btnText}</button>`;
+                    toggleBtnHtml = `
+                        <button onclick="toggleComments('${post.id}')" class="text-[10px] font-extrabold text-[#FF5A36] hover:underline mt-2 block">
+                            ${btnText}
+                        </button>
+                    `;
                 }
 
                 let commentBoxHtml = '';
                 if (currentUser) {
                     commentBoxHtml = `
-                        <div class="pt-2">
+                        <div class="pt-3">
                             <div class="text-[9px] text-slate-400 font-bold mb-1 flex items-center gap-1">
                                 <i class="fa-solid fa-user-check text-emerald-500"></i> Commenting as <span class="text-slate-800 font-extrabold">${currentUser.name}</span>
                             </div>
-                            <form onsubmit="event.preventDefault(); submitComment(${post.id});" class="flex gap-2">
+                            <form onsubmit="event.preventDefault(); submitComment('${post.id}');" class="flex gap-2">
                                 <input type="text" id="comment-input-${post.id}" required placeholder="Add a sweet foodie comment..." class="flex-1 px-3 py-2 bg-white border border-slate-200 rounded-lg outline-none text-[11px] font-bold text-slate-800 placeholder-slate-400 focus:border-[#FF5A36]">
-                                <button type="submit" class="bg-[#FF5A36] hover:bg-[#E04825] text-white px-3 rounded-lg text-xs font-black transition-all shadow-sm">Send</button>
+                                <button type="submit" class="bg-[#FF5A36] hover:bg-[#E04825] text-white px-3 rounded-lg text-xs font-black transition-all shadow-sm">
+                                    Send
+                                </button>
                             </form>
                         </div>
                     `;
                 } else if (guestSessionName) {
                     commentBoxHtml = `
-                        <div class="pt-2">
+                        <div class="pt-3">
                             <div class="text-[9px] text-slate-400 font-bold mb-1 flex items-center justify-between">
                                 <span><i class="fa-solid fa-user-pen text-[#FF5A36]"></i> Commenting as Guest: <span class="text-slate-800 font-extrabold">${guestSessionName}</span></span>
                                 <button type="button" onclick="resetGuestSessionName()" class="text-[9px] text-[#FF5A36] hover:underline">Change Name</button>
                             </div>
-                            <form onsubmit="event.preventDefault(); submitComment(${post.id});" class="flex gap-2">
+                            <form onsubmit="event.preventDefault(); submitComment('${post.id}');" class="flex gap-2">
                                 <input type="text" id="comment-input-${post.id}" required placeholder="Write your comment..." class="flex-1 px-3 py-2 bg-white border border-slate-200 rounded-lg outline-none text-[11px] font-bold text-slate-800 placeholder-slate-400 focus:border-[#FF5A36]">
-                                <button type="submit" class="bg-[#FF5A36] hover:bg-[#E04825] text-white px-3 rounded-lg text-xs font-black transition-all shadow-sm">Post</button>
+                                <button type="submit" class="bg-[#FF5A36] hover:bg-[#E04825] text-white px-3 rounded-lg text-xs font-black transition-all shadow-sm">
+                                    Post
+                                </button>
                             </form>
                         </div>
                     `;
                 } else {
                     commentBoxHtml = `
-                        <div class="bg-gradient-to-r from-orange-50/70 to-amber-50/70 p-3 rounded-2xl border border-orange-200/60 space-y-2 mt-2">
+                        <div class="bg-gradient-to-r from-orange-50/70 to-amber-50/70 p-3 rounded-2xl border border-orange-200/60 space-y-2 mt-3">
                             <div class="flex items-center justify-between text-[10px] font-black text-slate-700">
-                                <span class="flex items-center gap-1 text-[#FF5A36]"><i class="fa-solid fa-user-pen"></i> Guest Comment</span>
+                                <span class="flex items-center gap-1 text-[#FF5A36]">
+                                    <i class="fa-solid fa-user-pen"></i> Guest Comment
+                                </span>
                                 <span class="text-[9px] text-slate-400 font-bold">No registration needed</span>
                             </div>
+                            
                             <div class="flex gap-2">
                                 <input type="text" readonly onclick="openGuestNameModal()" placeholder="Click to enter your name & comment..." class="flex-1 px-3 py-2 bg-white border border-slate-200 rounded-lg outline-none text-[11px] font-bold text-slate-700 cursor-pointer hover:border-[#FF5A36] transition-all">
-                                <button type="button" onclick="openGuestNameModal()" class="bg-[#FF5A36] hover:bg-[#E04825] text-white px-3 py-2 rounded-lg text-xs font-black transition-all shadow-sm shrink-0 flex items-center gap-1"><i class="fa-solid fa-paper-plane text-[10px]"></i> Comment</button>
+                                <button type="button" onclick="openGuestNameModal()" class="bg-[#FF5A36] hover:bg-[#E04825] text-white px-3 py-2 rounded-lg text-xs font-black transition-all shadow-sm shrink-0 flex items-center gap-1">
+                                    <i class="fa-solid fa-paper-plane text-[10px]"></i> Comment
+                                </button>
                             </div>
                         </div>
                     `;
                 }
 
+                let currentSortLabel = sortMode === 'recent' ? 'Most recent' : 'Oldest first';
+
                 container.innerHTML += `
                     <div class="bg-white rounded-[24px] border border-slate-200 overflow-hidden shadow-sm hover:shadow-md transition-all">
                         <div class="p-4 flex items-center justify-between">
                             <div class="flex items-center gap-3">
-                                <img src="https://images.unsplash.com/photo-1550547660-d9450f859349?q=80&w=200&auto=format&fit=crop" class="w-10 h-10 rounded-full border-2 border-orange-500 object-cover" onerror="this.src='https://placehold.co/100x100/FF5A36/ffffff?text=ACP'">
+                                <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-orange-500 to-amber-500 flex items-center justify-center text-white shadow-sm font-bold">
+                                    <i class="fa-solid fa-utensils"></i>
+                                </div>
                                 <div>
                                     <div class="flex items-center gap-1">
-                                        <h4 class="text-xs font-black text-slate-900">Alqadri Chaska Point</h4>
-                                        <i class="fa-solid fa-circle-check text-[11px] text-[#FF5A36]" title="Verified Official Outlet"></i>
+                                        <h4 class="text-xs font-black text-slate-900">${post.authorName || 'Alqadri Chaska Point'}</h4>
+                                        <i class="fa-solid fa-circle-check text-[11px] text-blue-500" title="Verified Official Outlet"></i>
                                     </div>
                                     <p class="text-[9px] text-slate-400 font-bold">@alqadri.chaska &bull; Gujranwala</p>
                                 </div>
@@ -1777,39 +2366,132 @@
 
                         <div class="p-4 space-y-2.5">
                             <h3 class="text-xs font-black text-slate-900 line-clamp-2">${post.title}</h3>
-                            <p class="text-xs font-medium text-slate-600 leading-relaxed">${post.desc}</p>
+                            <p class="text-xs font-medium text-slate-600 leading-relaxed whitespace-pre-line">${post.desc}</p>
                         </div>
 
                         <div class="px-4 py-3 border-t border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
-                            <button onclick="likePost(${post.id})" class="flex items-center gap-1.5 text-xs font-extrabold text-slate-600 hover:text-rose-500 transition-all">
+                            <button onclick="likePost('${post.id}')" class="flex items-center gap-1.5 text-xs font-extrabold text-slate-600 hover:text-rose-500 transition-all">
                                 <i class="${heartIcon} ${heartColor} text-sm"></i>
-                                <span id="post-likes-count-${post.id}">${post.likes || 0}</span>
+                                <span id="post-likes-count-${post.id}">${post.likes}</span>
                             </button>
-                            <button onclick="focusCommentInput(${post.id})" class="flex items-center gap-1.5 text-xs font-extrabold text-slate-600 hover:text-sky-500 transition-all">
+                            <button onclick="focusCommentInput('${post.id}')" class="flex items-center gap-1.5 text-xs font-extrabold text-slate-600 hover:text-sky-500 transition-all">
                                 <i class="fa-regular fa-comment text-sm"></i>
-                                <span>${(post.comments || []).length}</span>
+                                <span>${totalCommentsCount}</span>
                             </button>
+                            
                             <button onclick="downloadPostMedia('${post.image}', '${post.title.replace(/'/g, "\\'")}')" class="flex items-center gap-1.5 text-xs font-extrabold text-slate-600 hover:text-[#FF5A36] transition-all" title="Download Image">
                                 <i class="fa-solid fa-download text-sm"></i>
                                 <span>Download</span>
                             </button>
-                            <button onclick="sharePost(${post.id}, '${post.title.replace(/'/g, "\\'")}')" class="flex items-center gap-1.5 text-xs font-extrabold text-slate-600 hover:text-emerald-500 transition-all">
+
+                            <!-- Functional native / hybrid share triggers here -->
+                            <button onclick="sharePost('${post.id}', '${post.title.replace(/'/g, "\\'")}', '${post.desc.replace(/\r?\n/g, " ").replace(/'/g, "\\'")}')" class="flex items-center gap-1.5 text-xs font-extrabold text-slate-600 hover:text-emerald-500 transition-all">
                                 <i class="fa-solid fa-share text-sm"></i>
                                 <span>Share</span>
                             </button>
                         </div>
 
-                        <div class="p-4 bg-slate-50/50 space-y-2">
-                            <div class="space-y-2" id="comments-list-${post.id}">${commentItemsHtml}</div>
+                        <div class="p-4 bg-slate-50/50 space-y-3">
+                            <div class="flex items-center justify-between border-b border-slate-200 pb-2">
+                                <h5 class="text-xs font-extrabold text-slate-900 flex items-center gap-1.5">
+                                    <span>Comments</span> 
+                                    <span class="bg-slate-200 text-slate-700 px-1.5 py-0.5 rounded-full text-[10px] font-bold">${totalCommentsCount}</span>
+                                </h5>
+                                <div onclick="toggleCommentSort('${post.id}')" class="text-[10px] text-slate-500 font-bold flex items-center gap-1 cursor-pointer hover:text-slate-800 transition-all" title="Click to switch sort order">
+                                    <span>${currentSortLabel}</span> <i class="fa-solid fa-chevron-down text-[8px]"></i>
+                                </div>
+                            </div>
+
+                            <div class="space-y-3" id="comments-list-${post.id}">
+                                ${commentItemsHtml}
+                            </div>
+
                             ${toggleBtnHtml}
+                            
                             ${commentBoxHtml}
                         </div>
                     </div>
                 `;
             });
-        };
+        }
 
-        window.downloadPostMedia = async function(imageUrl, title) {
+        // Direct Reply to Comment from Write Your Comment box
+        function openUserReplyModal(postId, commentIndex, commenterName) {
+            const post = feedPosts.find(p => p.id == postId);
+            if (!post || !post.comments[commentIndex]) return;
+
+            let commentInput = document.getElementById(`comment-input-${postId}`);
+            if (commentInput) {
+                commentInput.value = `@${commenterName}: `;
+                commentInput.focus();
+                commentInput.dataset.replyToIndex = commentIndex;
+                showNotification(`Replying to ${commenterName}. Type and send.`);
+            } else {
+                openGuestNameModal();
+            }
+        }
+
+        // Functional Share Dialog supporting both desktop and native mobile environments
+        function sharePost(id, title, desc) {
+            sharedPostText = `${title}\n\n${desc}\n\nCheck out Alqadri Chaska Point: ${window.location.href}`;
+            
+            // Open native device share sheet if supported
+            if (navigator.share) {
+                navigator.share({
+                    title: title,
+                    text: desc,
+                    url: window.location.href
+                }).then(() => {
+                    showNotification('Post shared successfully!');
+                }).catch((err) => {
+                    if (err.name !== 'AbortError') {
+                        openCustomShareModal(title, desc);
+                    }
+                });
+            } else {
+                // platform sliding fallback for browsers/desktops
+                openCustomShareModal(title, desc);
+            }
+        }
+
+        function openCustomShareModal(title, desc) {
+            let shareText = `${title}\n\n${desc}`;
+            let encodedText = encodeURIComponent(shareText);
+            let currentUrl = encodeURIComponent(window.location.href);
+
+            document.getElementById('shareWA').href = `https://api.whatsapp.com/send?text=${encodedText}%20${currentUrl}`;
+            document.getElementById('shareFB').href = `https://www.facebook.com/sharer/sharer.php?u=${currentUrl}&quote=${encodedText}`;
+            document.getElementById('shareTW').href = `https://twitter.com/intent/tweet?text=${encodedText}&url=${currentUrl}`;
+
+            document.getElementById('shareModal').classList.remove('hidden');
+        }
+
+        // Close Custom Sharing Popup Overlay
+        function closeShareModal() {
+            document.getElementById('shareModal').classList.add('hidden');
+        }
+
+        // Fallback Clipboard copy link configuration
+        function copyShareLink() {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(sharedPostText).then(() => {
+                    showNotification('Post details copied to clipboard!');
+                    closeShareModal();
+                });
+            } else {
+                let textarea = document.createElement('textarea');
+                textarea.value = sharedPostText;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                textarea.remove();
+                showNotification('Post details copied to clipboard!');
+                closeShareModal();
+            }
+        }
+
+        // Download Post Media Function
+        async function downloadPostMedia(imageUrl, title) {
             try {
                 showNotification('Downloading post image...');
                 const response = await fetch(imageUrl);
@@ -1834,20 +2516,25 @@
                 link.remove();
                 showNotification('Opened image in new tab for saving.');
             }
-        };
+        }
 
-        window.likePost = function(id) {
-            const post = feedPosts.find(p => p.id === id);
+        function likePost(id) {
+            const post = feedPosts.find(p => p.id == id);
             if (!post) return;
-            post.isLiked = !post.isLiked;
-            post.likes = (post.likes || 0) + (post.isLiked ? 1 : -1);
-            if (post.isLiked) showNotification('Liked this post! ♥');
-            
-            // Save to Firestore
-            setDoc(doc(db, "posts", String(post.id)), post, { merge: true });
-        };
 
-        window.focusCommentInput = function(id) {
+            let updatedIsLiked = !post.isLiked;
+            let updatedLikes = updatedIsLiked ? (post.likes + 1) : Math.max(0, post.likes - 1);
+
+            db.collection('posts').doc(id.toString()).update({
+                isLiked: updatedIsLiked,
+                likes: updatedLikes
+            })
+            .then(() => {
+                showNotification(updatedIsLiked ? 'Liked this post! ♥' : 'Like removed from post.');
+            });
+        }
+
+        function focusCommentInput(id) {
             const input = document.getElementById(`comment-input-${id}`);
             if (input) {
                 input.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -1855,44 +2542,85 @@
             } else {
                 openGuestNameModal();
             }
-        };
+        }
 
-        window.sharePost = function(id, text) {
-            document.execCommand('copy');
-            showNotification('Deal copied to clipboard! Share on social media.');
-        };
-
-        window.submitComment = function(id) {
-            const post = feedPosts.find(p => p.id === id);
+        function submitComment(id) {
+            const post = feedPosts.find(p => p.id == id);
             const input = document.getElementById(`comment-input-${id}`);
+            
             if (!post || !input) return;
 
             const commentText = input.value.trim();
             if (!commentText) return;
 
-            let commenterName = currentUser ? currentUser.name : (guestSessionName || "");
-            if (!commenterName) {
+            let commenterName = "";
+            if (currentUser) {
+                commenterName = currentUser.name;
+            } else if (guestSessionName) {
+                commenterName = guestSessionName;
+            } else {
                 openGuestNameModal();
                 return;
             }
 
-            if (!post.comments) post.comments = [];
-            post.comments.push({ commenter: commenterName, text: commentText });
-            input.value = '';
+            // Create a deep copy of the comments array to modify and push back to server
+            let updatedComments = JSON.parse(JSON.stringify(post.comments));
 
-            // Update Firestore
-            setDoc(doc(db, "posts", String(post.id)), post, { merge: true });
-        };
+            const replyToIndex = input.dataset.replyToIndex;
+            if (replyToIndex !== undefined && replyToIndex !== "") {
+                const idx = parseInt(replyToIndex);
+                if (updatedComments[idx]) {
+                    if (!updatedComments[idx].replies) updatedComments[idx].replies = [];
+                    updatedComments[idx].replies.push({
+                        commenter: commenterName,
+                        text: commentText,
+                        isAdmin: false,
+                        likes: 0,
+                        dislikes: 0,
+                        likedUsers: [],
+                        dislikedUsers: []
+                    });
+                }
+                delete input.dataset.replyToIndex;
+            } else {
+                updatedComments.push({ 
+                    commenter: commenterName, 
+                    text: commentText, 
+                    isAdmin: false, 
+                    timestamp: Date.now(), 
+                    likes: 0, 
+                    dislikes: 0, 
+                    likedUsers: [],
+                    dislikedUsers: [],
+                    replies: [] 
+                });
+            }
 
-        window.showNotification = function(message, type = 'success') {
+            db.collection('posts').doc(id.toString()).update({
+                comments: updatedComments
+            })
+            .then(() => {
+                input.value = '';
+                showNotification('Comment posted successfully!');
+            })
+            .catch(err => {
+                showNotification('Comment failed to post', 'warning');
+            });
+        }
+
+        function showNotification(message, type = 'success') {
             const container = document.getElementById('toastContainer');
             if (!container) return;
+
             const icon = type === 'success' ? 'fa-circle-check text-emerald-500' : 'fa-triangle-exclamation text-amber-500';
             const accent = type === 'success' ? 'border-emerald-100 bg-white' : 'border-amber-100 bg-white';
             
             const toast = document.createElement('div');
             toast.className = `flex items-center gap-3 p-3 rounded-xl border ${accent} shadow-md transition-all transform translate-x-12 opacity-0 pointer-events-auto w-full max-w-xs`;
-            toast.innerHTML = `<i class="fa-solid ${icon} text-base shrink-0"></i><div class="text-[10px] font-bold text-slate-800">${message}</div>`;
+            toast.innerHTML = `
+                <i class="fa-solid ${icon} text-base shrink-0"></i>
+                <div class="text-[10px] font-bold text-slate-800">${message}</div>
+            `;
             container.appendChild(toast);
 
             setTimeout(() => {
@@ -1904,29 +2632,36 @@
                 toast.classList.add('translate-x-12', 'opacity-0');
                 setTimeout(() => { toast.remove(); }, 300);
             }, 2500);
-        };
+        }
 
-        window.openNotificationsModal = function() {
+        function openNotificationsModal() {
             document.getElementById('notificationsModal').classList.remove('hidden');
             document.getElementById('navBellBadge').classList.add('hidden');
-        };
+        }
 
-        window.closeNotificationsModal = function() {
+        function closeNotificationsModal() {
             document.getElementById('notificationsModal').classList.add('hidden');
-        };
+        }
 
-        window.addOrderNotification = function(title, message, isApproval = false) {
+        function addOrderNotification(title, message, isApproval = false) {
             const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
             notificationsHistory.unshift({ title, message, time: timeStr, isApproval });
+            
             document.getElementById('navBellBadge').classList.remove('hidden');
             renderNotificationsList();
-        };
+        }
 
-        window.renderNotificationsList = function() {
+        function renderNotificationsList() {
             const list = document.getElementById('notificationsList');
             if (!list) return;
+
             if (notificationsHistory.length === 0) {
-                list.innerHTML = `<div class="text-center py-6 text-slate-400 text-xs"><i class="fa-regular fa-bell-slash text-2xl text-slate-300 block mb-1"></i>No order alerts yet.</div>`;
+                list.innerHTML = `
+                    <div class="text-center py-6 text-slate-400 text-xs">
+                        <i class="fa-regular fa-bell-slash text-2xl text-slate-300 block mb-1"></i>
+                        No order alerts yet.
+                    </div>
+                `;
                 return;
             }
 
@@ -1938,16 +2673,20 @@
                 list.innerHTML += `
                     <div class="bg-slate-50 border border-slate-100 p-2.5 rounded-xl text-xs space-y-1">
                         <div class="flex items-center justify-between">
-                            <span class="font-extrabold text-slate-900 flex items-center gap-1.5"><i class="${iconClass} ${iconBg} p-1 rounded-md text-[10px]"></i>${item.title}</span>
+                            <span class="font-extrabold text-slate-900 flex items-center gap-1.5">
+                                <i class="${iconClass} ${iconBg} p-1 rounded-md text-[10px]"></i>
+                                ${item.title}
+                            </span>
                             <span class="text-[9px] text-slate-400 font-medium">${item.time}</span>
                         </div>
                         <p class="text-[10px] text-slate-600 font-medium leading-relaxed">${item.message}</p>
                     </div>
                 `;
             });
-        };
+        }
 
-        window.openCheckoutConfirmModal = function() {
+        // Open Checkout Order Confirmation Modal
+        function openCheckoutConfirmModal() {
             const keys = Object.keys(cartItems);
             if (keys.length === 0) {
                 showNotification('Your basket is empty!', 'warning');
@@ -1956,6 +2695,7 @@
 
             const itemsContainer = document.getElementById('checkoutModalItemsList');
             const grandTotalEl = document.getElementById('checkoutModalGrandTotal');
+            
             if (itemsContainer) itemsContainer.innerHTML = '';
             let totalAmount = 0;
 
@@ -1965,6 +2705,7 @@
                     const qty = cartItems[id];
                     const total = item.price * qty;
                     totalAmount += total;
+
                     itemsContainer.innerHTML += `
                         <div class="flex justify-between items-center text-xs py-1 border-b border-slate-100 last:border-0">
                             <span class="font-extrabold text-slate-800">${item.name} <span class="text-slate-400 font-normal">x${qty}</span></span>
@@ -1976,20 +2717,26 @@
 
             if (grandTotalEl) grandTotalEl.innerText = 'Rs. ' + totalAmount;
 
+            // Pre-fill user details if logged in
+            const nameInput = document.getElementById('checkoutName');
+            const phoneInput = document.getElementById('checkoutPhone');
+            const locationInput = document.getElementById('checkoutLocation');
+
             if (currentUser) {
-                if (document.getElementById('checkoutName')) document.getElementById('checkoutName').value = currentUser.name;
-                if (document.getElementById('checkoutPhone')) document.getElementById('checkoutPhone').value = currentUser.phone;
-                if (document.getElementById('checkoutLocation')) document.getElementById('checkoutLocation').value = currentUser.location;
+                if (nameInput) nameInput.value = currentUser.name;
+                if (phoneInput) phoneInput.value = currentUser.phone;
+                if (locationInput) locationInput.value = currentUser.location;
             }
 
             document.getElementById('checkoutConfirmModal').classList.remove('hidden');
-        };
+        }
 
-        window.closeCheckoutConfirmModal = function() {
+        function closeCheckoutConfirmModal() {
             document.getElementById('checkoutConfirmModal').classList.add('hidden');
-        };
+        }
 
-        window.finalizeOrderAndSendWhatsApp = async function() {
+        // Finalize Order: Add to Admin Panel & Redirect to WhatsApp with Firestore Sync
+        function finalizeOrderAndSendWhatsApp() {
             const keys = Object.keys(cartItems);
             if (keys.length === 0) return;
 
@@ -2016,65 +2763,90 @@
                 }
             });
 
-            const newOrderObj = {
+            const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            const dateStr = new Date().toLocaleDateString();
+
+            // Structure Order Data payload
+            let orderPayload = {
                 id: orderId,
                 customerName: name,
                 phone: phone,
                 location: location,
-                date: new Date().toLocaleDateString(),
-                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                date: dateStr,
+                time: timeStr,
                 items: itemsDetail,
                 total: grandTotal,
-                status: 'Pending'
+                status: 'Pending',
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
             };
 
-            // Save to Firebase Firestore Collection
-            await addDoc(collection(db, "orders"), newOrderObj);
+            // Write checkout configuration straight to database
+            db.collection('orders').add(orderPayload)
+              .then(() => {
+                  let waMsg = `*🛒 NEW ORDER - ALQADRI CHASKA POINT*\n`;
+                  waMsg += `*Order ID:* ${orderId}\n`;
+                  waMsg += `*Customer:* ${name}\n`;
+                  waMsg += `*Phone:* ${phone}\n`;
+                  waMsg += `*Location:* ${location}\n\n`;
+                  waMsg += `*Items Ordered:*\n`;
+                  itemsDetail.forEach(it => {
+                      waMsg += `• ${it.name} x${it.qty} = Rs. ${it.total}\n`;
+                  });
+                  waMsg += `\n*Grand Total:* Rs. ${grandTotal}\n`;
+                  waMsg += `Thank you! Please prepare my order.`;
 
-            let waMsg = `*🛒 NEW ORDER - ALQADRI CHASKA POINT*\n*Order ID:* ${orderId}\n*Customer:* ${name}\n*Phone:* ${phone}\n*Location:* ${location}\n\n*Items Ordered:*\n`;
-            itemsDetail.forEach(it => { waMsg += `• ${it.name} x${it.qty} = Rs. ${it.total}\n`; });
-            waMsg += `\n*Grand Total:* Rs. ${grandTotal}\nThank you! Please prepare my order.`;
+                  const whatsappUrl = `https://wa.me/923102434222?text=${encodeURIComponent(waMsg)}`;
 
-            const whatsappUrl = `https://wa.me/923102434222?text=${encodeURIComponent(waMsg)}`;
+                  closeCheckoutConfirmModal();
+                  showNotification(`Order ${orderId} submitted! Opening WhatsApp...`);
+                  addOrderNotification(`Order Placed (${orderId})`, `Order sent to WhatsApp & kitchen for approval.`);
 
-            closeCheckoutConfirmModal();
-            showNotification(`Order ${orderId} submitted! Opening WhatsApp...`);
-            addOrderNotification(`Order Placed (${orderId})`, `Order sent to WhatsApp & kitchen for approval.`);
+                  // Clear Cart
+                  cartItems = {};
+                  renderCustomerMenu();
+                  renderLocalMenu();
+                  renderDrinksMenu();
+                  renderCartSummary();
 
-            cartItems = {};
-            renderCustomerMenu();
-            renderLocalMenu();
-            renderDrinksMenu();
-            renderCartSummary();
+                  // Open WhatsApp automatically
+                  window.open(whatsappUrl, '_blank');
+              })
+              .catch(err => {
+                  console.error("Order submission failure: ", err);
+                  showNotification('Order checkouts currently down. Please contact support.', 'warning');
+              });
+        }
 
-            window.open(whatsappUrl, '_blank');
-        };
-
-        window.approveAdminOrder = async function(index) {
-            if (ordersList[index]) {
-                const ord = ordersList[index];
-                ord.status = 'Approved';
-                if (ord.firebaseDocId) {
-                    await updateDoc(doc(db, "orders", ord.firebaseDocId), { status: 'Approved' });
-                }
-                showNotification(`Order ${ord.id} approved!`);
-                addOrderNotification(`Order Approved (${ord.id})`, `Kitchen approved order ${ord.id}! Fresh food preparation started.`, true);
+        // Admin Approval Action Function with Database Sync
+        function approveAdminOrder(index) {
+            let ord = ordersList[index];
+            if (ord && ord.firestoreId) {
+                db.collection('orders').doc(ord.firestoreId).update({
+                    status: 'Approved'
+                }).then(() => {
+                    showNotification(`Order ${ord.id} approved!`);
+                    addOrderNotification(`Order Approved (${ord.id})`, `Kitchen approved order ${ord.id}! Fresh food preparation started.`, true);
+                }).catch(err => console.error("Error approving order:", err));
             }
-        };
+        }
 
-        window.updateQty = function(id, change) {
+        function updateQty(id, change) {
             const currentQty = cartItems[id] || 0;
             const newQty = Math.max(0, currentQty + change);
-            if (newQty === 0) delete cartItems[id];
-            else cartItems[id] = newQty;
+            
+            if (newQty === 0) {
+                delete cartItems[id];
+            } else {
+                cartItems[id] = newQty;
+            }
 
             renderCustomerMenu();
             renderLocalMenu();
             renderDrinksMenu();
             renderCartSummary();
-        };
+        }
 
-        window.renderCartSummary = function() {
+        function renderCartSummary() {
             const emptyState = document.getElementById('emptyCart');
             const activeState = document.getElementById('activeCart');
             const cartTableBody = document.getElementById('cartTableRows');
@@ -2083,12 +2855,16 @@
             const floatingCartTotal = document.getElementById('floatingCartTotal');
             
             const keys = Object.keys(cartItems);
+            
             let totalItemsCount = 0;
-            keys.forEach(k => { totalItemsCount += cartItems[k]; });
+            keys.forEach(k => {
+                totalItemsCount += cartItems[k];
+            });
             
             if (keys.length === 0) {
                 if (emptyState) emptyState.style.display = 'block';
                 if (activeState) activeState.style.display = 'none';
+                
                 if (floatingCartBar) {
                     floatingCartBar.classList.add('translate-y-24', 'opacity-0', 'pointer-events-none');
                     floatingCartBar.classList.remove('translate-y-0', 'opacity-100', 'pointer-events-auto');
@@ -2101,9 +2877,11 @@
             if (cartTableBody) cartTableBody.innerHTML = '';
 
             let grandTotal = 0;
+
             keys.forEach(id => {
                 const item = menuData.find(x => x.id == id);
                 if (!item) return;
+
                 const qty = cartItems[id];
                 const total = item.price * qty;
                 grandTotal += total;
@@ -2113,36 +2891,40 @@
                         <tr>
                             <td class="font-bold py-2 text-slate-800">${item.name}</td>
                             <td class="text-center font-extrabold py-2">${qty}</td>
-                            <td class="text-right font-black py-2">Rs. ${total}</td>
+                            <td class="text-right font-black">Rs. ${total}</td>
                         </tr>
                     `;
                 }
             });
 
-            if (document.getElementById('txtSubtotal')) document.getElementById('txtSubtotal').innerText = 'Rs. ' + grandTotal;
-            if (document.getElementById('txtGrandTotal')) document.getElementById('txtGrandTotal').innerText = 'Rs. ' + grandTotal;
+            const txtSubtotal = document.getElementById('txtSubtotal');
+            const txtGrandTotal = document.getElementById('txtGrandTotal');
+            if (txtSubtotal) txtSubtotal.innerText = 'Rs. ' + grandTotal;
+            if (txtGrandTotal) txtGrandTotal.innerText = 'Rs. ' + grandTotal;
 
             if (floatingCartBar) {
                 if (floatingCartCount) floatingCartCount.innerText = totalItemsCount;
                 if (floatingCartTotal) floatingCartTotal.innerText = 'Rs. ' + grandTotal;
+                
                 const viewStore = document.getElementById('view-store');
                 if (viewStore && !viewStore.classList.contains('hidden')) {
                     floatingCartBar.classList.remove('translate-y-24', 'opacity-0', 'pointer-events-none');
                     floatingCartBar.classList.add('translate-y-0', 'opacity-100', 'pointer-events-auto');
                 }
             }
-        };
+        }
 
-        window.clearCart = function() {
+        function clearCart() {
             cartItems = {};
             renderCustomerMenu();
             renderLocalMenu();
             renderDrinksMenu();
             renderCartSummary();
             showNotification('Basket cleared.', 'warning');
-        };
+        }
 
-        window.switchAuthMode = function(mode) {
+        // Account Auth Switcher (Sign In vs Register)
+        function switchAuthMode(mode) {
             const btnSignIn = document.getElementById('btnAuthTabSignIn');
             const btnRegister = document.getElementById('btnAuthTabRegister');
             const viewSignIn = document.getElementById('userSignInView');
@@ -2162,9 +2944,9 @@
                 btnSignIn.className = inactiveTabStyle;
                 btnRegister.className = activeTabStyle;
             }
-        };
+        }
 
-        window.openUserModal = function() {
+        function openUserModal() {
             const modal = document.getElementById('userAuthModal');
             const authContainer = document.getElementById('userAuthContainer');
             const profileView = document.getElementById('userProfileView');
@@ -2172,6 +2954,7 @@
             if (currentUser) {
                 authContainer.classList.add('hidden');
                 profileView.classList.remove('hidden');
+
                 document.getElementById('profileName').innerText = currentUser.name;
                 document.getElementById('profilePhone').innerText = currentUser.phone;
                 document.getElementById('profileLocation').innerText = currentUser.location;
@@ -2182,21 +2965,23 @@
             }
 
             modal.classList.remove('hidden');
-        };
+        }
 
-        window.closeUserModal = function() {
+        function closeUserModal() {
             document.getElementById('userAuthModal').classList.add('hidden');
-        };
+        }
 
-        window.signInUser = function() {
+        // Sign In Existing User with permanent local storage session until manual sign out
+        function signInUser() {
             const phone = document.getElementById('signInPhone').value.trim();
             if (!phone) return;
 
             const foundUser = registeredUsers.find(u => u.phone === phone);
             if (foundUser) {
                 currentUser = foundUser;
+                localStorage.setItem('acp_current_user', JSON.stringify(currentUser));
                 updateUserAccountDisplay();
-                showNotification(`Welcome back, ${foundUser.name}!`);
+                showNotification(`Welcome back, ${currentUser.name}!`);
                 closeUserModal();
                 document.getElementById('signInPhone').value = '';
                 renderCustomerSocialFeeds();
@@ -2205,9 +2990,10 @@
                 switchAuthMode('register');
                 document.getElementById('regPhone').value = phone;
             }
-        };
+        }
 
-        window.registerUser = async function() {
+        // Register First-Time User with permanent local storage session synced with Database
+        function registerUser() {
             const name = document.getElementById('regName').value.trim();
             const phone = document.getElementById('regPhone').value.trim();
             const loc = document.getElementById('regLocation').value.trim();
@@ -2219,49 +3005,59 @@
             }
 
             const newUser = { name, phone, location: loc, email };
-            
-            // Save User to Firebase
-            await addDoc(collection(db, "users"), newUser);
-            currentUser = newUser; 
 
-            updateUserAccountDisplay();
-            showNotification(`Welcome, ${name}! Account registered.`);
-            closeUserModal();
-            
-            document.getElementById('regName').value = '';
-            document.getElementById('regPhone').value = '';
-            document.getElementById('regLocation').value = '';
-            document.getElementById('regEmail').value = '';
+            db.collection('users').add(newUser)
+              .then((docRef) => {
+                  currentUser = newUser; 
+                  currentUser.firestoreId = docRef.id;
+                  localStorage.setItem('acp_current_user', JSON.stringify(currentUser));
 
-            renderCustomerSocialFeeds();
-        };
+                  updateUserAccountDisplay();
+                  showNotification(`Welcome, ${name}! Account registered.`);
+                  closeUserModal();
+                  
+                  document.getElementById('regName').value = '';
+                  document.getElementById('regPhone').value = '';
+                  document.getElementById('regLocation').value = '';
+                  document.getElementById('regEmail').value = '';
 
-        window.logoutUser = function() {
+                  renderCustomerSocialFeeds();
+              })
+              .catch(err => {
+                  console.error("User registration error: ", err);
+                  showNotification('Failed to register user to cloud backend.', 'warning');
+              });
+        }
+
+        function logoutUser() {
             currentUser = null;
+            localStorage.removeItem('acp_current_user');
             updateUserAccountDisplay();
             closeUserModal();
             renderCustomerSocialFeeds();
             showNotification('Signed out successfully.');
-        };
+        }
 
-        window.openAdminPortal = function() {
+        function openAdminPortal() {
             document.getElementById('adminAuthModal').classList.remove('hidden');
             document.getElementById('adminPasscode').focus();
-        };
+        }
 
-        window.closeAdminAuth = function() {
+        function closeAdminAuth() {
             document.getElementById('adminAuthModal').classList.add('hidden');
             document.getElementById('adminPasscode').value = '';
-        };
+        }
 
-        window.verifyAdminPasscode = function() {
+        function verifyAdminPasscode() {
             const codeField = document.getElementById('adminPasscode');
             if (codeField.value === '7574') {
                 closeAdminAuth();
+                
                 document.getElementById('customer-page').classList.add('hidden');
                 document.getElementById('admin-page').classList.remove('hidden');
                 window.scrollTo(0, 0);
                 
+                // Initialize staging working arrays on entry
                 workingMenuData = JSON.parse(JSON.stringify(menuData));
                 workingFeedPosts = JSON.parse(JSON.stringify(feedPosts));
 
@@ -2276,9 +3072,9 @@
                 codeField.value = '';
                 codeField.focus();
             }
-        };
+        }
 
-        window.closeAdminPortal = function() {
+        function closeAdminPortal() {
             document.getElementById('admin-page').classList.add('hidden');
             document.getElementById('customer-page').classList.remove('hidden');
             window.scrollTo(0, 0);
@@ -2288,9 +3084,9 @@
             renderDrinksMenu();
             renderCartSummary();
             renderCustomerSocialFeeds();
-        };
+        }
 
-        window.switchAdminTab = function(activeTab) {
+        function switchAdminTab(activeTab) {
             const btnOrders = document.getElementById('adminTabOrders');
             const btnCatalog = document.getElementById('adminTabCatalog');
             const btnFeed = document.getElementById('adminTabFeed');
@@ -2333,9 +3129,9 @@
                 btnUsers.className = activeBox;
                 renderRegisteredUsers();
             }
-        };
+        }
 
-        window.switchCatalogSubTab = function(subTab) {
+        function switchCatalogSubTab(subTab) {
             const btnList = document.getElementById('btnSubCatList');
             const btnAdd = document.getElementById('btnSubCatAdd');
             const secList = document.getElementById('subSecCatalogList');
@@ -2355,9 +3151,9 @@
                 btnList.className = inactiveBtn;
                 btnAdd.className = activeBtn;
             }
-        };
+        }
 
-        window.switchFeedSubTab = function(subTab) {
+        function switchFeedSubTab(subTab) {
             const btnCreate = document.getElementById('btnSubFeedCreate');
             const btnList = document.getElementById('btnSubFeedList');
             const secCreate = document.getElementById('subSecFeedCreate');
@@ -2377,9 +3173,10 @@
                 btnCreate.className = inactiveBtn;
                 btnList.className = activeBtn;
             }
-        };
+        }
 
-        window.renderAdminOrdersList = function() {
+        // 1. Render Admin Orders List
+        function renderAdminOrdersList() {
             const container = document.getElementById('adminOrdersContainer');
             const counter = document.getElementById('lblAdminOrdersCount');
             const badge = document.getElementById('adminOrdersCountBadge');
@@ -2391,7 +3188,12 @@
             container.innerHTML = '';
 
             if (ordersList.length === 0) {
-                container.innerHTML = `<div class="py-8 text-center text-slate-400 font-bold text-xs"><i class="fa-solid fa-box-open text-2xl mb-1 text-slate-300 block"></i>No customer orders received yet.</div>`;
+                container.innerHTML = `
+                    <div class="py-8 text-center text-slate-400 font-bold text-xs">
+                        <i class="fa-solid fa-box-open text-2xl mb-1 text-slate-300 block"></i>
+                        No customer orders received yet.
+                    </div>
+                `;
                 return;
             }
 
@@ -2411,7 +3213,11 @@
                     ? '<span class="bg-amber-100 text-amber-700 border border-amber-200 px-2 py-0.5 rounded-full text-[9px] font-black uppercase">Pending</span>'
                     : '<span class="bg-emerald-100 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-full text-[9px] font-black uppercase">Approved</span>';
 
-                const approveBtnHtml = isPending ? `<button onclick="approveAdminOrder(${index})" class="px-2.5 py-1 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-xs font-bold transition-all flex items-center gap-1 shadow-sm"><i class="fa-solid fa-circle-check"></i> Approve Order</button>` : '';
+                const approveBtnHtml = isPending ? `
+                    <button onclick="approveAdminOrder(${index})" class="px-2.5 py-1 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-xs font-bold transition-all flex items-center gap-1 shadow-sm">
+                        <i class="fa-solid fa-circle-check"></i> Approve Order
+                    </button>
+                ` : '';
 
                 container.innerHTML += `
                     <div class="bg-slate-50 border border-slate-200 rounded-xl p-3 shadow-sm space-y-2">
@@ -2423,49 +3229,58 @@
                             </div>
                             ${statusBadge}
                         </div>
-                        <div class="bg-white p-2.5 rounded-lg border border-slate-100 space-y-0.5">${itemsListHtml}</div>
+
+                        <div class="bg-white p-2.5 rounded-lg border border-slate-100 space-y-0.5">
+                            ${itemsListHtml}
+                        </div>
+
                         <div class="flex justify-between items-center pt-0.5">
                             <span class="text-[11px] font-bold text-slate-500">Total Amount:</span>
                             <span class="text-xs font-black text-[#FF5A36]">Rs. ${ord.total}</span>
                         </div>
+
                         <div class="flex justify-end gap-1.5 pt-1.5 border-t border-slate-200/60">
                             ${approveBtnHtml}
-                            <button onclick="removeAdminOrder(${index})" class="px-2 py-1 bg-red-50 hover:bg-red-500 text-red-600 hover:text-white border border-red-200 rounded-lg text-xs font-bold transition-all flex items-center gap-1"><i class="fa-solid fa-trash-can"></i> Clear</button>
+                            <button onclick="removeAdminOrder(${index})" class="px-2 py-1 bg-red-50 hover:bg-red-500 text-red-600 hover:text-white border border-red-200 rounded-lg text-xs font-bold transition-all flex items-center gap-1">
+                                <i class="fa-solid fa-trash-can"></i> Clear
+                            </button>
                         </div>
                     </div>
                 `;
             });
-        };
+        }
 
-        window.removeAdminOrder = async function(index) {
-            if (ordersList[index]) {
-                const ord = ordersList[index];
-                if (ord.firebaseDocId) {
-                    await deleteDoc(doc(db, "orders", ord.firebaseDocId));
-                }
-                showNotification('Order record cleared.');
+        // Delete order from database inside admin view
+        function removeAdminOrder(index) {
+            let ord = ordersList[index];
+            if (ord && ord.firestoreId) {
+                db.collection('orders').doc(ord.firestoreId).delete()
+                  .then(() => showNotification('Order record cleared.'))
+                  .catch(err => console.error("Error clearing order:", err));
             }
-        };
+        }
 
-        window.handleImageUpload = function(event) {
+        function handleImageUpload(event) {
             const file = event.target.files[0];
             if (file) {
                 const reader = new FileReader();
                 reader.onload = function(e) {
-                    document.getElementById('foodFormImage').value = e.target.result;
+                    const result = e.target.result;
+                    document.getElementById('foodFormImage').value = result;
                     showNotification('Device image uploaded successfully.');
                 };
                 reader.readAsDataURL(file);
             }
-        };
+        }
 
-        window.handlePostImageUpload = function(event) {
+        function handlePostImageUpload(event) {
             const file = event.target.files[0];
             if (file) {
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     const result = e.target.result;
                     document.getElementById('postFormImage').value = result;
+                    
                     const previewContainer = document.getElementById('postImagePreviewContainer');
                     const previewImg = document.getElementById('postImagePreview');
                     if (previewContainer && previewImg) {
@@ -2476,23 +3291,47 @@
                 };
                 reader.readAsDataURL(file);
             }
-        };
+        }
 
-        window.removePostImage = function() {
+        function removePostImage() {
             document.getElementById('postFormFile').value = '';
             document.getElementById('postFormImage').value = '';
+            
             const previewContainer = document.getElementById('postImagePreviewContainer');
-            if (previewContainer) previewContainer.classList.add('hidden');
+            if (previewContainer) {
+                previewContainer.classList.add('hidden');
+            }
             showNotification('Image attachment removed.', 'warning');
-        };
+        }
 
-        window.filterAdminCatalog = function(cat) {
+        // Filter Admin Catalog View by Category Boxes
+        function filterAdminCatalog(cat) {
             activeAdminCatalogFilter = cat;
-            renderAdminCatalog();
-        };
 
-        window.moveCatalogItem = function(id, direction) {
-            const index = workingMenuData.findIndex(x => x.id === id);
+            const btnAll = document.getElementById('catFilterAll');
+            const btnFast = document.getElementById('catFilterFast');
+            const btnLocal = document.getElementById('catFilterLocal');
+            const btnDrinks = document.getElementById('catFilterDrinks');
+
+            const inactiveStyle = "px-2.5 py-1 rounded-lg text-[10px] font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 shrink-0";
+            const activeStyle = "px-2.5 py-1 rounded-lg text-[10px] font-black bg-[#FF5A36] text-white shadow-sm shrink-0";
+
+            if (btnAll) btnAll.className = inactiveStyle;
+            if (btnFast) btnFast.className = inactiveStyle;
+            if (btnLocal) btnLocal.className = inactiveStyle;
+            if (btnDrinks) btnDrinks.className = inactiveStyle;
+
+            if (cat === 'all' && btnAll) btnAll.className = activeStyle;
+            if (cat === 'fast' && btnFast) btnFast.className = activeStyle;
+            if (cat === 'local' && btnLocal) btnLocal.className = activeStyle;
+            if (cat === 'drinks' && btnDrinks) btnDrinks.className = activeStyle;
+
+            renderAdminCatalog();
+        }
+
+        // Reorder Catalog Item Up or Down in Staging array
+        function moveCatalogItem(id, direction) {
+            const index = workingMenuData.findIndex(x => x.id == id);
             if (index === -1) return;
 
             const targetIndex = direction === 'up' ? index - 1 : index + 1;
@@ -2503,22 +3342,34 @@
             workingMenuData[targetIndex] = temp;
 
             renderAdminCatalog();
+
             const updateBar = document.getElementById('catalogUpdateBar');
             if (updateBar) updateBar.classList.remove('hidden');
-        };
+        }
 
-        window.saveCatalogOrderChanges = async function() {
-            menuData = JSON.parse(JSON.stringify(workingMenuData));
-            for (let item of menuData) {
-                await setDoc(doc(db, "menu", String(item.id)), item);
-            }
-            const updateBar = document.getElementById('catalogUpdateBar');
-            if (updateBar) updateBar.classList.add('hidden');
-            showNotification('Catalog order updated in Firebase!');
-        };
+        // Commit Reordered Catalog parameters directly to Firestore
+        function saveCatalogOrderChanges() {
+            let batch = db.batch();
+            workingMenuData.forEach((item, index) => {
+                let ref = db.collection('menu').doc(item.id);
+                batch.update(ref, { order: index });
+            });
 
-        window.movePostItem = function(id, direction) {
-            const index = workingFeedPosts.findIndex(p => p.id === id);
+            batch.commit()
+              .then(() => {
+                  showNotification('Catalog order updated successfully!');
+                  const updateBar = document.getElementById('catalogUpdateBar');
+                  if (updateBar) updateBar.classList.add('hidden');
+              })
+              .catch(err => {
+                  console.error("Batch write catalog failure: ", err);
+                  showNotification('Failed to update catalog order on server.', 'warning');
+              });
+        }
+
+        // Reorder Feed Post Up or Down in Staging array
+        function movePostItem(id, direction) {
+            const index = workingFeedPosts.findIndex(p => p.id == id);
             if (index === -1) return;
 
             const targetIndex = direction === 'up' ? index - 1 : index + 1;
@@ -2529,39 +3380,64 @@
             workingFeedPosts[targetIndex] = temp;
 
             renderAdminPostsList();
+
             const updateBar = document.getElementById('postUpdateBar');
             if (updateBar) updateBar.classList.remove('hidden');
-        };
+        }
 
-        window.savePostOrderChanges = async function() {
-            feedPosts = JSON.parse(JSON.stringify(workingFeedPosts));
-            for (let post of feedPosts) {
-                await setDoc(doc(db, "posts", String(post.id)), post);
-            }
-            const updateBar = document.getElementById('postUpdateBar');
-            if (updateBar) updateBar.classList.add('hidden');
-            showNotification('Feed post order updated in Firebase!');
-        };
+        // Commit Reordered Feed post parameters directly to Firestore
+        function savePostOrderChanges() {
+            let batch = db.batch();
+            workingFeedPosts.forEach((post, index) => {
+                let ref = db.collection('posts').doc(post.id);
+                batch.update(ref, { order: index });
+            });
 
-        window.renderAdminCatalog = function() {
+            batch.commit()
+              .then(() => {
+                  showNotification('Feed post order updated successfully!');
+                  const updateBar = document.getElementById('postUpdateBar');
+                  if (updateBar) updateBar.classList.add('hidden');
+              })
+              .catch(err => {
+                  console.error("Batch write feed posts failure: ", err);
+                  showNotification('Failed to update feed layout order on server.', 'warning');
+              });
+        }
+
+        // 2. Render Food Catalog in Admin Panel
+        function renderAdminCatalog() {
             const container = document.getElementById('adminCatalogRows');
             const counter = document.getElementById('adminCatalogCount');
             if (!container) return;
 
-            const filteredData = activeAdminCatalogFilter === 'all' ? workingMenuData : workingMenuData.filter(x => x.category === activeAdminCatalogFilter);
+            const filteredData = activeAdminCatalogFilter === 'all' 
+                ? workingMenuData 
+                : workingMenuData.filter(x => x.category === activeAdminCatalogFilter);
+
             container.innerHTML = '';
             if (counter) counter.innerText = filteredData.length;
 
             if (filteredData.length === 0) {
-                container.innerHTML = `<tr><td colspan="3" class="p-4 text-center text-slate-400 font-bold text-xs italic">No products listed under this category.</td></tr>`;
+                container.innerHTML = `
+                    <tr>
+                        <td colspan="3" class="p-4 text-center text-slate-400 font-bold text-xs italic">
+                            No products listed under this category.
+                        </td>
+                    </tr>
+                `;
                 return;
             }
 
-            filteredData.forEach(item => {
+            filteredData.forEach((item, index) => {
                 let categoryBadge = '';
-                if (item.category === 'fast') categoryBadge = '<span class="text-[9px] bg-indigo-50 text-indigo-700 font-extrabold px-1.5 py-0.5 rounded border border-indigo-200 uppercase">Fast Food</span>';
-                else if (item.category === 'local') categoryBadge = '<span class="text-[9px] bg-amber-50 text-amber-700 font-extrabold px-1.5 py-0.5 rounded border border-amber-200 uppercase">Local Menu</span>';
-                else if (item.category === 'drinks') categoryBadge = '<span class="text-[9px] bg-sky-50 text-sky-700 font-extrabold px-1.5 py-0.5 rounded border border-sky-200 uppercase">Cold Drink</span>';
+                if (item.category === 'fast') {
+                    categoryBadge = '<span class="text-[9px] bg-indigo-50 text-indigo-700 font-extrabold px-1.5 py-0.5 rounded border border-indigo-200 uppercase">Fast Food</span>';
+                } else if (item.category === 'local') {
+                    categoryBadge = '<span class="text-[9px] bg-amber-50 text-amber-700 font-extrabold px-1.5 py-0.5 rounded border border-amber-200 uppercase">Local Menu</span>';
+                } else if (item.category === 'drinks') {
+                    categoryBadge = '<span class="text-[9px] bg-sky-50 text-sky-700 font-extrabold px-1.5 py-0.5 rounded border border-sky-200 uppercase">Cold Drink</span>';
+                }
 
                 container.innerHTML += `
                     <tr class="hover:bg-slate-50 transition-all">
@@ -2574,17 +3450,26 @@
                         </td>
                         <td class="p-2.5 text-right font-black text-slate-800">Rs. ${item.price}</td>
                         <td class="p-2.5 text-right space-x-1 whitespace-nowrap">
-                            <button onclick="moveCatalogItem(${item.id}, 'up')" class="w-7 h-7 inline-flex items-center justify-center bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg transition-all font-bold" title="Move Up"><i class="fa-solid fa-arrow-up text-[10px]"></i></button>
-                            <button onclick="moveCatalogItem(${item.id}, 'down')" class="w-7 h-7 inline-flex items-center justify-center bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg transition-all font-bold" title="Move Down"><i class="fa-solid fa-arrow-down text-[10px]"></i></button>
-                            <button onclick="loadFoodToEdit(${item.id})" class="w-7 h-7 inline-flex items-center justify-center bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg transition-all font-bold" title="Edit Item"><i class="fa-solid fa-pencil text-[10px]"></i></button>
-                            <button onclick="deleteFoodCatalog(${item.id})" class="w-7 h-7 inline-flex items-center justify-center bg-red-50 text-red-500 hover:bg-red-500 hover:text-white rounded-lg transition-all font-bold" title="Delete Item"><i class="fa-solid fa-trash text-[10px]"></i></button>
+                            <button onclick="moveCatalogItem('${item.id}', 'up')" class="w-7 h-7 inline-flex items-center justify-center bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg transition-all font-bold" title="Move Up">
+                                <i class="fa-solid fa-arrow-up text-[10px]"></i>
+                            </button>
+                            <button onclick="moveCatalogItem('${item.id}', 'down')" class="w-7 h-7 inline-flex items-center justify-center bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg transition-all font-bold" title="Move Down">
+                                <i class="fa-solid fa-arrow-down text-[10px]"></i>
+                            </button>
+                            <button onclick="loadFoodToEdit('${item.id}')" class="w-7 h-7 inline-flex items-center justify-center bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg transition-all font-bold" title="Edit Item">
+                                <i class="fa-solid fa-pencil text-[10px]"></i>
+                            </button>
+                            <button onclick="deleteFoodCatalog('${item.id}')" class="w-7 h-7 inline-flex items-center justify-center bg-red-50 text-red-500 hover:bg-red-500 hover:text-white rounded-lg transition-all font-bold" title="Delete Item">
+                                <i class="fa-solid fa-trash text-[10px]"></i>
+                            </button>
                         </td>
                     </tr>
                 `;
             });
-        };
+        }
 
-        window.renderAdminPostsList = function() {
+        // 3. Render Published Posts List showing only post likes and total number of comments
+        function renderAdminPostsList() {
             const container = document.getElementById('adminPostsListContainer');
             const counter = document.getElementById('lblAdminPostsCount');
             if (!container) return;
@@ -2593,36 +3478,59 @@
             container.innerHTML = '';
 
             if (workingFeedPosts.length === 0) {
-                container.innerHTML = `<div class="py-8 text-center text-slate-400 font-bold text-xs"><i class="fa-regular fa-newspaper text-2xl mb-1 text-slate-300 block"></i>No active posts.</div>`;
+                container.innerHTML = `
+                    <div class="py-8 text-center text-slate-400 font-bold text-xs">
+                        <i class="fa-regular fa-newspaper text-2xl mb-1 text-slate-300 block"></i>
+                        No active posts.
+                    </div>
+                `;
                 return;
             }
 
-            workingFeedPosts.forEach(post => {
+            workingFeedPosts.forEach((post, index) => {
+                const totalComments = getTotalCommentsCount(post);
+
                 container.innerHTML += `
-                    <div class="bg-slate-50 border border-slate-200 rounded-xl p-2.5 space-y-2">
+                    <div class="bg-slate-50 border border-slate-200 rounded-xl p-3 space-y-2">
                         <div class="flex gap-2.5 items-start">
                             <img src="${post.image}" class="w-12 h-12 rounded-lg object-cover border border-slate-200 shrink-0" onerror="this.src='https://placehold.co/100x100/FF5A36/ffffff?text=ACP'">
                             <div class="space-y-0.5">
                                 <h4 class="text-xs font-black text-slate-900 line-clamp-1">${post.title}</h4>
-                                <p class="text-[9px] text-slate-500 line-clamp-2 leading-tight">${post.desc}</p>
+                                <p class="text-[9px] text-slate-500 line-clamp-2 leading-tight whitespace-pre-line">${post.desc}</p>
                             </div>
                         </div>
-                        <div class="flex justify-between items-center pt-1.5 border-t border-slate-200">
-                            <span class="text-[9px] text-slate-400 font-bold"><i class="fa-solid fa-heart text-rose-500 mr-1"></i>${post.likes || 0} Likes</span>
-                            <div class="flex gap-1">
-                                <button onclick="movePostItem(${post.id}, 'up')" class="px-2 py-1 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-md text-[10px] font-bold transition-all flex items-center gap-1"><i class="fa-solid fa-arrow-up"></i></button>
-                                <button onclick="movePostItem(${post.id}, 'down')" class="px-2 py-1 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-md text-[10px] font-bold transition-all flex items-center gap-1"><i class="fa-solid fa-arrow-down"></i></button>
-                                <button onclick="loadPostToEdit(${post.id})" class="px-2 py-1 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-md text-[10px] font-bold transition-all flex items-center gap-1"><i class="fa-solid fa-pen-to-square"></i> Edit</button>
-                                <button onclick="deleteFeedPost(${post.id})" class="px-2 py-1 bg-red-50 hover:bg-red-500 text-red-600 hover:text-white border border-red-200 rounded-md text-[10px] font-bold transition-all flex items-center gap-1"><i class="fa-solid fa-trash-can"></i> Delete</button>
-                            </div>
+
+                        <!-- Post Likes and number of comments matching design image -->
+                        <div class="flex items-center justify-between text-[10px] font-bold pt-1.5 border-t border-slate-200 text-slate-600">
+                            <span class="text-rose-500 flex items-center gap-1">
+                                <i class="fa-solid fa-heart"></i> ${post.likes} Likes
+                            </span>
+                            <span class="text-slate-500 flex items-center gap-1">
+                                <i class="fa-regular fa-comment"></i> ${totalComments} Comments
+                            </span>
+                        </div>
+
+                        <div class="flex justify-end gap-1 pt-1.5 border-t border-slate-200">
+                            <button onclick="movePostItem('${post.id}', 'up')" class="px-2 py-1 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-md text-[10px] font-bold transition-all flex items-center gap-1" title="Move Up">
+                                <i class="fa-solid fa-arrow-up"></i>
+                            </button>
+                            <button onclick="movePostItem('${post.id}', 'down')" class="px-2 py-1 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-md text-[10px] font-bold transition-all flex items-center gap-1" title="Move Down">
+                                <i class="fa-solid fa-arrow-down"></i>
+                            </button>
+                            <button onclick="loadPostToEdit('${post.id}')" class="px-2 py-1 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-md text-[10px] font-bold transition-all flex items-center gap-1">
+                                <i class="fa-solid fa-pen-to-square"></i> Edit
+                            </button>
+                            <button onclick="deleteFeedPost('${post.id}')" class="px-2 py-1 bg-red-50 hover:bg-red-500 text-red-600 hover:text-white border border-red-200 rounded-md text-[10px] font-bold transition-all flex items-center gap-1">
+                                <i class="fa-solid fa-trash-can"></i> Delete
+                            </button>
                         </div>
                     </div>
                 `;
             });
-        };
+        }
 
-        window.loadPostToEdit = function(postId) {
-            const post = feedPosts.find(p => p.id === postId);
+        function loadPostToEdit(postId) {
+            const post = feedPosts.find(p => p.id == postId);
             if (!post) return;
 
             document.getElementById('editPostId').value = post.id;
@@ -2642,9 +3550,9 @@
             }
 
             switchFeedSubTab('create');
-        };
+        }
 
-        window.resetPostForm = function() {
+        function resetPostForm() {
             document.getElementById('editPostId').value = '';
             document.getElementById('postFormTitle').value = '';
             document.getElementById('postFormFile').value = '';
@@ -2656,16 +3564,25 @@
             document.getElementById('btnCancelPostEdit').classList.add('hidden');
 
             const previewContainer = document.getElementById('postImagePreviewContainer');
-            if (previewContainer) previewContainer.classList.add('hidden');
-        };
+            if (previewContainer) {
+                previewContainer.classList.add('hidden');
+            }
+        }
 
-        window.deleteFeedPost = async function(postId) {
-            await deleteDoc(doc(db, "posts", String(postId)));
-            showNotification('Post deleted from Firebase!', 'warning');
-        };
+        // Delete post inside Firestore posts collection
+        function deleteFeedPost(postId) {
+            db.collection('posts').doc(postId.toString()).delete()
+              .then(() => showNotification('Post deleted successfully!', 'warning'))
+              .catch(err => {
+                  console.error("Delete post failure: ", err);
+                  showNotification('Error deleting post on server.', 'warning');
+              });
+        }
 
-        window.handleFeedPostSubmit = async function(event) {
+        // Form post handler synchronized with Cloud Firestore
+        function handleFeedPostSubmit(event) {
             event.preventDefault();
+
             const editId = document.getElementById('editPostId').value;
             const title = document.getElementById('postFormTitle').value.trim();
             const image = document.getElementById('postFormImage').value.trim();
@@ -2676,43 +3593,57 @@
                 return;
             }
 
+            const adminAuthorName = "Alqadri Chaska Point";
+
+            let payload = {
+                title: title,
+                image: image,
+                desc: desc,
+                authorName: adminAuthorName
+            };
+
             if (editId) {
-                const postIdx = feedPosts.findIndex(p => p.id == editId);
-                if (postIdx !== -1) {
-                    feedPosts[postIdx].title = title;
-                    feedPosts[postIdx].image = image;
-                    feedPosts[postIdx].desc = desc;
-                    await setDoc(doc(db, "posts", String(editId)), feedPosts[postIdx], { merge: true });
-                    showNotification('Post updated in Firebase!');
-                }
+                db.collection('posts').doc(editId.toString()).update(payload)
+                  .then(() => {
+                      showNotification('Post changes saved successfully!');
+                      resetPostForm();
+                      switchFeedSubTab('list');
+                  })
+                  .catch(err => showNotification('Failed to update post.', 'warning'));
             } else {
-                const newPostId = feedPosts.length > 0 ? Math.max(...feedPosts.map(p => p.id)) + 1 : 101;
-                const newPostObj = {
-                    id: newPostId,
-                    title,
-                    image,
-                    desc,
-                    likes: 0,
-                    isLiked: false,
-                    comments: []
-                };
-                await setDoc(doc(db, "posts", String(newPostId)), newPostObj);
-                showNotification('New post broadcasted live!');
+                payload.likes = 0;
+                payload.isLiked = false;
+                payload.comments = [];
+                payload.order = Date.now();
+
+                db.collection('posts').add(payload)
+                  .then(() => {
+                      showNotification('New post broadcasted live!');
+                      resetPostForm();
+                      switchFeedSubTab('list');
+                  })
+                  .catch(err => showNotification('Failed to publish post.', 'warning'));
             }
+        }
 
-            resetPostForm();
-            switchFeedSubTab('list');
-        };
-
-        window.renderRegisteredUsers = function(usersToShow = registeredUsers) {
+        // 4. Render Registered Customers CRM Directory
+        function renderRegisteredUsers(usersToShow = registeredUsers) {
             const tableBody = document.getElementById('registeredUsersRows');
             const badge = document.getElementById('adminUsersCountBadge');
+            
             if (!tableBody) return;
             if (badge) badge.innerText = registeredUsers.length;
 
             tableBody.innerHTML = '';
+            
             if (usersToShow.length === 0) {
-                tableBody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-400 font-bold italic text-xs">No registered customer found.</td></tr>`;
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="p-4 text-center text-slate-400 font-bold italic text-xs">
+                            No registered customer found.
+                        </td>
+                    </tr>
+                `;
                 return;
             }
 
@@ -2721,54 +3652,77 @@
                     <tr class="hover:bg-slate-50 transition-colors">
                         <td class="p-2.5 align-middle">
                             <div class="flex items-center gap-1.5">
-                                <div class="w-6 h-6 rounded-full bg-orange-500/10 text-orange-600 font-black text-[10px] flex items-center justify-center uppercase shrink-0">${user.name ? user.name.charAt(0) : 'U'}</div>
+                                <div class="w-6 h-6 rounded-full bg-orange-500/10 text-orange-600 font-black text-[10px] flex items-center justify-center uppercase shrink-0">
+                                    ${user.name.charAt(0)}
+                                </div>
                                 <span class="font-extrabold text-slate-900 text-[11px] truncate max-w-[90px]">${user.name}</span>
                             </div>
                         </td>
-                        <td class="p-2.5 align-middle text-[11px]"><a href="tel:${user.phone}" class="text-sky-600 font-bold hover:underline">${user.phone}</a></td>
-                        <td class="p-2.5 align-middle text-[10px] text-slate-500 max-w-[100px] truncate" title="${user.location}">${user.location}</td>
-                        <td class="p-2.5 align-middle text-[10px] text-slate-500 max-w-[90px] truncate" title="${user.email}">${user.email}</td>
+                        <td class="p-2.5 align-middle text-[11px]">
+                            <a href="tel:${user.phone}" class="text-sky-600 font-bold hover:underline">
+                                ${user.phone}
+                            </a>
+                        </td>
+                        <td class="p-2.5 align-middle text-[10px] text-slate-500 max-w-[100px] truncate" title="${user.location}">
+                            ${user.location}
+                        </td>
+                        <td class="p-2.5 align-middle text-[10px] text-slate-500 max-w-[90px] truncate" title="${user.email}">
+                            ${user.email}
+                        </td>
                         <td class="p-2.5 align-middle text-center space-x-1 whitespace-nowrap">
-                            <button onclick="copyCustomerAddress('${(user.location || '').replace(/'/g, "\\'")}')" class="w-6 h-6 inline-flex items-center justify-center bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg transition-all" title="Copy Address"><i class="fa-solid fa-copy text-[9px]"></i></button>
-                            <button onclick="removeCustomerRecord(${idx})" class="w-6 h-6 inline-flex items-center justify-center bg-red-50 hover:bg-red-500 hover:text-white text-red-500 rounded-lg transition-all" title="Delete Account"><i class="fa-solid fa-trash-can text-[9px]"></i></button>
+                            <button onclick="copyCustomerAddress('${user.location.replace(/'/g, "\\'")}')" class="w-6 h-6 inline-flex items-center justify-center bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg transition-all" title="Copy Address">
+                                <i class="fa-solid fa-copy text-[9px]"></i>
+                            </button>
+                            <button onclick="removeCustomerRecord(${idx})" class="w-6 h-6 inline-flex items-center justify-center bg-red-50 hover:bg-red-500 hover:text-white text-red-500 rounded-lg transition-all" title="Delete Account">
+                                <i class="fa-solid fa-trash-can text-[9px]"></i>
+                            </button>
                         </td>
                     </tr>
                 `;
             });
-        };
+        }
 
-        window.copyCustomerAddress = function(address) {
+        function copyCustomerAddress(address) {
             document.execCommand('copy');
             showNotification('Address copied to clipboard!');
-        };
+        }
 
-        window.removeCustomerRecord = async function(idx) {
-            if (registeredUsers[idx]) {
-                const userDoc = registeredUsers[idx];
-                if (userDoc.firebaseDocId) {
-                    await deleteDoc(doc(db, "users", userDoc.firebaseDocId));
-                }
-                showNotification('Account removed from CRM database.', 'warning');
+        // Delete user record from cloud Firestore
+        function removeCustomerRecord(idx) {
+            let user = registeredUsers[idx];
+            if (user && user.firestoreId) {
+                db.collection('users').doc(user.firestoreId).delete()
+                  .then(() => showNotification('Account removed from CRM database.', 'warning'))
+                  .catch(err => console.error("Error deleting customer doc:", err));
             }
-        };
+        }
 
-        window.searchUsers = function(keyword) {
+        function searchUsers(keyword) {
             const filtered = registeredUsers.filter(u => 
-                (u.name || '').toLowerCase().includes(keyword.toLowerCase()) || 
-                (u.phone || '').includes(keyword) || 
-                (u.location || '').toLowerCase().includes(keyword.toLowerCase()) ||
-                (u.email || '').toLowerCase().includes(keyword.toLowerCase())
+                u.name.toLowerCase().includes(keyword.toLowerCase()) || 
+                u.phone.includes(keyword) || 
+                u.location.toLowerCase().includes(keyword.toLowerCase()) ||
+                u.email.toLowerCase().includes(keyword.toLowerCase())
             );
             renderRegisteredUsers(filtered);
-        };
+        }
 
-        window.deleteFoodCatalog = async function(id) {
-            if (cartItems[id]) delete cartItems[id];
-            await deleteDoc(doc(db, "menu", String(id)));
-            showNotification('Item removed from catalog.');
-        };
+        // Delete item from cloud Firestore catalog collection
+        function deleteFoodCatalog(id) {
+            if (cartItems[id]) {
+                delete cartItems[id];
+            }
+            db.collection('menu').doc(id.toString()).delete()
+              .then(() => {
+                  showNotification('Item removed from catalog.');
+              })
+              .catch(err => {
+                  console.error("Error removing catalog item: ", err);
+                  showNotification('Failed to remove catalog item on server.', 'warning');
+              });
+        }
 
-        window.loadFoodToEdit = function(id) {
+        function loadFoodToEdit(id) {
             const item = menuData.find(x => x.id == id);
             if (!item) return;
 
@@ -2783,9 +3737,10 @@
             document.getElementById('foodFormSubmitBtn').innerHTML = '<i class="fa-solid fa-save mr-1"></i> Save Changes';
 
             switchCatalogSubTab('add');
-        };
+        }
 
-        window.handleFoodFormSubmit = async function(event) {
+        // Handles menu modifications directly writing payloads to server
+        function handleFoodFormSubmit(event) {
             event.preventDefault();
 
             const editId = document.getElementById('editFoodId').value;
@@ -2800,31 +3755,46 @@
                 return;
             }
 
-            if (!image) image = 'https://placehold.co/400x300/FF5A36/ffffff?text=ACP';
-
-            if (editId) {
-                const updatedItem = { id: parseInt(editId), name, price, image, desc, category };
-                await setDoc(doc(db, "menu", String(editId)), updatedItem);
-                showNotification('Product updated in Firebase!');
-            } else {
-                const newId = menuData.length > 0 ? Math.max(...menuData.map(x => x.id)) + 1 : 1;
-                const newItem = { id: newId, name, price, image, desc, category };
-                await setDoc(doc(db, "menu", String(newId)), newItem);
-                showNotification('Product added to Firebase!');
+            if (!image) {
+                image = 'https://placehold.co/400x300/FF5A36/ffffff?text=ACP';
             }
 
-            resetAdminForm();
-            switchCatalogSubTab('list');
-        };
+            let payload = {
+                name: name,
+                price: price,
+                image: image,
+                desc: desc,
+                category: category
+            };
 
-        window.resetAdminForm = function() {
+            if (editId) {
+                db.collection('menu').doc(editId.toString()).update(payload)
+                  .then(() => {
+                      showNotification('Changes saved successfully!');
+                      resetAdminForm();
+                      switchCatalogSubTab('list');
+                  })
+                  .catch(err => showNotification('Error editing menu item.', 'warning'));
+            } else {
+                payload.order = Date.now();
+                db.collection('menu').add(payload)
+                  .then(() => {
+                      showNotification('Product successfully added to the catalog!');
+                      resetAdminForm();
+                      switchCatalogSubTab('list');
+                  })
+                  .catch(err => showNotification('Error adding catalog product.', 'warning'));
+            }
+        }
+
+        function resetAdminForm() {
             document.getElementById('editFoodId').value = '';
             document.getElementById('adminFoodForm').reset();
             document.getElementById('formPanelTitle').innerText = 'Add New Food Item';
             document.getElementById('foodFormSubmitBtn').innerHTML = '<i class="fa-solid fa-save mr-1"></i> Save Product';
-        };
+        }
 
-        window.generateStoreInvoice = function() {
+        function generateStoreInvoice() {
             const modalOverlay = document.getElementById('invoiceModalOverlay');
             const invoiceTableBody = document.getElementById('invoiceTableRows');
             const keys = Object.keys(cartItems);
@@ -2853,27 +3823,35 @@
                 }
             });
 
-            if (document.getElementById('lblInvDate')) {
-                document.getElementById('lblInvDate').innerText = new Date().toLocaleDateString('en-US', {
+            const dateObj = new Date();
+            const lblInvDate = document.getElementById('lblInvDate');
+            if (lblInvDate) {
+                lblInvDate.innerText = dateObj.toLocaleDateString('en-US', {
                     year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit'
                 });
             }
 
-            if (document.getElementById('lblTxnId')) {
-                document.getElementById('lblTxnId').innerText = '#ACP-' + Math.floor(1000 + Math.random() * 9000);
+            const lblTxnId = document.getElementById('lblTxnId');
+            if (lblTxnId) {
+                lblTxnId.innerText = '#ACP-' + Math.floor(1000 + Math.random() * 9000);
             }
 
-            if (document.getElementById('lblSub')) document.getElementById('lblSub').innerText = 'Rs. ' + totalAmount;
+            const lblSub = document.getElementById('lblSub');
+            if (lblSub) lblSub.innerText = 'Rs. ' + totalAmount;
+
             if (modalOverlay) modalOverlay.style.display = 'flex';
-        };
+        }
 
-        window.closeReceiptAndScrollToMenu = function() {
+        function closeReceiptAndScrollToMenu() {
             const modalOverlay = document.getElementById('invoiceModalOverlay');
-            if (modalOverlay) modalOverlay.style.display = 'none';
-        };
+            if (modalOverlay) {
+                modalOverlay.style.display = 'none';
+            }
+        }
 
-        window.downloadInvoiceJPG = function() {
+        function downloadInvoiceJPG() {
             const element = document.getElementById('receiptContainer');
+            
             const options = {
                 scale: 4,
                 useCORS: true,
@@ -2887,6 +3865,7 @@
             };
 
             showNotification('Generating ultra-high-res receipt image...');
+            
             html2canvas(element, options).then(canvas => {
                 const link = document.createElement('a');
                 link.download = 'Alqadri-HighRes-Receipt.jpg';
@@ -2894,9 +3873,10 @@
                 link.click();
                 showNotification('High-resolution JPG saved successfully!');
             }).catch(err => {
+                console.error("JPG capture error: ", err);
                 showNotification('Failed to generate crisp JPG receipt.', 'warning');
             });
-        };
+        }
     </script>
 </body>
 </html>
