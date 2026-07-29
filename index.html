@@ -1,16 +1,20 @@
 
-
 <!DOCTYPE html>
 <html lang="en" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ACP Premium Fast Food & Traditional Twist</title>
+    <title>Al-Qadri Chaska Point | Premium Fast Food & Traditional Twist Gujranwala</title>
     
-    <!-- Clear Old Cache Files & Force Clean Reloads -->
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
+    <!-- SEO Meta Tags for Google Search Indexing & GitHub Pages Deployment -->
+    <meta name="description" content="Welcome to Al-Qadri Chaska Point (ACP) in Gujranwala. Order premium fast food, local delicacies, and traditional secret spice twists with live tracking and social community boards.">
+    <meta name="keywords" content="Al-Qadri Chaska Point, ACP Fast Food, Gujranwala Fast Food, Traditional Twist, Jalal Balagan Gujranwala, Best Burgers Gujranwala, Local Delicacies">
+    <meta name="author" content="Mohsin Ali Raza & Wasif Ali">
+    
+    <!-- Open Graph Social Share Tags -->
+    <meta property="og:title" content="Al-Qadri Chaska Point - Premium Fast Food & Traditional Twist">
+    <meta property="og:description" content="Fresh daily local bites and premium fast food prepared with secret spices of Gujranwala.">
+    <meta property="og:type" content="website">
 
     <!-- Import elegant fonts from Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,500&display=swap" rel="stylesheet">
@@ -21,11 +25,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <!-- Tailwind CSS for modern responsive layout helper utilities -->
     <script src="https://cdn.tailwindcss.com"></script>
-
-    <!-- Firebase Compat SDKs (For global browser compatibility) -->
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics-compat.js"></script>
 
     <style>
         :root {
@@ -325,7 +324,7 @@
         .app-hero {
             padding: 24px 16px;
             text-align: center;
-            background: radial-gradient(circle at 50% 50%, rgba(255, 90, 54, 0.06) 0%, transparent 80%);
+            background-color: #FBF1EF;
             border-bottom: 1px dashed rgba(226, 232, 240, 0.85);
         }
 
@@ -387,10 +386,6 @@
             flex-direction: column;
             box-shadow: var(--shadow-sm);
             transition: all 0.2s ease-in-out;
-        }
-
-        .portrait-card:hover {
-            transform: none !important;
         }
 
         .card-image-box {
@@ -484,10 +479,6 @@
             box-shadow: var(--shadow-sm);
             height: 100%;
             transition: all 0.2s ease-in-out;
-        }
-
-        .local-mini-card:hover {
-            transform: none !important;
         }
 
         .local-title-compact {
@@ -660,7 +651,6 @@
             clip-path: polygon(0% 0%, 50% 0%, 50% 100%, 0% 100%);
         }
 
-        /* Print Media Configurations */
         @media print {
             body * { visibility: hidden; }
             .receipt-container, .receipt-container * { visibility: visible; }
@@ -690,7 +680,7 @@
                                 <i class="fa-solid fa-burger"></i>
                             </div>
                         </div>
-                        <span class="header-title-text font-serif">Alqadri Chaska Point</span>
+                        <span class="header-title-text font-serif">Al-Qadri Chaska Point</span>
                     </a>
                     
                     <div class="flex items-center gap-2">
@@ -930,7 +920,7 @@
                     </div>
 
                     <div>
-                        <label class="block text-slate-500 mb-1 uppercase text-[9px] tracking-wider">Delivery Location / Address *</label>
+                        <label class="block text-slate-500 mb-1 uppercase text-[9px] tracking-wider">Location / Address *</label>
                         <input type="text" id="checkoutLocation" required placeholder="Street / Colony / Area in Gujranwala *" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none text-xs font-bold text-slate-800 focus:border-[#FF5A36]">
                     </div>
                 </div>
@@ -1043,6 +1033,29 @@
                 </button>
             </form>
             <p class="text-[9px] text-slate-400">Your details are not added to any registration database.</p>
+        </div>
+    </div>
+
+    <!-- Admin Comment Management Modal -->
+    <div id="adminCommentsModal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-md z-[10001] hidden flex items-center justify-center p-4" onclick="closeAdminCommentsModal()">
+        <div class="bg-white rounded-[24px] max-w-md w-full p-5 border border-slate-200 relative shadow-2xl space-y-4 max-h-[85vh] flex flex-col" onclick="event.stopPropagation()">
+            <button onclick="closeAdminCommentsModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
+                <i class="fa-solid fa-circle-xmark text-xl"></i>
+            </button>
+            
+            <div class="flex items-center gap-3 border-b border-slate-100 pb-3 shrink-0">
+                <div class="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center text-lg text-primary">
+                    <i class="fa-solid fa-comments"></i>
+                </div>
+                <div>
+                    <h3 class="text-sm font-extrabold text-slate-900">Manage Post Comments</h3>
+                    <p class="text-[10px] text-slate-400" id="adminCommentsPostTitle">Review & delete comments / replies</p>
+                </div>
+            </div>
+            
+            <div id="adminCommentsListContainer" class="space-y-3 overflow-y-auto flex-grow pr-1">
+                <!-- Dynamic comments tree with delete capability -->
+            </div>
         </div>
     </div>
 
@@ -1270,17 +1283,17 @@
             <!-- CATEGORY 3: PUBLISH POST -->
             <div id="admin-sec-feed" class="hidden space-y-4">
                 <div class="grid grid-cols-2 gap-2 mb-2">
-                    <button type="button" onclick="switchFeedSubTab('create')" id="btnSubFeedCreate" class="py-2 px-3 rounded-xl text-xs font-black text-center transition-all bg-[#FF5A36] text-white shadow-sm border border-[#FF5A36] flex items-center justify-center gap-1.5">
-                        <i class="fa-solid fa-paper-plane"></i> Broadcast / Edit Post
-                    </button>
-                    <button type="button" onclick="switchFeedSubTab('list')" id="btnSubFeedList" class="py-2 px-3 rounded-xl text-xs font-bold text-center transition-all bg-white text-slate-700 hover:bg-slate-100 border border-slate-200 flex items-center justify-center gap-1.5">
+                    <button type="button" onclick="switchFeedSubTab('list')" id="btnSubFeedList" class="py-2 px-3 rounded-xl text-xs font-black text-center transition-all bg-[#FF5A36] text-white shadow-sm border border-[#FF5A36] flex items-center justify-center gap-1.5">
                         <i class="fa-solid fa-newspaper"></i> Active Posts
+                    </button>
+                    <button type="button" onclick="switchFeedSubTab('create')" id="btnSubFeedCreate" class="py-2 px-3 rounded-xl text-xs font-bold text-center transition-all bg-white text-slate-700 hover:bg-slate-100 border border-slate-200 flex items-center justify-center gap-1.5">
+                        <i class="fa-solid fa-paper-plane"></i> Broadcast Post
                     </button>
                 </div>
 
-                <div id="subSecFeedCreate" class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+                <div id="subSecFeedCreate" class="hidden bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-3">
                     <div class="border-b border-slate-100 pb-2">
-                        <h3 id="postFormHeading" class="text-xs font-black text-slate-955 flex items-center gap-2">
+                        <h3 id="postFormHeading" class="text-xs font-black text-slate-950 flex items-center gap-2">
                             <i class="fa-solid fa-paper-plane text-orange-500"></i> Broadcast / Edit Post
                         </h3>
                     </div>
@@ -1322,7 +1335,7 @@
                     </form>
                 </div>
 
-                <div id="subSecFeedList" class="hidden bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+                <div id="subSecFeedList" class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-3">
                     <div class="border-b border-slate-100 pb-2 flex justify-between items-center">
                         <h3 class="text-xs font-black text-slate-900 flex items-center gap-1.5">
                             <i class="fa-solid fa-newspaper text-amber-500"></i> Active Posts
@@ -1334,7 +1347,6 @@
                         <!-- Dynamic Post Cards Injected Here -->
                     </div>
 
-                    <!-- Post Update Action Button Centered -->
                     <div id="postUpdateBar" class="hidden pt-3 flex justify-center">
                         <button onclick="savePostOrderChanges()" class="py-2.5 px-5 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold rounded-xl text-xs transition-all shadow-md flex items-center gap-2 active:scale-95">
                             <i class="fa-solid fa-circle-check text-sm"></i> Save Post Order Changes
@@ -1348,7 +1360,7 @@
             <div id="admin-sec-users" class="hidden">
                 <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-3">
                     <div class="border-b border-slate-100 pb-3">
-                        <h3 class="text-xs font-black text-slate-955 flex items-center gap-2">
+                        <h3 class="text-xs font-black text-slate-950 flex items-center gap-2">
                             <i class="fa-solid fa-id-card text-sky-500"></i> Registered Customer Base
                         </h3>
                         <div class="relative w-full text-xs font-bold mt-2">
@@ -1397,7 +1409,7 @@
                 <div class="flex items-center justify-center gap-3 mb-4">
                     <div class="h-[1px] bg-slate-200 flex-grow"></div>
                     <div class="text-center shrink-0">
-                        <h2 class="font-serif font-black text-xs text-slate-800 tracking-wide">Alqadri Chaska Point</h2>
+                        <h2 class="font-serif font-black text-xs text-slate-800 tracking-wide">Al-Qadri Chaska Point</h2>
                         <p class="text-[8px] text-slate-400 font-bold">Premium Taste Outlets</p>
                     </div>
                     <div class="h-[1px] bg-slate-200 flex-grow"></div>
@@ -1508,42 +1520,75 @@
         </div>
     </div>
 
-    <!-- JavaScript Backend Configuration & State Machine -->
-    <script>
-        // Your web app's Firebase configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyCnTvjumYj8qXN8rsQtmkGOAmNuJDummBI",
-            authDomain: "alfa-corex.firebaseapp.com",
-            projectId: "alfa-corex",
-            storageBucket: "alfa-corex.firebasestorage.app",
-            messagingSenderId: "137972735130",
-            appId: "1:137972735130:web:8edac3d79ebea4046b1323",
-            measurementId: "G-FERT7LM1W6"
+    <!-- Firebase Integration Script -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-analytics.js";
+        import { getFirestore, doc, setDoc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
+
+        const firebaseConfig = { 
+            apiKey: "AIzaSyBuR55aUNW71kiYS2AAN9LnRo6UlFG9mdg", 
+            authDomain: "alfa-corex-1-a9761.firebaseapp.com", 
+            projectId: "alfa-corex-1-a9761", 
+            storageBucket: "alfa-corex-1-a9761.firebasestorage.app", 
+            messagingSenderId: "211023448949", 
+            appId: "1:211023448949:web:df5c519352868a12cea13c", 
+            measurementId: "G-BFVW5HY59P" 
+        }; 
+
+        const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app);
+        const db = getFirestore(app);
+
+        window.db = db;
+        window.firebaseDocRef = doc(db, "acp_store_data", "main_database");
+
+        window.syncDataToFirebase = async function() {
+            try {
+                await setDoc(window.firebaseDocRef, {
+                    menuData: window.menuData || [],
+                    ordersList: window.ordersList || [],
+                    registeredUsers: window.registeredUsers || [],
+                    feedPosts: window.feedPosts || [],
+                    lastUpdated: Date.now()
+                });
+            } catch (err) {
+                console.error("Firebase sync error: ", err);
+            }
         };
 
-        // Initialize Firebase Compat
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
+        // Real-time synchronization listeners (Instant update with zero delay and clear old client cache)
+        onSnapshot(window.firebaseDocRef, (docSnap) => {
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+                window.menuData = data.menuData || [];
+                window.ordersList = data.ordersList || [];
+                window.registeredUsers = data.registeredUsers || [];
+                window.feedPosts = data.feedPosts || [];
 
-        // Safe Initialization of Firebase Analytics to prevent ad-blockers from stopping execution
-        let analytics;
-        try {
-            analytics = firebase.analytics();
-        } catch (e) {
-            console.warn("Analytics initialization was safely bypassed to prevent halting: ", e);
-        }
+                // Clear cached stale elements locally and refresh views instantly
+                if (typeof window.renderCustomerMenu === 'function') {
+                    window.renderCustomerMenu();
+                    window.renderLocalMenu();
+                    window.renderDrinksMenu();
+                    window.renderCartSummary();
+                    window.renderCustomerSocialFeeds();
+                    if(document.getElementById('admin-page') && !document.getElementById('admin-page').classList.contains('hidden')) {
+                        window.workingMenuData = JSON.parse(JSON.stringify(window.menuData));
+                        window.workingFeedPosts = JSON.parse(JSON.stringify(window.feedPosts));
+                        window.renderAdminCatalog();
+                        window.renderAdminOrdersList();
+                        window.renderAdminPostsList();
+                        window.renderRegisteredUsers();
+                    }
+                }
+            }
+        }, (error) => {
+            console.error("Realtime listener error:", error);
+        });
+    </script>
 
-        // Safe clearing of persistence cache
-        try {
-            db.clearPersistence().then(() => {
-                console.log("Firestore offline database cache was cleaned successfully.");
-            }).catch((err) => {
-                console.warn("Firestore cache could not be cleared on load:", err);
-            });
-        } catch (e) {
-            console.warn("Persistence clearing bypassed: ", e);
-        }
-
+    <script>
         let cartItems = {};
         let notificationsHistory = [];
         let expandedComments = {}; 
@@ -1554,65 +1599,33 @@
         let activeAdminCatalogFilter = 'all';
         let sharedPostText = ""; 
 
-        // Working variables initialized
         let workingMenuData = [];
         let workingFeedPosts = [];
 
-        // Real-time State synchronized from Firestore Collections
-        let menuData = [];
-        let ordersList = [];
-        let registeredUsers = [];
-        let feedPosts = [];
+        window.menuData = [];
+        window.ordersList = [];
+        window.registeredUsers = [];
+        window.feedPosts = [];
 
-        // Real-time listener for the 'menu' catalog collection
-        db.collection('menu').orderBy('order', 'asc').onSnapshot(snapshot => {
-            menuData = [];
-            snapshot.forEach(doc => {
-                let data = doc.data();
-                data.id = doc.id; // Map Document ID smoothly
-                menuData.push(data);
-            });
+        window.addEventListener('DOMContentLoaded', () => {
+            const savedUser = localStorage.getItem('acp_current_user');
+            if (savedUser) {
+                try {
+                    currentUser = JSON.parse(savedUser);
+                } catch(e) {
+                    currentUser = null;
+                }
+            }
+
+            updateUserAccountDisplay();
             renderCustomerMenu();
             renderLocalMenu();
             renderDrinksMenu();
             renderCartSummary();
-        }, err => console.error("Menu snapshot error: ", err));
-
-        // Real-time listener for the 'orders' collection
-        db.collection('orders').orderBy('timestamp', 'desc').onSnapshot(snapshot => {
-            ordersList = [];
-            snapshot.forEach(doc => {
-                let data = doc.data();
-                data.firestoreId = doc.id;
-                ordersList.push(data);
-            });
-            renderAdminOrdersList();
-        }, err => console.error("Orders snapshot error: ", err));
-
-        // Real-time listener for the 'users' (CRM registration) collection
-        db.collection('users').onSnapshot(snapshot => {
-            registeredUsers = [];
-            snapshot.forEach(doc => {
-                let data = doc.data();
-                data.firestoreId = doc.id;
-                registeredUsers.push(data);
-            });
-            renderRegisteredUsers();
-        }, err => console.error("Users snapshot error: ", err));
-
-        // Real-time listener for the 'posts' (social feeds) collection
-        db.collection('posts').orderBy('order', 'asc').onSnapshot(snapshot => {
-            feedPosts = [];
-            snapshot.forEach(doc => {
-                let data = doc.data();
-                data.id = doc.id;
-                feedPosts.push(data);
-            });
             renderCustomerSocialFeeds();
-        }, err => console.error("Posts snapshot error: ", err));
+            renderDynamicFooter();
+        });
 
-
-        // Trigger Guest Name Pop-up Modal
         function openGuestNameModal() {
             const modal = document.getElementById('guestNameModal');
             if (modal) modal.classList.remove('hidden');
@@ -1640,7 +1653,6 @@
             renderCustomerSocialFeeds();
         }
 
-        // Display only the first spelling of the user's name on the header icon
         function updateUserAccountDisplay() {
             const userBtn = document.getElementById('navUserBtn');
             if (!userBtn) return;
@@ -1665,7 +1677,6 @@
             }
         }
 
-        // Toggle Main User View Tabs & Render dynamic footer per tab view
         function switchCustomerTab(tabName) {
             const storeBtn = document.getElementById('tabBtnStore');
             const feedsBtn = document.getElementById('tabBtnFeeds');
@@ -1681,7 +1692,6 @@
                 storeBtn.className = "btn-tab-effect btn-tab-active flex-1 max-w-[180px] flex items-center justify-center gap-2 py-2 px-4 text-xs font-black rounded-xl border border-[#FF5A36] bg-[#FF5A36] text-white shadow-md active:scale-95";
                 feedsBtn.className = "btn-tab-effect btn-tab-inactive flex-1 max-w-[180px] flex items-center justify-center gap-2 py-2 px-4 text-xs font-black rounded-xl border border-slate-200 bg-white text-slate-700 shadow-sm relative active:scale-95";
                 
-                // Keep icons correctly color-coded
                 storeBtn.innerHTML = `<i class="fa-solid fa-utensils text-white"></i> Order Menu`;
                 feedsBtn.innerHTML = `
                     <i class="fa-solid fa-rss text-orange-500"></i> Social Feed
@@ -1697,7 +1707,6 @@
                 feedsBtn.className = "btn-tab-effect btn-tab-active flex-1 max-w-[180px] flex items-center justify-center gap-2 py-2 px-4 text-xs font-black rounded-xl border border-[#FF5A36] bg-[#FF5A36] text-white shadow-md relative active:scale-95";
                 storeBtn.className = "btn-tab-effect btn-tab-inactive flex-1 max-w-[180px] flex items-center justify-center gap-2 py-2 px-4 text-xs font-black rounded-xl border border-slate-200 bg-white text-slate-700 shadow-sm active:scale-95";
                 
-                // Feeds active: icon becomes white inside the tab selection
                 feedsBtn.innerHTML = `
                     <i class="fa-solid fa-rss text-white"></i> Social Feed
                     <span class="absolute -top-1 -right-1 w-2 h-2 bg-rose-500 rounded-full animate-ping"></span>
@@ -1714,7 +1723,6 @@
             window.scrollTo(0,0);
         }
 
-        // Dynamic footer content depending on whether Order Menu or Social Feed is active
         function renderDynamicFooter() {
             const footerEl = document.getElementById('mainFooterSection');
             if (!footerEl) return;
@@ -1753,7 +1761,6 @@
                 </div>
             `;
 
-            // Reduced size for admin portal button
             let adminPortalBtnHtml = `
                 <div class="pt-3 mt-1 border-t border-slate-800/80 flex justify-center">
                     <button onclick="openAdminPortal()" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-slate-800 border border-slate-700 text-slate-300 hover:text-white hover:border-[#FF5A36] hover:bg-slate-750 transition-all text-[9px] font-extrabold tracking-wider uppercase shadow" title="Admin Control Dashboard">
@@ -1764,12 +1771,11 @@
 
             let copyrightHtml = `
                 <div class="pt-2 text-[10px] text-slate-500 text-center">
-                    <span>&copy; 2026 ACP Premium Fast Food. All rights reserved.</span>
+                    <span>&copy; 2026 Al-Qadri Chaska Point. All rights reserved.</span>
                 </div>
             `;
 
             if (isStoreActive) {
-                // Front page footer: Icons made smaller, names use a clean prominent sans-serif styling with optimal spacing.
                 footerEl.innerHTML = `
                     <div class="flex flex-wrap justify-center items-center gap-2 text-xs text-white py-1">
                         <div class="glow-on-hover flex flex-col items-center justify-center text-center p-1 rounded-xl">
@@ -1792,7 +1798,6 @@
                     ${copyrightHtml}
                 `;
             } else {
-                // Second page footer (Social feed)
                 footerEl.innerHTML = `
                     <div class="font-serif text-white font-extrabold text-base leading-snug tracking-wide max-w-[340px] mx-auto">
                         Thank you for visiting our website
@@ -1811,7 +1816,6 @@
             }
         }
 
-        // Render Fast Food catalog
         function renderCustomerMenu() {
             const container = document.getElementById('menuGridContainer');
             if (!container) return;
@@ -1846,9 +1850,9 @@
                                 <div class="card-price-compact !mb-0 !mt-0">Rs. ${item.price}</div>
                             </div>
                             <div class="selector-box-compact mt-1">
-                                <button class="btn-qty-mini" onclick="updateQty('${item.id}', -1)">-</button>
+                                <button class="btn-qty-mini" onclick="updateQty(${item.id}, -1)">-</button>
                                 <span class="qty-val-mini" id="qty-${item.id}">${currentQty}</span>
-                                <button class="btn-qty-mini" onclick="updateQty('${item.id}', 1)">+</button>
+                                <button class="btn-qty-mini" onclick="updateQty(${item.id}, 1)">+</button>
                             </div>
                         </div>
                     </div>
@@ -1856,7 +1860,6 @@
             });
         }
 
-        // Render Local Delicacies inside Customer store
         function renderLocalMenu() {
             const container = document.getElementById('localMenuGridContainer');
             if (!container) return;
@@ -1891,16 +1894,15 @@
                         </div>
                         
                         <div class="selector-box-compact w-full text-center mt-1">
-                            <button class="btn-qty-mini !w-5 !h-5" onclick="updateQty('${item.id}', -1)">-</button>
+                            <button class="btn-qty-mini !w-5 !h-5" onclick="updateQty(${item.id}, -1)">-</button>
                             <span class="qty-val-mini !w-4 !text-[10px]" id="qty-local-${item.id}">${currentQty}</span>
-                            <button class="btn-qty-mini !w-5 !h-5" onclick="updateQty('${item.id}', 1)">+</button>
+                            <button class="btn-qty-mini !w-5 !h-5" onclick="updateQty(${item.id}, 1)">+</button>
                         </div>
                     </div>
                 `;
             });
         }
 
-        // Render Cold Drinks inside Customer store
         function renderDrinksMenu() {
             const container = document.getElementById('drinksMenuGridContainer');
             if (!container) return;
@@ -1935,35 +1937,31 @@
                         </div>
                         
                         <div class="selector-box-compact w-full text-center mt-1">
-                            <button class="btn-qty-mini !w-5 !h-5" onclick="updateQty('${item.id}', -1)">-</button>
+                            <button class="btn-qty-mini !w-5 !h-5" onclick="updateQty(${item.id}, -1)">-</button>
                             <span class="qty-val-mini !w-4 !text-[10px]" id="qty-drink-${item.id}">${currentQty}</span>
-                            <button class="btn-qty-mini !w-5 !h-5" onclick="updateQty('${item.id}', 1)">+</button>
+                            <button class="btn-qty-mini !w-5 !h-5" onclick="updateQty(${item.id}, 1)">+</button>
                         </div>
                     </div>
                 `;
             });
         }
 
-        // Toggle Comments Expansion
         function toggleComments(postId) {
             expandedComments[postId] = !expandedComments[postId];
             renderCustomerSocialFeeds();
         }
 
-        // Toggle comment sort mode ('recent' or 'oldest')
         function toggleCommentSort(postId) {
             let current = commentSortModes[postId] || 'recent';
             commentSortModes[postId] = current === 'recent' ? 'oldest' : 'recent';
             renderCustomerSocialFeeds();
         }
 
-        // Toggle visibility of nested replies for a specific comment key
         function toggleNestedReplies(key) {
             expandedReplies[key] = !expandedReplies[key];
             renderCustomerSocialFeeds();
         }
 
-        // Helper to count total comments including nested replies
         function getTotalCommentsCount(post) {
             let count = post.comments ? post.comments.length : 0;
             if (post.comments) {
@@ -1976,36 +1974,22 @@
             return count;
         }
 
-        // Helper function to update comments array structure on Firestore
-        function updatePostCommentsInFirestore(postId, commentsArray) {
-            db.collection('posts').doc(postId.toString()).update({
-                comments: commentsArray
-            }).catch(err => {
-                console.error("Error writing comment updates directly to database:", err);
-                showNotification('Error updating comment state', 'warning');
-            });
-        }
-
-        // Like toggle logic on comments with Firestore Write Sync
         function likeComment(postId, commentIndex) {
-            const post = feedPosts.find(p => p.id == postId);
+            const post = feedPosts.find(p => p.id === postId);
             if (!post || !post.comments[commentIndex]) return;
 
             let identifier = currentUser ? currentUser.phone : (guestSessionName || "guest_session");
-            const commentsCopy = JSON.parse(JSON.stringify(post.comments));
-            const comment = commentsCopy[commentIndex];
+            const comment = post.comments[commentIndex];
             
             if (!comment.likedUsers) comment.likedUsers = [];
             if (!comment.dislikedUsers) comment.dislikedUsers = [];
 
             if (comment.likedUsers.includes(identifier)) {
-                // If clicked again, remove the like (toggle behavior)
                 const idx = comment.likedUsers.indexOf(identifier);
                 comment.likedUsers.splice(idx, 1);
                 comment.likes = Math.max(0, (comment.likes || 1) - 1);
                 showNotification('Like removed from comment.', 'warning');
             } else {
-                // Clicking once likes the comment and removes any existing dislike
                 const disIdx = comment.dislikedUsers.indexOf(identifier);
                 if (disIdx !== -1) {
                     comment.dislikedUsers.splice(disIdx, 1);
@@ -2015,17 +1999,16 @@
                 comment.likes = (comment.likes || 0) + 1;
                 showNotification('Liked comment!');
             }
-            updatePostCommentsInFirestore(postId, commentsCopy);
+            syncDataToFirebase();
+            renderCustomerSocialFeeds();
         }
 
-        // Dislike toggle logic on comments with Firestore Write Sync
         function dislikeComment(postId, commentIndex) {
-            const post = feedPosts.find(p => p.id == postId);
+            const post = feedPosts.find(p => p.id === postId);
             if (!post || !post.comments[commentIndex]) return;
 
             let identifier = currentUser ? currentUser.phone : (guestSessionName || "guest_session");
-            const commentsCopy = JSON.parse(JSON.stringify(post.comments));
-            const comment = commentsCopy[commentIndex];
+            const comment = post.comments[commentIndex];
             
             if (!comment.likedUsers) comment.likedUsers = [];
             if (!comment.dislikedUsers) comment.dislikedUsers = [];
@@ -2045,17 +2028,16 @@
                 comment.dislikes = (comment.dislikes || 0) + 1;
                 showNotification('Disliked comment.');
             }
-            updatePostCommentsInFirestore(postId, commentsCopy);
+            syncDataToFirebase();
+            renderCustomerSocialFeeds();
         }
 
-        // Like toggle logic on nested replies (sub-comments) with Firestore Write Sync
         function likeReply(postId, commentIndex, replyIndex) {
-            const post = feedPosts.find(p => p.id == postId);
+            const post = feedPosts.find(p => p.id === postId);
             if (!post || !post.comments[commentIndex] || !post.comments[commentIndex].replies[replyIndex]) return;
 
             let identifier = currentUser ? currentUser.phone : (guestSessionName || "guest_session");
-            const commentsCopy = JSON.parse(JSON.stringify(post.comments));
-            const reply = commentsCopy[commentIndex].replies[replyIndex];
+            const reply = post.comments[commentIndex].replies[replyIndex];
             
             if (!reply.likedUsers) reply.likedUsers = [];
             if (!reply.dislikedUsers) reply.dislikedUsers = [];
@@ -2075,17 +2057,16 @@
                 reply.likes = (reply.likes || 0) + 1;
                 showNotification('Liked reply!');
             }
-            updatePostCommentsInFirestore(postId, commentsCopy);
+            syncDataToFirebase();
+            renderCustomerSocialFeeds();
         }
 
-        // Dislike toggle logic on nested replies (sub-comments) with Firestore Write Sync
         function dislikeReply(postId, commentIndex, replyIndex) {
-            const post = feedPosts.find(p => p.id == postId);
+            const post = feedPosts.find(p => p.id === postId);
             if (!post || !post.comments[commentIndex] || !post.comments[commentIndex].replies[replyIndex]) return;
 
             let identifier = currentUser ? currentUser.phone : (guestSessionName || "guest_session");
-            const commentsCopy = JSON.parse(JSON.stringify(post.comments));
-            const reply = commentsCopy[commentIndex].replies[replyIndex];
+            const reply = post.comments[commentIndex].replies[replyIndex];
             
             if (!reply.likedUsers) reply.likedUsers = [];
             if (!reply.dislikedUsers) reply.dislikedUsers = [];
@@ -2105,27 +2086,36 @@
                 reply.dislikes = (reply.dislikes || 0) + 1;
                 showNotification('Disliked reply.');
             }
-            updatePostCommentsInFirestore(postId, commentsCopy);
+            syncDataToFirebase();
+            renderCustomerSocialFeeds();
         }
 
-        // Comment removal triggers updates on server Comments array
         function deleteComment(postId, commentIndex) {
-            const post = feedPosts.find(p => p.id == postId);
+            const post = feedPosts.find(p => p.id === postId);
             if (post && post.comments[commentIndex]) {
-                const comment = post.comments[commentIndex];
-                let currentIdentifier = currentUser ? currentUser.name : guestSessionName;
-                
-                if (currentIdentifier && currentIdentifier === comment.commenter) {
-                    const commentsCopy = JSON.parse(JSON.stringify(post.comments));
-                    commentsCopy.splice(commentIndex, 1);
-                    
-                    db.collection('posts').doc(postId.toString()).update({
-                        comments: commentsCopy
-                    }).then(() => {
-                        showNotification('Your comment was deleted successfully!', 'warning');
-                    });
-                } else {
-                    showNotification('You can only delete your own comments.', 'warning');
+                post.comments.splice(commentIndex, 1);
+                syncDataToFirebase();
+                showNotification('Comment was deleted successfully!', 'warning');
+                renderCustomerSocialFeeds();
+                renderAdminPostsList();
+                const modal = document.getElementById('adminCommentsModal');
+                if (modal && !modal.classList.contains('hidden')) {
+                    openAdminCommentsModal(postId);
+                }
+            }
+        }
+
+        function deleteReply(postId, commentIndex, replyIndex) {
+            const post = feedPosts.find(p => p.id === postId);
+            if (post && post.comments[commentIndex] && post.comments[commentIndex].replies[replyIndex]) {
+                post.comments[commentIndex].replies.splice(replyIndex, 1);
+                syncDataToFirebase();
+                showNotification('Reply was deleted successfully!', 'warning');
+                renderCustomerSocialFeeds();
+                renderAdminPostsList();
+                const modal = document.getElementById('adminCommentsModal');
+                if (modal && !modal.classList.contains('hidden')) {
+                    openAdminCommentsModal(postId);
                 }
             }
         }
@@ -2144,7 +2134,6 @@
             return `${diffDays} days ago`;
         }
 
-        // Highlights ONLY the mentioned user's name with @ in the reply text with distinct color
         function formatReplyText(text) {
             if (!text) return '';
             return text.replace(/^(@[^:]+:)/, '<span class="text-[#FF5A36] font-extrabold">$1</span>');
@@ -2175,9 +2164,9 @@
                 
                 let sortedComments = [...post.comments];
                 if (sortMode === 'recent') {
-                    sortedComments.reverse(); // Newest first
+                    sortedComments.reverse();
                 } else {
-                    sortedComments.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0)); // Oldest first
+                    sortedComments.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
                 }
 
                 const visibleComments = isExpanded ? sortedComments : sortedComments.slice(0, 2);
@@ -2194,7 +2183,7 @@
 
                     let currentIdentifier = currentUser ? currentUser.name : guestSessionName;
                     let canDelete = currentIdentifier && (currentIdentifier === c.commenter);
-                    let deleteBtnHtml = canDelete ? `<button onclick="deleteComment('${post.id}', ${actualIndex})" class="text-red-400 hover:text-red-600 ml-2" title="Delete comment"><i class="fa-solid fa-trash-can text-[10px]"></i></button>` : '';
+                    let deleteBtnHtml = canDelete ? `<button onclick="deleteComment(${post.id}, ${actualIndex})" class="text-red-400 hover:text-red-600 ml-2" title="Delete comment"><i class="fa-solid fa-trash-can text-[10px]"></i></button>` : '';
 
                     let likesCount = c.likes || 0;
                     let dislikesCount = c.dislikes || 0;
@@ -2206,13 +2195,13 @@
 
                     if (c.replies && c.replies.length > 0) {
                         let totalReplies = c.replies.length;
-                        let visibleReplies = isRepliesExpanded ? c.replies : [c.replies[0]]; // Show first reply by default, others hidden
+                        let visibleReplies = isRepliesExpanded ? c.replies : [c.replies[0]];
 
                         visibleReplies.forEach((rep, repIdx) => {
                             let repAdminBadge = rep.isAdmin ? `<span class="inline-flex items-center text-blue-500 ml-1 text-xs" title="Verified Admin"><i class="fa-solid fa-circle-check"></i></span>` : '';
                             let formattedReplyText = formatReplyText(rep.text);
+                            let repTimeAgo = formatCommentTime(rep.timestamp);
                             
-                            // Nested reply likes configuration
                             let repLikes = rep.likes || 0;
                             let repDislikes = rep.dislikes || 0;
 
@@ -2228,20 +2217,19 @@
                                                 <div class="flex items-center gap-1.5">
                                                     <span class="font-extrabold text-slate-900">${rep.commenter}</span>
                                                     ${repAdminBadge}
-                                                    <span class="text-slate-400 text-[10px]">Just now</span>
+                                                    <span class="text-slate-400 text-[10px]">${repTimeAgo}</span>
                                                 </div>
                                             </div>
                                             <p class="text-xs text-slate-700 leading-relaxed whitespace-pre-line">${formattedReplyText}</p>
                                             
-                                            <!-- Sub-comment action toolbar with functional toggle likes -->
-                                            <div class="flex items-center gap-3.5 text-[10px] text-slate-500 pt-0.5">
-                                                <button onclick="likeReply('${post.id}', ${actualIndex}, ${repIdx})" class="flex items-center gap-1 hover:text-slate-800 transition-all">
+                                            <div class="flex items-center gap-4 text-[10px] text-slate-500 pt-0.5">
+                                                <button onclick="likeReply(${post.id}, ${actualIndex}, ${repIdx})" class="flex items-center gap-1 hover:text-slate-800 transition-all">
                                                     <i class="fa-regular fa-thumbs-up"></i> <span>${repLikes}</span>
                                                 </button>
-                                                <button onclick="dislikeReply('${post.id}', ${actualIndex}, ${repIdx})" class="flex items-center gap-1 hover:text-slate-800 transition-all">
+                                                <button onclick="dislikeReply(${post.id}, ${actualIndex}, ${repIdx})" class="flex items-center gap-1 hover:text-slate-800 transition-all">
                                                     <i class="fa-regular fa-thumbs-down"></i> <span>${repDislikes}</span>
                                                 </button>
-                                                <button onclick="openUserReplyModal('${post.id}', ${actualIndex}, '${rep.commenter.replace(/'/g, "\\'")}')" class="font-bold hover:text-primary transition-all">Reply</button>
+                                                <button onclick="openUserReplyModal(${post.id}, ${actualIndex}, '${rep.commenter.replace(/'/g, "\\'")}')" class="font-bold hover:text-primary transition-all">Reply</button>
                                             </div>
                                         </div>
                                     </div>
@@ -2258,7 +2246,7 @@
                             `;
                         } else {
                             repliesHtml += `
-                                <button onclick="openUserReplyModal('${post.id}', ${actualIndex}, '${c.commenter.replace(/'/g, "\\'")}')" class="text-[10px] font-extrabold text-slate-500 hover:text-[#FF5A36] mt-1 ml-8 block">
+                                <button onclick="openUserReplyModal(${post.id}, ${actualIndex}, '${c.commenter.replace(/'/g, "\\'")}')" class="text-[10px] font-extrabold text-slate-500 hover:text-[#FF5A36] mt-1 ml-8 block">
                                     <i class="fa-solid fa-reply mr-1"></i> Reply
                                 </button>
                             `;
@@ -2281,11 +2269,15 @@
                                         ${deleteBtnHtml}
                                     </div>
                                     <p class="text-xs text-slate-700 leading-relaxed whitespace-pre-line">${formatReplyText(c.text)}</p>
+                                    
                                     <div class="flex items-center gap-4 text-xs text-slate-500 pt-0.5">
-                                        <button onclick="likeComment('${post.id}', ${actualIndex})" class="flex items-center gap-1 hover:text-slate-800 transition-all"><i class="fa-regular fa-thumbs-up"></i> <span>${likesCount}</span></button>
-                                        <button onclick="dislikeComment('${post.id}', ${actualIndex})" class="flex items-center gap-1 hover:text-slate-800 transition-all"><i class="fa-regular fa-thumbs-down"></i> <span>${dislikesCount}</span></button>
-                                        <button onclick="openUserReplyModal('${post.id}', ${actualIndex}, '${c.commenter.replace(/'/g, "\\'")}')" class="font-bold hover:text-primary transition-all">Reply</button>
-                                        <button class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-ellipsis"></i></button>
+                                        <button onclick="likeComment(${post.id}, ${actualIndex})" class="flex items-center gap-1 hover:text-slate-800 transition-all">
+                                            <i class="fa-regular fa-thumbs-up"></i> <span>${likesCount}</span>
+                                        </button>
+                                        <button onclick="dislikeComment(${post.id}, ${actualIndex})" class="flex items-center gap-1 hover:text-slate-800 transition-all">
+                                            <i class="fa-regular fa-thumbs-down"></i> <span>${dislikesCount}</span>
+                                        </button>
+                                        <button onclick="openUserReplyModal(${post.id}, ${actualIndex}, '${c.commenter.replace(/'/g, "\\'")}')" class="font-bold hover:text-primary transition-all">Reply</button>
                                     </div>
                                 </div>
                             </div>
@@ -2298,7 +2290,7 @@
                 if (post.comments.length > 2) {
                     const btnText = isExpanded ? 'Show Less Comments' : `Show More Comments (${post.comments.length - 2})`;
                     toggleBtnHtml = `
-                        <button onclick="toggleComments('${post.id}')" class="text-[10px] font-extrabold text-[#FF5A36] hover:underline mt-2 block">
+                        <button onclick="toggleComments(${post.id})" class="text-[10px] font-extrabold text-[#FF5A36] hover:underline mt-2 block">
                             ${btnText}
                         </button>
                     `;
@@ -2311,7 +2303,7 @@
                             <div class="text-[9px] text-slate-400 font-bold mb-1 flex items-center gap-1">
                                 <i class="fa-solid fa-user-check text-emerald-500"></i> Commenting as <span class="text-slate-800 font-extrabold">${currentUser.name}</span>
                             </div>
-                            <form onsubmit="event.preventDefault(); submitComment('${post.id}');" class="flex gap-2">
+                            <form onsubmit="event.preventDefault(); submitComment(${post.id});" class="flex gap-2">
                                 <input type="text" id="comment-input-${post.id}" required placeholder="Add a sweet foodie comment..." class="flex-1 px-3 py-2 bg-white border border-slate-200 rounded-lg outline-none text-[11px] font-bold text-slate-800 placeholder-slate-400 focus:border-[#FF5A36]">
                                 <button type="submit" class="bg-[#FF5A36] hover:bg-[#E04825] text-white px-3 rounded-lg text-xs font-black transition-all shadow-sm">
                                     Send
@@ -2326,7 +2318,7 @@
                                 <span><i class="fa-solid fa-user-pen text-[#FF5A36]"></i> Commenting as Guest: <span class="text-slate-800 font-extrabold">${guestSessionName}</span></span>
                                 <button type="button" onclick="resetGuestSessionName()" class="text-[9px] text-[#FF5A36] hover:underline">Change Name</button>
                             </div>
-                            <form onsubmit="event.preventDefault(); submitComment('${post.id}');" class="flex gap-2">
+                            <form onsubmit="event.preventDefault(); submitComment(${post.id});" class="flex gap-2">
                                 <input type="text" id="comment-input-${post.id}" required placeholder="Write your comment..." class="flex-1 px-3 py-2 bg-white border border-slate-200 rounded-lg outline-none text-[11px] font-bold text-slate-800 placeholder-slate-400 focus:border-[#FF5A36]">
                                 <button type="submit" class="bg-[#FF5A36] hover:bg-[#E04825] text-white px-3 rounded-lg text-xs font-black transition-all shadow-sm">
                                     Post
@@ -2355,6 +2347,7 @@
                 }
 
                 let currentSortLabel = sortMode === 'recent' ? 'Most recent' : 'Oldest first';
+                let postTimeDisplay = post.timestamp ? formatCommentTime(post.timestamp) : 'Recently';
 
                 container.innerHTML += `
                     <div class="bg-white rounded-[24px] border border-slate-200 overflow-hidden shadow-sm hover:shadow-md transition-all">
@@ -2365,10 +2358,10 @@
                                 </div>
                                 <div>
                                     <div class="flex items-center gap-1">
-                                        <h4 class="text-xs font-black text-slate-900">${post.authorName || 'Alqadri Chaska Point'}</h4>
+                                        <h4 class="text-xs font-black text-slate-900">${post.authorName || 'Al-Qadri Chaska Point'}</h4>
                                         <i class="fa-solid fa-circle-check text-[11px] text-blue-500" title="Verified Official Outlet"></i>
                                     </div>
-                                    <p class="text-[9px] text-slate-400 font-bold">@alqadri.chaska &bull; Gujranwala</p>
+                                    <p class="text-[9px] text-slate-400 font-bold">@alqadri.chaska &bull; <span class="text-slate-500">${postTimeDisplay}</span></p>
                                 </div>
                             </div>
                             <span class="text-[9px] bg-orange-100 text-[#FF5A36] px-2.5 py-1 rounded-full font-extrabold tracking-wide">Verified Deal</span>
@@ -2384,11 +2377,11 @@
                         </div>
 
                         <div class="px-4 py-3 border-t border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
-                            <button onclick="likePost('${post.id}')" class="flex items-center gap-1.5 text-xs font-extrabold text-slate-600 hover:text-rose-500 transition-all">
+                            <button onclick="likePost(${post.id})" class="flex items-center gap-1.5 text-xs font-extrabold text-slate-600 hover:text-rose-500 transition-all">
                                 <i class="${heartIcon} ${heartColor} text-sm"></i>
                                 <span id="post-likes-count-${post.id}">${post.likes}</span>
                             </button>
-                            <button onclick="focusCommentInput('${post.id}')" class="flex items-center gap-1.5 text-xs font-extrabold text-slate-600 hover:text-sky-500 transition-all">
+                            <button onclick="focusCommentInput(${post.id})" class="flex items-center gap-1.5 text-xs font-extrabold text-slate-600 hover:text-sky-500 transition-all">
                                 <i class="fa-regular fa-comment text-sm"></i>
                                 <span>${totalCommentsCount}</span>
                             </button>
@@ -2398,8 +2391,7 @@
                                 <span>Download</span>
                             </button>
 
-                            <!-- Functional native / hybrid share triggers here -->
-                            <button onclick="sharePost('${post.id}', '${post.title.replace(/'/g, "\\'")}', '${post.desc.replace(/\r?\n/g, " ").replace(/'/g, "\\'")}')" class="flex items-center gap-1.5 text-xs font-extrabold text-slate-600 hover:text-emerald-500 transition-all">
+                            <button onclick="sharePost(${post.id}, '${post.title.replace(/'/g, "\\'")}', '${post.desc.replace(/\r?\n/g, " ").replace(/'/g, "\\'")}')" class="flex items-center gap-1.5 text-xs font-extrabold text-slate-600 hover:text-emerald-500 transition-all">
                                 <i class="fa-solid fa-share text-sm"></i>
                                 <span>Share</span>
                             </button>
@@ -2411,7 +2403,7 @@
                                     <span>Comments</span> 
                                     <span class="bg-slate-200 text-slate-700 px-1.5 py-0.5 rounded-full text-[10px] font-bold">${totalCommentsCount}</span>
                                 </h5>
-                                <div onclick="toggleCommentSort('${post.id}')" class="text-[10px] text-slate-500 font-bold flex items-center gap-1 cursor-pointer hover:text-slate-800 transition-all" title="Click to switch sort order">
+                                <div onclick="toggleCommentSort(${post.id})" class="text-[10px] text-slate-500 font-bold flex items-center gap-1 cursor-pointer hover:text-slate-800 transition-all" title="Click to switch sort order">
                                     <span>${currentSortLabel}</span> <i class="fa-solid fa-chevron-down text-[8px]"></i>
                                 </div>
                             </div>
@@ -2429,9 +2421,8 @@
             });
         }
 
-        // Direct Reply to Comment from Write Your Comment box
         function openUserReplyModal(postId, commentIndex, commenterName) {
-            const post = feedPosts.find(p => p.id == postId);
+            const post = feedPosts.find(p => p.id === postId);
             if (!post || !post.comments[commentIndex]) return;
 
             let commentInput = document.getElementById(`comment-input-${postId}`);
@@ -2445,11 +2436,9 @@
             }
         }
 
-        // Functional Share Dialog supporting both desktop and native mobile environments
         function sharePost(id, title, desc) {
-            sharedPostText = `${title}\n\n${desc}\n\nCheck out Alqadri Chaska Point: ${window.location.href}`;
+            sharedPostText = `${title}\n\n${desc}\n\nCheck out Al-Qadri Chaska Point: ${window.location.href}`;
             
-            // Open native device share sheet if supported
             if (navigator.share) {
                 navigator.share({
                     title: title,
@@ -2463,7 +2452,6 @@
                     }
                 });
             } else {
-                // platform sliding fallback for browsers/desktops
                 openCustomShareModal(title, desc);
             }
         }
@@ -2480,12 +2468,10 @@
             document.getElementById('shareModal').classList.remove('hidden');
         }
 
-        // Close Custom Sharing Popup Overlay
         function closeShareModal() {
             document.getElementById('shareModal').classList.add('hidden');
         }
 
-        // Fallback Clipboard copy link configuration
         function copyShareLink() {
             if (navigator.clipboard && navigator.clipboard.writeText) {
                 navigator.clipboard.writeText(sharedPostText).then(() => {
@@ -2504,7 +2490,6 @@
             }
         }
 
-        // Download Post Media Function
         async function downloadPostMedia(imageUrl, title) {
             try {
                 showNotification('Downloading post image...');
@@ -2533,19 +2518,19 @@
         }
 
         function likePost(id) {
-            const post = feedPosts.find(p => p.id == id);
+            const post = feedPosts.find(p => p.id === id);
             if (!post) return;
 
-            let updatedIsLiked = !post.isLiked;
-            let updatedLikes = updatedIsLiked ? (post.likes + 1) : Math.max(0, post.likes - 1);
-
-            db.collection('posts').doc(id.toString()).update({
-                isLiked: updatedIsLiked,
-                likes: updatedLikes
-            })
-            .then(() => {
-                showNotification(updatedIsLiked ? 'Liked this post! ♥' : 'Like removed from post.');
-            });
+            post.isLiked = !post.isLiked;
+            if (post.isLiked) {
+                post.likes += 1;
+                showNotification('Liked this post! ♥');
+            } else {
+                post.likes -= 1;
+            }
+            syncDataToFirebase();
+            renderCustomerSocialFeeds();
+            renderAdminPostsList();
         }
 
         function focusCommentInput(id) {
@@ -2559,7 +2544,7 @@
         }
 
         function submitComment(id) {
-            const post = feedPosts.find(p => p.id == id);
+            const post = feedPosts.find(p => p.id === id);
             const input = document.getElementById(`comment-input-${id}`);
             
             if (!post || !input) return;
@@ -2577,18 +2562,17 @@
                 return;
             }
 
-            // Create a deep copy of the comments array to modify and push back to server
-            let updatedComments = JSON.parse(JSON.stringify(post.comments));
-
             const replyToIndex = input.dataset.replyToIndex;
             if (replyToIndex !== undefined && replyToIndex !== "") {
                 const idx = parseInt(replyToIndex);
-                if (updatedComments[idx]) {
-                    if (!updatedComments[idx].replies) updatedComments[idx].replies = [];
-                    updatedComments[idx].replies.push({
+                if (post.comments[idx]) {
+                    if (!post.comments[idx].replies) post.comments[idx].replies = [];
+                    
+                    post.comments[idx].replies.push({
                         commenter: commenterName,
                         text: commentText,
                         isAdmin: false,
+                        timestamp: Date.now(),
                         likes: 0,
                         dislikes: 0,
                         likedUsers: [],
@@ -2597,7 +2581,7 @@
                 }
                 delete input.dataset.replyToIndex;
             } else {
-                updatedComments.push({ 
+                post.comments.push({ 
                     commenter: commenterName, 
                     text: commentText, 
                     isAdmin: false, 
@@ -2610,16 +2594,10 @@
                 });
             }
 
-            db.collection('posts').doc(id.toString()).update({
-                comments: updatedComments
-            })
-            .then(() => {
-                input.value = '';
-                showNotification('Comment posted successfully!');
-            })
-            .catch(err => {
-                showNotification('Comment failed to post', 'warning');
-            });
+            input.value = '';
+            syncDataToFirebase();
+            renderCustomerSocialFeeds();
+            renderAdminPostsList();
         }
 
         function showNotification(message, type = 'success') {
@@ -2699,7 +2677,6 @@
             });
         }
 
-        // Open Checkout Order Confirmation Modal
         function openCheckoutConfirmModal() {
             const keys = Object.keys(cartItems);
             if (keys.length === 0) {
@@ -2731,7 +2708,6 @@
 
             if (grandTotalEl) grandTotalEl.innerText = 'Rs. ' + totalAmount;
 
-            // Pre-fill user details if logged in
             const nameInput = document.getElementById('checkoutName');
             const phoneInput = document.getElementById('checkoutPhone');
             const locationInput = document.getElementById('checkoutLocation');
@@ -2749,7 +2725,6 @@
             document.getElementById('checkoutConfirmModal').classList.add('hidden');
         }
 
-        // Finalize Order: Add to Admin Panel & Redirect to WhatsApp with Firestore Sync
         function finalizeOrderAndSendWhatsApp() {
             const keys = Object.keys(cartItems);
             if (keys.length === 0) return;
@@ -2780,8 +2755,7 @@
             const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
             const dateStr = new Date().toLocaleDateString();
 
-            // Structure Order Data payload
-            let orderPayload = {
+            ordersList.unshift({
                 id: orderId,
                 customerName: name,
                 phone: phone,
@@ -2790,57 +2764,47 @@
                 time: timeStr,
                 items: itemsDetail,
                 total: grandTotal,
-                status: 'Pending',
-                timestamp: firebase.firestore.FieldValue.serverTimestamp()
-            };
+                status: 'Pending'
+            });
 
-            // Write checkout configuration straight to database
-            db.collection('orders').add(orderPayload)
-              .then(() => {
-                  let waMsg = `*🛒 NEW ORDER - ALQADRI CHASKA POINT*\n`;
-                  waMsg += `*Order ID:* ${orderId}\n`;
-                  waMsg += `*Customer:* ${name}\n`;
-                  waMsg += `*Phone:* ${phone}\n`;
-                  waMsg += `*Location:* ${location}\n\n`;
-                  waMsg += `*Items Ordered:*\n`;
-                  itemsDetail.forEach(it => {
-                      waMsg += `• ${it.name} x${it.qty} = Rs. ${it.total}\n`;
-                  });
-                  waMsg += `\n*Grand Total:* Rs. ${grandTotal}\n`;
-                  waMsg += `Thank you! Please prepare my order.`;
+            syncDataToFirebase();
 
-                  const whatsappUrl = `https://wa.me/923102434222?text=${encodeURIComponent(waMsg)}`;
+            let waMsg = `*🛒 NEW ORDER - AL-QADRI CHASKA POINT*\n`;
+            waMsg += `*Order ID:* ${orderId}\n`;
+            waMsg += `*Customer:* ${name}\n`;
+            waMsg += `*Phone:* ${phone}\n`;
+            waMsg += `*Location:* ${location}\n\n`;
+            waMsg += `*Items Ordered:*\n`;
+            itemsDetail.forEach(it => {
+                waMsg += `• ${it.name} x${it.qty} = Rs. ${it.total}\n`;
+            });
+            waMsg += `\n*Grand Total:* Rs. ${grandTotal}\n`;
+            waMsg += `Thank you! Please prepare my order.`;
 
-                  closeCheckoutConfirmModal();
-                  showNotification(`Order ${orderId} submitted! Opening WhatsApp...`);
-                  addOrderNotification(`Order Placed (${orderId})`, `Order sent to WhatsApp & kitchen for approval.`);
+            const whatsappUrl = `https://wa.me/923102434222?text=${encodeURIComponent(waMsg)}`;
 
-                  // Clear Cart
-                  cartItems = {};
-                  renderCustomerMenu();
-                  renderLocalMenu();
-                  renderDrinksMenu();
-                  renderCartSummary();
+            closeCheckoutConfirmModal();
+            showNotification(`Order ${orderId} submitted! Opening WhatsApp...`);
+            addOrderNotification(`Order Placed (${orderId})`, `Order sent to WhatsApp & kitchen for approval.`);
 
-                  // Open WhatsApp automatically
-                  window.open(whatsappUrl, '_blank');
-              })
-              .catch(err => {
-                  console.error("Order submission failure: ", err);
-                  showNotification('Order checkouts currently down. Please contact support.', 'warning');
-              });
+            cartItems = {};
+            renderCustomerMenu();
+            renderLocalMenu();
+            renderDrinksMenu();
+            renderCartSummary();
+            renderAdminOrdersList();
+
+            window.open(whatsappUrl, '_blank');
         }
 
-        // Admin Approval Action Function with Database Sync
         function approveAdminOrder(index) {
-            let ord = ordersList[index];
-            if (ord && ord.firestoreId) {
-                db.collection('orders').doc(ord.firestoreId).update({
-                    status: 'Approved'
-                }).then(() => {
-                    showNotification(`Order ${ord.id} approved!`);
-                    addOrderNotification(`Order Approved (${ord.id})`, `Kitchen approved order ${ord.id}! Fresh food preparation started.`, true);
-                }).catch(err => console.error("Error approving order:", err));
+            if (ordersList[index]) {
+                ordersList[index].status = 'Approved';
+                const ord = ordersList[index];
+                syncDataToFirebase();
+                showNotification(`Order ${ord.id} approved!`);
+                addOrderNotification(`Order Approved (${ord.id})`, `Kitchen approved order ${ord.id}! Fresh food preparation started.`, true);
+                renderAdminOrdersList();
             }
         }
 
@@ -2937,7 +2901,6 @@
             showNotification('Basket cleared.', 'warning');
         }
 
-        // Account Auth Switcher (Sign In vs Register)
         function switchAuthMode(mode) {
             const btnSignIn = document.getElementById('btnAuthTabSignIn');
             const btnRegister = document.getElementById('btnAuthTabRegister');
@@ -2985,7 +2948,6 @@
             document.getElementById('userAuthModal').classList.add('hidden');
         }
 
-        // Sign In Existing User with permanent local storage session until manual sign out
         function signInUser() {
             const phone = document.getElementById('signInPhone').value.trim();
             if (!phone) return;
@@ -3006,7 +2968,6 @@
             }
         }
 
-        // Register First-Time User with permanent local storage session synced with Database
         function registerUser() {
             const name = document.getElementById('regName').value.trim();
             const phone = document.getElementById('regPhone').value.trim();
@@ -3019,28 +2980,23 @@
             }
 
             const newUser = { name, phone, location: loc, email };
+            registeredUsers.push(newUser);
+            currentUser = newUser; 
+            localStorage.setItem('acp_current_user', JSON.stringify(currentUser));
 
-            db.collection('users').add(newUser)
-              .then((docRef) => {
-                  currentUser = newUser; 
-                  currentUser.firestoreId = docRef.id;
-                  localStorage.setItem('acp_current_user', JSON.stringify(currentUser));
+            syncDataToFirebase();
+            updateUserAccountDisplay();
+            
+            showNotification(`Welcome, ${name}! Account registered.`);
+            closeUserModal();
+            
+            document.getElementById('regName').value = '';
+            document.getElementById('regPhone').value = '';
+            document.getElementById('regLocation').value = '';
+            document.getElementById('regEmail').value = '';
 
-                  updateUserAccountDisplay();
-                  showNotification(`Welcome, ${name}! Account registered.`);
-                  closeUserModal();
-                  
-                  document.getElementById('regName').value = '';
-                  document.getElementById('regPhone').value = '';
-                  document.getElementById('regLocation').value = '';
-                  document.getElementById('regEmail').value = '';
-
-                  renderCustomerSocialFeeds();
-              })
-              .catch(err => {
-                  console.error("User registration error: ", err);
-                  showNotification('Failed to register user to cloud backend.', 'warning');
-              });
+            renderRegisteredUsers();
+            renderCustomerSocialFeeds();
         }
 
         function logoutUser() {
@@ -3071,7 +3027,6 @@
                 document.getElementById('admin-page').classList.remove('hidden');
                 window.scrollTo(0, 0);
                 
-                // Initialize staging working arrays on entry
                 workingMenuData = JSON.parse(JSON.stringify(menuData));
                 workingFeedPosts = JSON.parse(JSON.stringify(feedPosts));
 
@@ -3136,7 +3091,7 @@
             } else if (activeTab === 'feed') {
                 secFeed.classList.remove('hidden');
                 btnFeed.className = activeBox;
-                switchFeedSubTab('create');
+                switchFeedSubTab('list');
                 renderAdminPostsList();
             } else if (activeTab === 'users') {
                 secUsers.classList.remove('hidden');
@@ -3189,7 +3144,6 @@
             }
         }
 
-        // 1. Render Admin Orders List
         function renderAdminOrdersList() {
             const container = document.getElementById('adminOrdersContainer');
             const counter = document.getElementById('lblAdminOrdersCount');
@@ -3264,14 +3218,11 @@
             });
         }
 
-        // Delete order from database inside admin view
         function removeAdminOrder(index) {
-            let ord = ordersList[index];
-            if (ord && ord.firestoreId) {
-                db.collection('orders').doc(ord.firestoreId).delete()
-                  .then(() => showNotification('Order record cleared.'))
-                  .catch(err => console.error("Error clearing order:", err));
-            }
+            ordersList.splice(index, 1);
+            syncDataToFirebase();
+            renderAdminOrdersList();
+            showNotification('Order record cleared.');
         }
 
         function handleImageUpload(event) {
@@ -3318,7 +3269,6 @@
             showNotification('Image attachment removed.', 'warning');
         }
 
-        // Filter Admin Catalog View by Category Boxes
         function filterAdminCatalog(cat) {
             activeAdminCatalogFilter = cat;
 
@@ -3343,9 +3293,8 @@
             renderAdminCatalog();
         }
 
-        // Reorder Catalog Item Up or Down in Staging array
         function moveCatalogItem(id, direction) {
-            const index = workingMenuData.findIndex(x => x.id == id);
+            const index = workingMenuData.findIndex(x => x.id === id);
             if (index === -1) return;
 
             const targetIndex = direction === 'up' ? index - 1 : index + 1;
@@ -3361,29 +3310,21 @@
             if (updateBar) updateBar.classList.remove('hidden');
         }
 
-        // Commit Reordered Catalog parameters directly to Firestore
         function saveCatalogOrderChanges() {
-            let batch = db.batch();
-            workingMenuData.forEach((item, index) => {
-                let ref = db.collection('menu').doc(item.id);
-                batch.update(ref, { order: index });
-            });
+            menuData = JSON.parse(JSON.stringify(workingMenuData));
+            syncDataToFirebase();
+            renderAdminCatalog();
+            renderCustomerMenu();
+            renderLocalMenu();
+            renderDrinksMenu();
 
-            batch.commit()
-              .then(() => {
-                  showNotification('Catalog order updated successfully!');
-                  const updateBar = document.getElementById('catalogUpdateBar');
-                  if (updateBar) updateBar.classList.add('hidden');
-              })
-              .catch(err => {
-                  console.error("Batch write catalog failure: ", err);
-                  showNotification('Failed to update catalog order on server.', 'warning');
-              });
+            const updateBar = document.getElementById('catalogUpdateBar');
+            if (updateBar) updateBar.classList.add('hidden');
+            showNotification('Catalog order updated successfully!');
         }
 
-        // Reorder Feed Post Up or Down in Staging array
         function movePostItem(id, direction) {
-            const index = workingFeedPosts.findIndex(p => p.id == id);
+            const index = workingFeedPosts.findIndex(p => p.id === id);
             if (index === -1) return;
 
             const targetIndex = direction === 'up' ? index - 1 : index + 1;
@@ -3399,27 +3340,17 @@
             if (updateBar) updateBar.classList.remove('hidden');
         }
 
-        // Commit Reordered Feed post parameters directly to Firestore
         function savePostOrderChanges() {
-            let batch = db.batch();
-            workingFeedPosts.forEach((post, index) => {
-                let ref = db.collection('posts').doc(post.id);
-                batch.update(ref, { order: index });
-            });
+            feedPosts = JSON.parse(JSON.stringify(workingFeedPosts));
+            syncDataToFirebase();
+            renderAdminPostsList();
+            renderCustomerSocialFeeds();
 
-            batch.commit()
-              .then(() => {
-                  showNotification('Feed post order updated successfully!');
-                  const updateBar = document.getElementById('postUpdateBar');
-                  if (updateBar) updateBar.classList.add('hidden');
-              })
-              .catch(err => {
-                  console.error("Batch write feed posts failure: ", err);
-                  showNotification('Failed to update feed layout order on server.', 'warning');
-              });
+            const updateBar = document.getElementById('postUpdateBar');
+            if (updateBar) updateBar.classList.add('hidden');
+            showNotification('Feed post order updated successfully!');
         }
 
-        // 2. Render Food Catalog in Admin Panel
         function renderAdminCatalog() {
             const container = document.getElementById('adminCatalogRows');
             const counter = document.getElementById('adminCatalogCount');
@@ -3464,16 +3395,16 @@
                         </td>
                         <td class="p-2.5 text-right font-black text-slate-800">Rs. ${item.price}</td>
                         <td class="p-2.5 text-right space-x-1 whitespace-nowrap">
-                            <button onclick="moveCatalogItem('${item.id}', 'up')" class="w-7 h-7 inline-flex items-center justify-center bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg transition-all font-bold" title="Move Up">
+                            <button onclick="moveCatalogItem(${item.id}, 'up')" class="w-7 h-7 inline-flex items-center justify-center bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg transition-all font-bold" title="Move Up">
                                 <i class="fa-solid fa-arrow-up text-[10px]"></i>
                             </button>
-                            <button onclick="moveCatalogItem('${item.id}', 'down')" class="w-7 h-7 inline-flex items-center justify-center bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg transition-all font-bold" title="Move Down">
+                            <button onclick="moveCatalogItem(${item.id}, 'down')" class="w-7 h-7 inline-flex items-center justify-center bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg transition-all font-bold" title="Move Down">
                                 <i class="fa-solid fa-arrow-down text-[10px]"></i>
                             </button>
-                            <button onclick="loadFoodToEdit('${item.id}')" class="w-7 h-7 inline-flex items-center justify-center bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg transition-all font-bold" title="Edit Item">
+                            <button onclick="loadFoodToEdit(${item.id})" class="w-7 h-7 inline-flex items-center justify-center bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg transition-all font-bold" title="Edit Item">
                                 <i class="fa-solid fa-pencil text-[10px]"></i>
                             </button>
-                            <button onclick="deleteFoodCatalog('${item.id}')" class="w-7 h-7 inline-flex items-center justify-center bg-red-50 text-red-500 hover:bg-red-500 hover:text-white rounded-lg transition-all font-bold" title="Delete Item">
+                            <button onclick="deleteFoodCatalog(${item.id})" class="w-7 h-7 inline-flex items-center justify-center bg-red-50 text-red-500 hover:bg-red-500 hover:text-white rounded-lg transition-all font-bold" title="Delete Item">
                                 <i class="fa-solid fa-trash text-[10px]"></i>
                             </button>
                         </td>
@@ -3482,7 +3413,6 @@
             });
         }
 
-        // 3. Render Published Posts List showing only post likes and total number of comments
         function renderAdminPostsList() {
             const container = document.getElementById('adminPostsListContainer');
             const counter = document.getElementById('lblAdminPostsCount');
@@ -3508,33 +3438,35 @@
                     <div class="bg-slate-50 border border-slate-200 rounded-xl p-3 space-y-2">
                         <div class="flex gap-2.5 items-start">
                             <img src="${post.image}" class="w-12 h-12 rounded-lg object-cover border border-slate-200 shrink-0" onerror="this.src='https://placehold.co/100x100/FF5A36/ffffff?text=ACP'">
-                            <div class="space-y-0.5">
+                            <div class="space-y-0.5 flex-1">
                                 <h4 class="text-xs font-black text-slate-900 line-clamp-1">${post.title}</h4>
                                 <p class="text-[9px] text-slate-500 line-clamp-2 leading-tight whitespace-pre-line">${post.desc}</p>
                             </div>
                         </div>
 
-                        <!-- Post Likes and number of comments matching design image -->
                         <div class="flex items-center justify-between text-[10px] font-bold pt-1.5 border-t border-slate-200 text-slate-600">
                             <span class="text-rose-500 flex items-center gap-1">
                                 <i class="fa-solid fa-heart"></i> ${post.likes} Likes
                             </span>
-                            <span class="text-slate-500 flex items-center gap-1">
+                            <span class="text-sky-600 flex items-center gap-1 font-extrabold">
                                 <i class="fa-regular fa-comment"></i> ${totalComments} Comments
                             </span>
+                            <button onclick="openAdminCommentsModal(${post.id})" class="px-2.5 py-1 bg-orange-100 text-[#FF5A36] hover:bg-orange-200 rounded-md font-extrabold transition-all">
+                                <i class="fa-solid fa-comments mr-1"></i> Edit Comments
+                            </button>
                         </div>
 
                         <div class="flex justify-end gap-1 pt-1.5 border-t border-slate-200">
-                            <button onclick="movePostItem('${post.id}', 'up')" class="px-2 py-1 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-md text-[10px] font-bold transition-all flex items-center gap-1" title="Move Up">
+                            <button onclick="movePostItem(${post.id}, 'up')" class="px-2 py-1 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-md text-[10px] font-bold transition-all flex items-center gap-1" title="Move Up">
                                 <i class="fa-solid fa-arrow-up"></i>
                             </button>
-                            <button onclick="movePostItem('${post.id}', 'down')" class="px-2 py-1 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-md text-[10px] font-bold transition-all flex items-center gap-1" title="Move Down">
+                            <button onclick="movePostItem(${post.id}, 'down')" class="px-2 py-1 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-md text-[10px] font-bold transition-all flex items-center gap-1" title="Move Down">
                                 <i class="fa-solid fa-arrow-down"></i>
                             </button>
-                            <button onclick="loadPostToEdit('${post.id}')" class="px-2 py-1 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-md text-[10px] font-bold transition-all flex items-center gap-1">
+                            <button onclick="loadPostToEdit(${post.id})" class="px-2 py-1 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-md text-[10px] font-bold transition-all flex items-center gap-1">
                                 <i class="fa-solid fa-pen-to-square"></i> Edit
                             </button>
-                            <button onclick="deleteFeedPost('${post.id}')" class="px-2 py-1 bg-red-50 hover:bg-red-500 text-red-600 hover:text-white border border-red-200 rounded-md text-[10px] font-bold transition-all flex items-center gap-1">
+                            <button onclick="deleteFeedPost(${post.id})" class="px-2 py-1 bg-red-50 hover:bg-red-500 text-red-600 hover:text-white border border-red-200 rounded-md text-[10px] font-bold transition-all flex items-center gap-1">
                                 <i class="fa-solid fa-trash-can"></i> Delete
                             </button>
                         </div>
@@ -3543,8 +3475,75 @@
             });
         }
 
+        function openAdminCommentsModal(postId) {
+            const post = feedPosts.find(p => p.id === postId) || workingFeedPosts.find(p => p.id === postId);
+            if (!post) return;
+
+            document.getElementById('adminCommentsPostTitle').innerText = post.title;
+            const container = document.getElementById('adminCommentsListContainer');
+            container.innerHTML = '';
+
+            if (!post.comments || post.comments.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-10 text-slate-400 text-xs font-bold">
+                        <i class="fa-regular fa-comment-dots text-2xl block mb-1 text-slate-300"></i>
+                        No comments on this post yet.
+                    </div>
+                `;
+            } else {
+                post.comments.forEach((c, cIdx) => {
+                    let commentTime = formatCommentTime(c.timestamp);
+                    let repliesHtml = '';
+
+                    if (c.replies && c.replies.length > 0) {
+                        c.replies.forEach((rep, rIdx) => {
+                            let replyTime = formatCommentTime(rep.timestamp);
+                            repliesHtml += `
+                                <div class="ml-6 mt-2 p-2.5 bg-slate-50 border border-slate-200 rounded-xl flex items-start justify-between gap-2">
+                                    <div class="space-y-0.5">
+                                        <div class="flex items-center gap-1.5 text-[10px]">
+                                            <span class="font-extrabold text-slate-900">${rep.commenter}</span>
+                                            <span class="text-slate-400 font-medium">${replyTime}</span>
+                                        </div>
+                                        <p class="text-xs text-slate-700 whitespace-pre-line">${rep.text}</p>
+                                    </div>
+                                    <button onclick="deleteReply(${post.id}, ${cIdx}, ${rIdx})" class="p-1.5 bg-red-50 hover:bg-red-500 text-red-500 hover:text-white rounded-lg transition-all shrink-0 text-xs" title="Delete Reply">
+                                        <i class="fa-solid fa-trash-can"></i>
+                                    </button>
+                                </div>
+                            `;
+                        });
+                    }
+
+                    container.innerHTML += `
+                        <div class="p-3 bg-white border border-slate-200 rounded-2xl shadow-sm space-y-2">
+                            <div class="flex items-start justify-between gap-2">
+                                <div class="space-y-0.5">
+                                    <div class="flex items-center gap-1.5 text-xs">
+                                        <span class="font-black text-slate-900">${c.commenter}</span>
+                                        <span class="text-slate-400 text-[10px] font-medium">${commentTime}</span>
+                                    </div>
+                                    <p class="text-xs text-slate-800 font-medium whitespace-pre-line">${c.text}</p>
+                                </div>
+                                <button onclick="deleteComment(${post.id}, ${cIdx})" class="p-2 bg-red-50 hover:bg-red-500 text-red-500 hover:text-white rounded-xl transition-all shrink-0 text-xs shadow-sm" title="Delete Comment">
+                                    <i class="fa-solid fa-trash-can"></i>
+                                </button>
+                            </div>
+                            ${repliesHtml}
+                        </div>
+                    `;
+                });
+            }
+
+            document.getElementById('adminCommentsModal').classList.remove('hidden');
+        }
+
+        function closeAdminCommentsModal() {
+            document.getElementById('adminCommentsModal').classList.add('hidden');
+        }
+
         function loadPostToEdit(postId) {
-            const post = feedPosts.find(p => p.id == postId);
+            const post = feedPosts.find(p => p.id === postId);
             if (!post) return;
 
             document.getElementById('editPostId').value = post.id;
@@ -3583,17 +3582,15 @@
             }
         }
 
-        // Delete post inside Firestore posts collection
         function deleteFeedPost(postId) {
-            db.collection('posts').doc(postId.toString()).delete()
-              .then(() => showNotification('Post deleted successfully!', 'warning'))
-              .catch(err => {
-                  console.error("Delete post failure: ", err);
-                  showNotification('Error deleting post on server.', 'warning');
-              });
+            feedPosts = feedPosts.filter(p => p.id !== postId);
+            workingFeedPosts = JSON.parse(JSON.stringify(feedPosts));
+            syncDataToFirebase();
+            renderAdminPostsList();
+            renderCustomerSocialFeeds();
+            showNotification('Post deleted successfully!', 'warning');
         }
 
-        // Form post handler synchronized with Cloud Firestore
         function handleFeedPostSubmit(event) {
             event.preventDefault();
 
@@ -3607,40 +3604,40 @@
                 return;
             }
 
-            const adminAuthorName = "Alqadri Chaska Point";
-
-            let payload = {
-                title: title,
-                image: image,
-                desc: desc,
-                authorName: adminAuthorName
-            };
+            const adminAuthorName = "Al-Qadri Chaska Point";
 
             if (editId) {
-                db.collection('posts').doc(editId.toString()).update(payload)
-                  .then(() => {
-                      showNotification('Post changes saved successfully!');
-                      resetPostForm();
-                      switchFeedSubTab('list');
-                  })
-                  .catch(err => showNotification('Failed to update post.', 'warning'));
+                const postIdx = feedPosts.findIndex(p => p.id == editId);
+                if (postIdx !== -1) {
+                    feedPosts[postIdx].title = title;
+                    feedPosts[postIdx].image = image;
+                    feedPosts[postIdx].desc = desc;
+                    feedPosts[postIdx].authorName = adminAuthorName;
+                    showNotification('Post changes saved successfully!');
+                }
             } else {
-                payload.likes = 0;
-                payload.isLiked = false;
-                payload.comments = [];
-                payload.order = Date.now();
-
-                db.collection('posts').add(payload)
-                  .then(() => {
-                      showNotification('New post broadcasted live!');
-                      resetPostForm();
-                      switchFeedSubTab('list');
-                  })
-                  .catch(err => showNotification('Failed to publish post.', 'warning'));
+                const newPostId = feedPosts.length > 0 ? Math.max(...feedPosts.map(p => p.id)) + 1 : 101;
+                feedPosts.unshift({
+                    id: newPostId,
+                    title,
+                    image,
+                    desc,
+                    authorName: adminAuthorName,
+                    timestamp: Date.now(),
+                    likes: 0,
+                    isLiked: false,
+                    comments: []
+                });
+                showNotification('New post broadcasted live!');
             }
+
+            workingFeedPosts = JSON.parse(JSON.stringify(feedPosts));
+            syncDataToFirebase();
+            resetPostForm();
+            renderAdminPostsList();
+            renderCustomerSocialFeeds();
         }
 
-        // 4. Render Registered Customers CRM Directory
         function renderRegisteredUsers(usersToShow = registeredUsers) {
             const tableBody = document.getElementById('registeredUsersRows');
             const badge = document.getElementById('adminUsersCountBadge');
@@ -3701,14 +3698,12 @@
             showNotification('Address copied to clipboard!');
         }
 
-        // Delete user record from cloud Firestore
         function removeCustomerRecord(idx) {
-            let user = registeredUsers[idx];
-            if (user && user.firestoreId) {
-                db.collection('users').doc(user.firestoreId).delete()
-                  .then(() => showNotification('Account removed from CRM database.', 'warning'))
-                  .catch(err => console.error("Error deleting customer doc:", err));
-            }
+            registeredUsers.splice(idx, 1);
+            syncDataToFirebase();
+            updateUserAccountDisplay();
+            renderRegisteredUsers();
+            showNotification('Account removed from CRM database.', 'warning');
         }
 
         function searchUsers(keyword) {
@@ -3721,19 +3716,15 @@
             renderRegisteredUsers(filtered);
         }
 
-        // Delete item from cloud Firestore catalog collection
         function deleteFoodCatalog(id) {
             if (cartItems[id]) {
                 delete cartItems[id];
             }
-            db.collection('menu').doc(id.toString()).delete()
-              .then(() => {
-                  showNotification('Item removed from catalog.');
-              })
-              .catch(err => {
-                  console.error("Error removing catalog item: ", err);
-                  showNotification('Failed to remove catalog item on server.', 'warning');
-              });
+            menuData = menuData.filter(x => x.id != id);
+            workingMenuData = JSON.parse(JSON.stringify(menuData));
+            syncDataToFirebase();
+            renderAdminCatalog();
+            showNotification('Item removed from catalog.');
         }
 
         function loadFoodToEdit(id) {
@@ -3753,7 +3744,6 @@
             switchCatalogSubTab('add');
         }
 
-        // Handles menu modifications directly writing payloads to server
         function handleFoodFormSubmit(event) {
             event.preventDefault();
 
@@ -3773,32 +3763,25 @@
                 image = 'https://placehold.co/400x300/FF5A36/ffffff?text=ACP';
             }
 
-            let payload = {
-                name: name,
-                price: price,
-                image: image,
-                desc: desc,
-                category: category
-            };
-
             if (editId) {
-                db.collection('menu').doc(editId.toString()).update(payload)
-                  .then(() => {
-                      showNotification('Changes saved successfully!');
-                      resetAdminForm();
-                      switchCatalogSubTab('list');
-                  })
-                  .catch(err => showNotification('Error editing menu item.', 'warning'));
+                const index = menuData.findIndex(x => x.id == editId);
+                if (index !== -1) {
+                    menuData[index] = { id: parseInt(editId), name, price, image, desc, category };
+                    showNotification('Changes saved successfully!');
+                }
             } else {
-                payload.order = Date.now();
-                db.collection('menu').add(payload)
-                  .then(() => {
-                      showNotification('Product successfully added to the catalog!');
-                      resetAdminForm();
-                      switchCatalogSubTab('list');
-                  })
-                  .catch(err => showNotification('Error adding catalog product.', 'warning'));
+                const newId = menuData.length > 0 ? Math.max(...menuData.map(x => x.id)) + 1 : 1;
+                menuData.push({ id: newId, name, price, image, desc, category });
+                showNotification('Product successfully added to the catalog!');
             }
+
+            workingMenuData = JSON.parse(JSON.stringify(menuData));
+            syncDataToFirebase();
+            renderAdminCatalog();
+            renderCustomerMenu();
+            renderLocalMenu();
+            renderDrinksMenu();
+            resetAdminForm();
         }
 
         function resetAdminForm() {
@@ -3882,7 +3865,7 @@
             
             html2canvas(element, options).then(canvas => {
                 const link = document.createElement('a');
-                link.download = 'Alqadri-HighRes-Receipt.jpg';
+                link.download = 'Al-Qadri-HighRes-Receipt.jpg';
                 link.href = canvas.toDataURL('image/jpeg', 1.0);
                 link.click();
                 showNotification('High-resolution JPG saved successfully!');
@@ -3891,26 +3874,6 @@
                 showNotification('Failed to generate crisp JPG receipt.', 'warning');
             });
         }
-
-        // On Load initialization safely reading saved session credentials
-        window.addEventListener('DOMContentLoaded', () => {
-            const savedUser = localStorage.getItem('acp_current_user');
-            if (savedUser) {
-                try {
-                    currentUser = JSON.parse(savedUser);
-                } catch(e) {
-                    currentUser = null;
-                }
-            }
-
-            updateUserAccountDisplay();
-            renderCustomerMenu();
-            renderLocalMenu();
-            renderDrinksMenu();
-            renderCartSummary();
-            renderCustomerSocialFeeds();
-            renderDynamicFooter();
-        });
     </script>
 </body>
 </html>
