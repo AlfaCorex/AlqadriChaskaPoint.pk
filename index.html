@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en" class="scroll-smooth">
 <head>
@@ -3829,29 +3828,24 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.3.0/firebase-app.js";
         import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.3.0/firebase-analytics.js";
         import { 
-            initializeFirestore, persistentLocalCache, persistentMultipleTabManager, 
-            collection, doc, setDoc, addDoc, updateDoc, deleteDoc, onSnapshot 
+            getFirestore, collection, doc, setDoc, addDoc, updateDoc, deleteDoc, onSnapshot 
         } from "https://www.gstatic.com/firebasejs/11.3.0/firebase-firestore.js";
 
-        // Your web app's Firebase configuration (Delhi Server)
+        // Your web app's Firebase configuration 
         const firebaseConfig = { 
-            apiKey: "AIzaSyAU3wBPK_iKzH-F0qfRp9KFG4Keq8tmm2U", 
-            authDomain: "alfa-corex-1-c9856.firebaseapp.com", 
-            projectId: "alfa-corex-1-c9856", 
-            storageBucket: "alfa-corex-1-c9856.firebasestorage.app", 
-            messagingSenderId: "685367477889", 
-            appId: "1:685367477889:web:f83b7028683df4fdc96f80", 
-            measurementId: "G-ZKPVH2RPW5" 
+            apiKey: "AIzaSyCnTvjumYj8qXN8rsQtmkGOAmNuJDummBI", 
+            authDomain: "alfa-corex.firebaseapp.com", 
+            projectId: "alfa-corex", 
+            storageBucket: "alfa-corex.firebasestorage.app", 
+            messagingSenderId: "137972735130", 
+            appId: "1:137972735130:web:8edac3d79ebea4046b1323", 
+            measurementId: "G-FERT7LM1W6" 
         }; 
 
-        // Initialize Firebase & Firestore with Persistent Local Caching (Speeds up loading instantly)
+        // Initialize Firebase & Firestore
         const app = initializeApp(firebaseConfig); 
         const analytics = getAnalytics(app);
-        const db = initializeFirestore(app, {
-            localCache: persistentLocalCache({
-                tabManager: persistentMultipleTabManager()
-            })
-        });
+        const db = getFirestore(app);
 
         // Core App State
         let cartItems = {};
@@ -3871,23 +3865,6 @@
         let workingFeedPosts = [];
         let ordersList = [];
         let registeredUsers = [];
-
-        // -----------------------------------------------------------------
-        // FIRESTORE HELPER FUNCTION (For custom item additions)
-        // -----------------------------------------------------------------
-        async function addNewItem(collectionName = "items", dataObject = {}) {
-            try {
-                const docRef = await addDoc(collection(db, collectionName), {
-                    ...dataObject,
-                    createdAt: new Date()
-                });
-                console.log("Document written with ID: ", docRef.id);
-                return docRef.id;
-            } catch (error) {
-                console.error("Error adding document: ", error);
-                throw error;
-            }
-        }
 
         // -----------------------------------------------------------------
         // REALTIME FIREBASE FIRESTORE LISTENERS
@@ -6208,7 +6185,6 @@
         }
 
         // Attach Functions to Global Window Scope for Inline Events
-        window.addNewItem = addNewItem;
         window.openGuestNameModal = openGuestNameModal;
         window.closeGuestNameModal = closeGuestNameModal;
         window.saveGuestNameFromPopup = saveGuestNameFromPopup;
