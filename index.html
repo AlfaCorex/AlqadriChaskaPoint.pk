@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en" class="scroll-smooth">
 <head>
@@ -3823,6 +3824,7 @@
     </script>
 </body>
 </html>
+
     <!-- FIREBASE REALTIME BACKEND SCRIPT -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.3.0/firebase-app.js";
@@ -3865,6 +3867,23 @@
         let workingFeedPosts = [];
         let ordersList = [];
         let registeredUsers = [];
+
+        // -----------------------------------------------------------------
+        // FIRESTORE HELPER FUNCTION (As requested for custom item additions)
+        // -----------------------------------------------------------------
+        async function addNewItem(collectionName = "items", dataObject = {}) {
+            try {
+                const docRef = await addDoc(collection(db, collectionName), {
+                    ...dataObject,
+                    createdAt: new Date()
+                });
+                console.log("Document written with ID: ", docRef.id);
+                return docRef.id;
+            } catch (error) {
+                console.error("Error adding document: ", error);
+                throw error;
+            }
+        }
 
         // -----------------------------------------------------------------
         // REALTIME FIREBASE FIRESTORE LISTENERS
@@ -6185,6 +6204,7 @@
         }
 
         // Attach Functions to Global Window Scope for Inline Events
+        window.addNewItem = addNewItem;
         window.openGuestNameModal = openGuestNameModal;
         window.closeGuestNameModal = closeGuestNameModal;
         window.saveGuestNameFromPopup = saveGuestNameFromPopup;
