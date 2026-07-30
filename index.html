@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en" class="scroll-smooth">
 <head>
@@ -2183,7 +2182,7 @@
                                                 <button onclick="dislikeReply(${post.id}, ${actualIndex}, ${repIdx})" class="flex items-center gap-1 hover:text-slate-800 transition-all">
                                                     <i class="fa-regular fa-thumbs-down"></i> <span>${repDislikes}</span>
                                                 </button>
-                                                <button onclick="openUserReplyModal(${post.id}, ${actualIndex}, '${rep.commenter.replace(/'/g, "\\'")}')" class="font-bold hover:text-slate-800 transition-all">Reply</button>
+                                                <button onclick="openUserReplyModal(${post.id}, ${actualIndex}, '${rep.commenter.replace(/'/g, "\\'")}')" class="font-bold hover:text-primary transition-all">Reply</button>
                                             </div>
                                         </div>
                                     </div>
@@ -2232,7 +2231,7 @@
                                         <button onclick="dislikeComment(${post.id}, ${actualIndex})" class="flex items-center gap-1 hover:text-slate-800 transition-all">
                                             <i class="fa-regular fa-thumbs-down"></i> <span>${dislikesCount}</span>
                                         </button>
-                                        <button onclick="openUserReplyModal(${post.id}, ${actualIndex}, '${c.commenter.replace(/'/g, "\\'")}')" class="font-bold hover:text-slate-800 transition-all">Reply</button>
+                                        <button onclick="openUserReplyModal(${post.id}, ${actualIndex}, '${c.commenter.replace(/'/g, "\\'")}')" class="font-bold hover:text-primary transition-all">Reply</button>
                                     </div>
                                 </div>
                             </div>
@@ -2582,7 +2581,6 @@
             }, 2500);
         }
 
-        // Open/Close Notifications Modal
         function openNotificationsModal() {
             document.getElementById('notificationsModal').classList.remove('hidden');
             document.getElementById('navBellBadge').classList.add('hidden');
@@ -3824,306 +3822,28 @@
         }
     </script>
 
-    <!-- ================================================================= -->
-    <!-- FIREBASE INTEGRATION LAYER (DO NOT CHANGE ORIGINAL CODES ABOVE)  -->
-    <!-- ================================================================= -->
-    <!-- Firebase App and Firestore SDKs (Compat v10 Libraries) -->
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+    <!-- Firebase SDK Integration (Loaded asynchronously to prevent UI lag or pauses) -->
+    <script type="module">
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+      import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics.js";
 
-    <script>
-        (function() {
-            // FIREBASE CONFIGURATION
-            // Update this block with your actual credentials from the Firebase Console.
-            // If kept with placeholder strings, the app enters an in-memory "Local Mode".
-            const firebaseConfig = {
-                apiKey: "YOUR_API_KEY_PLACEHOLDER",
-                authDomain: "YOUR_AUTH_DOMAIN_PLACEHOLDER",
-                projectId: "YOUR_PROJECT_ID_PLACEHOLDER",
-                storageBucket: "YOUR_STORAGE_BUCKET_PLACEHOLDER",
-                messagingSenderId: "YOUR_MESSAGING_SENDER_ID_PLACEHOLDER",
-                appId: "YOUR_APP_ID_PLACEHOLDER"
-            };
+      const firebaseConfig = {
+        apiKey: "AIzaSyCnTvjumYj8qXN8rsQtmkGOAmNuJDummBI",
+        authDomain: "alfa-corex.firebaseapp.com",
+        projectId: "alfa-corex",
+        storageBucket: "alfa-corex.firebasestorage.app",
+        messagingSenderId: "137972735130",
+        appId: "1:137972735130:web:8edac3d79ebea4046b1323",
+        measurementId: "G-FERT7LM1W6"
+      };
 
-            let db = null;
-            let isFirebaseActive = false;
-
-            // Non-blocking initialization check to avoid browser errors
-            if (firebaseConfig.apiKey && !firebaseConfig.apiKey.includes("PLACEHOLDER") && 
-                firebaseConfig.projectId && !firebaseConfig.projectId.includes("PLACEHOLDER")) {
-                try {
-                    firebase.initializeApp(firebaseConfig);
-                    db = firebase.firestore();
-                    isFirebaseActive = true;
-                    console.log("ACP Backend: Firebase Connected.");
-                } catch (e) {
-                    console.warn("ACP Backend: Connection failed. Operating in Local Mode.", e);
-                }
-            } else {
-                console.log("ACP Backend: Placeholder settings. Operating in Local Cache Mode.");
-            }
-
-            // Async data loading to ensure instant initial page load with no freeze
-            async function loadDataFromFirebase() {
-                if (!isFirebaseActive || !db) return;
-
-                try {
-                    // 1. Fetch Catalog Menu (Ordered by arrangement index)
-                    const catalogSnap = await db.collection("catalog").orderBy("orderIndex", "asc").get();
-                    const loadedCatalog = [];
-                    catalogSnap.forEach(doc => loadedCatalog.push(doc.data()));
-                    if (loadedCatalog.length > 0) {
-                        menuData = loadedCatalog;
-                        workingMenuData = JSON.parse(JSON.stringify(menuData));
-                        if (typeof renderCustomerMenu === 'function') renderCustomerMenu();
-                        if (typeof renderLocalMenu === 'function') renderLocalMenu();
-                        if (typeof renderDrinksMenu === 'function') renderDrinksMenu();
-                    }
-
-                    // 2. Fetch Feed Announcements
-                    const postsSnap = await db.collection("posts").orderBy("orderIndex", "asc").get();
-                    const loadedPosts = [];
-                    postsSnap.forEach(doc => loadedPosts.push(doc.data()));
-                    if (loadedPosts.length > 0) {
-                        feedPosts = loadedPosts;
-                        workingFeedPosts = JSON.parse(JSON.stringify(feedPosts));
-                        if (typeof renderCustomerSocialFeeds === 'function') renderCustomerSocialFeeds();
-                    }
-
-                    // 3. Fetch Registrants Directory
-                    const usersSnap = await db.collection("users").get();
-                    const loadedUsers = [];
-                    usersSnap.forEach(doc => loadedUsers.push(doc.data()));
-                    if (loadedUsers.length > 0) {
-                        registeredUsers = loadedUsers;
-                        if (typeof renderRegisteredUsers === 'function') renderRegisteredUsers();
-                    }
-
-                    // 4. Fetch Placed Orders
-                    const ordersSnap = await db.collection("orders").orderBy("time", "desc").get();
-                    const loadedOrders = [];
-                    ordersSnap.forEach(doc => loadedOrders.push(doc.data()));
-                    if (loadedOrders.length > 0) {
-                        ordersList = loadedOrders;
-                        if (typeof renderAdminOrdersList === 'function') renderAdminOrdersList();
-                    }
-                } catch (err) {
-                    console.error("ACP Backend: Firestore initialization fetch failure:", err);
-                }
-            }
-
-            // Sync helpers
-            function syncPostToFirebase(postId) {
-                if (!isFirebaseActive || !db) return;
-                const post = feedPosts.find(p => p.id === postId);
-                if (post) {
-                    db.collection("posts").doc(postId.toString()).set(post)
-                        .catch(e => console.error("ACP Sync Error:", e));
-                }
-            }
-
-            function saveFullCatalogToFirebase() {
-                if (!isFirebaseActive || !db) return;
-                const batch = db.batch();
-                menuData.forEach((item, index) => {
-                    const docRef = db.collection("catalog").doc(item.id.toString());
-                    batch.set(docRef, { ...item, orderIndex: index });
-                });
-                batch.commit().catch(e => console.error("ACP Catalog Sync Failure:", e));
-            }
-
-            function saveFullPostsToFirebase() {
-                if (!isFirebaseActive || !db) return;
-                const batch = db.batch();
-                feedPosts.forEach((post, index) => {
-                    const docRef = db.collection("posts").doc(post.id.toString());
-                    batch.set(docRef, { ...post, orderIndex: index });
-                });
-                batch.commit().catch(e => console.error("ACP Posts Sync Failure:", e));
-            }
-
-            // Intercept existing functions at runtime safely
-            window.addEventListener('DOMContentLoaded', () => {
-                loadDataFromFirebase();
-
-                // Intercept Customer Sign-Up/Registration
-                if (window.registerUser) {
-                    const origRegisterUser = window.registerUser;
-                    window.registerUser = function() {
-                        origRegisterUser.apply(this, arguments);
-                        if (isFirebaseActive && currentUser) {
-                            db.collection("users").doc(currentUser.phone).set(currentUser)
-                                .catch(e => console.error("ACP User Registry Sync Error:", e));
-                        }
-                    };
-                }
-
-                // Intercept Customer Removal
-                if (window.removeCustomerRecord) {
-                    const origRemoveRecord = window.removeCustomerRecord;
-                    window.removeCustomerRecord = function(idx) {
-                        const targetUser = registeredUsers[idx];
-                        origRemoveRecord.apply(this, arguments);
-                        if (isFirebaseActive && targetUser) {
-                            db.collection("users").doc(targetUser.phone).delete()
-                                .catch(e => console.error("ACP User Deletion Sync Error:", e));
-                        }
-                    };
-                }
-
-                // Intercept Catalog Forms
-                if (window.handleFoodFormSubmit) {
-                    const origFoodSubmit = window.handleFoodFormSubmit;
-                    window.handleFoodFormSubmit = function() {
-                        origFoodSubmit.apply(this, arguments);
-                        if (isFirebaseActive) saveFullCatalogToFirebase();
-                    };
-                }
-
-                // Intercept Catalog Deletions
-                if (window.deleteFoodCatalog) {
-                    const origDeleteFood = window.deleteFoodCatalog;
-                    window.deleteFoodCatalog = function(id) {
-                        origDeleteFood.apply(this, arguments);
-                        if (isFirebaseActive) {
-                            db.collection("catalog").doc(id.toString()).delete()
-                                .catch(e => console.error("ACP Catalog Item Removal Sync Error:", e));
-                        }
-                    };
-                }
-
-                // Intercept Catalog Reordering
-                if (window.saveCatalogOrderChanges) {
-                    const origSaveCatalogOrder = window.saveCatalogOrderChanges;
-                    window.saveCatalogOrderChanges = function() {
-                        origSaveCatalogOrder.apply(this, arguments);
-                        if (isFirebaseActive) saveFullCatalogToFirebase();
-                    };
-                }
-
-                // Intercept Feed Submissions
-                if (window.handleFeedPostSubmit) {
-                    const origPostSubmit = window.handleFeedPostSubmit;
-                    window.handleFeedPostSubmit = function() {
-                        origPostSubmit.apply(this, arguments);
-                        if (isFirebaseActive) saveFullPostsToFirebase();
-                    };
-                }
-
-                // Intercept Feed Deletions
-                if (window.deleteFeedPost) {
-                    const origDeleteFeed = window.deleteFeedPost;
-                    window.deleteFeedPost = function(postId) {
-                        origDeleteFeed.apply(this, arguments);
-                        if (isFirebaseActive) {
-                            db.collection("posts").doc(postId.toString()).delete()
-                                .catch(e => console.error("ACP Post Removal Sync Error:", e));
-                        }
-                    };
-                }
-
-                // Intercept Post Reordering
-                if (window.savePostOrderChanges) {
-                    const origSavePostOrder = window.savePostOrderChanges;
-                    window.savePostOrderChanges = function() {
-                        origSavePostOrder.apply(this, arguments);
-                        if (isFirebaseActive) saveFullPostsToFirebase();
-                    };
-                }
-
-                // Intercept Engagement/Interactions
-                const engagementFuncs = [
-                    'submitComment', 'likePost', 'likeComment', 'dislikeComment',
-                    'likeReply', 'dislikeReply', 'deleteComment', 'deleteReply'
-                ];
-
-                engagementFuncs.forEach(funcName => {
-                    if (window[funcName]) {
-                        const origFunc = window[funcName];
-                        window[funcName] = function() {
-                            const postId = arguments[0];
-                            origFunc.apply(this, arguments);
-                            if (isFirebaseActive && postId) {
-                                syncPostToFirebase(postId);
-                            }
-                        };
-                    }
-                });
-
-                // Intercept Order Processing
-                if (window.finalizeOrderAndSendWhatsApp) {
-                    const origFinalizeOrder = window.finalizeOrderAndSendWhatsApp;
-                    window.finalizeOrderAndSendWhatsApp = function() {
-                        const prevCount = ordersList.length;
-                        origFinalizeOrder.apply(this, arguments);
-                        if (isFirebaseActive && ordersList.length > prevCount) {
-                            const newOrder = ordersList[0];
-                            db.collection("orders").doc(newOrder.id).set(newOrder)
-                                .catch(e => console.error("ACP Order Placement Sync Error:", e));
-                        }
-                    };
-                }
-
-                // Intercept Order Status Approvals
-                if (window.approveAdminOrder) {
-                    const origApproveOrder = window.approveAdminOrder;
-                    window.approveAdminOrder = function(index) {
-                        origApproveOrder.apply(this, arguments);
-                        if (isFirebaseActive && ordersList[index]) {
-                            const ord = ordersList[index];
-                            db.collection("orders").doc(ord.id).update({ status: 'Approved' })
-                                .catch(e => console.error("ACP Order Approval Sync Error:", e));
-                        }
-                    };
-                }
-
-                // Intercept Order Records Cleared
-                if (window.removeAdminOrder) {
-                    const origRemoveOrder = window.removeAdminOrder;
-                    window.removeAdminOrder = function(index) {
-                        const targetOrder = ordersList[index];
-                        origRemoveOrder.apply(this, arguments);
-                        if (isFirebaseActive && targetOrder) {
-                            db.collection("orders").doc(targetOrder.id).delete()
-                                .catch(e => console.error("ACP Order Removal Sync Error:", e));
-                        }
-                    };
-                }
-            });
-        })();
+      // Initialize Firebase in the background safely
+      try {
+        const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app);
+      } catch (error) {
+        console.warn("Firebase background initialization note:", error);
+      }
     </script>
 </body>
 </html>
-
-Setup Instructions for Your Firebase Database:
-
-To use the Firebase connection, complete the following setup in your Firebase
-account:
-
-1.  Create your Firestore Database:
-
-      - Go to your Firebase Console and select Build > Firestore Database.
-      - Click Create Database and choose either test mode or production mode.
-
-2.  Configure Database Rules:
-
-      - To allow customers to check out, view items, read deals, and post
-        comments without mandatory email registration, configure your Firestore
-        Rules. In the Rules tab of your Firestore Database console, deploy the
-        following settings:
-        rules_version = '2';
-        service cloud.firestore {
-          match /databases/{database}/documents {
-            match /{document=**} {
-              allow read, write: if true;
-            }
-          }
-        }
-
-3.  Insert Your Project Credentials:
-
-      - In the Firebase Console, go to Project Settings (the gear icon next to
-        Project Overview) and click Add App > Web App.
-      - Copy the generated configuration snippet.
-      - Replace the placeholders inside the const firebaseConfig block (located
-        around line 1550) with your actual API keys and IDs.
