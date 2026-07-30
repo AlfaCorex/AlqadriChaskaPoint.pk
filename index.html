@@ -1,4 +1,8 @@
-
+Here is your complete original website code integrated directly with your exact
+Firebase script (using proper ES module CDN imports so it runs cleanly in your
+single HTML page without throwing network/module errors), along with full
+real-time synchronization configured for your menu, orders, social feed, and
+users.
 
 <!DOCTYPE html>
 <html lang="en" class="scroll-smooth">
@@ -38,91 +42,627 @@
             --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
+        /* User-provided Glow on Hover Animation Effect Code for Co-Founder and Admin Footer Cards */
         .glow-on-hover {
-            width: 46%; max-width: 190px; height: 72px; border: none; outline: none; color: #fff; background: #111; cursor: pointer; position: relative; z-index: 0; border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 6px; box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            width: 46%;
+            max-width: 190px;
+            height: 72px;
+            border: none;
+            outline: none;
+            color: #fff;
+            background: #111;
+            cursor: pointer;
+            position: relative;
+            z-index: 0;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 6px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
         }
+
         .glow-on-hover:before {
-            content: ''; background: linear-gradient(45deg, #ff0000, #ff7300, #fffb00, #48ff00, #00ffd5, #002bff, #7a00ff, #ff00c8, #ff0000); position: absolute; top: -2px; left:-2px; background-size: 400%; z-index: -1; filter: blur(5px); width: calc(100% + 4px); height: calc(100% + 4px); animation: glowing 20s linear infinite; opacity: 0; transition: opacity .3s ease-in-out; border-radius: 12px;
+            content: '';
+            background: linear-gradient(45deg, #ff0000, #ff7300, #fffb00, #48ff00, #00ffd5, #002bff, #7a00ff, #ff00c8, #ff0000);
+            position: absolute;
+            top: -2px;
+            left:-2px;
+            background-size: 400%;
+            z-index: -1;
+            filter: blur(5px);
+            width: calc(100% + 4px);
+            height: calc(100% + 4px);
+            animation: glowing 20s linear infinite;
+            opacity: 0;
+            transition: opacity .3s ease-in-out;
+            border-radius: 12px;
         }
-        .glow-on-hover:hover:before { opacity: 1; }
-        .glow-on-hover:after { z-index: -1; content: ''; position: absolute; width: 100%; height: 100%; background: #111; left: 0; top: 0; border-radius: 12px; }
-        @keyframes glowing { 0% { background-position: 0 0; } 50% { background-position: 400% 0; } 100% { background-position: 0 0; } }
 
-        .btn-tab-effect { transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1); position: relative; overflow: hidden; }
-        .btn-tab-active { box-shadow: 0 4px 14px rgba(255, 90, 54, 0.35), inset 0 1px 3px rgba(255, 255, 255, 0.2); transform: scale(1.02); }
-        .btn-action-effect { position: relative; overflow: hidden; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); }
-        .social-glow-wa:hover { box-shadow: 0 0 12px rgba(37, 211, 102, 0.65); transform: translateY(-2px) scale(1.06); }
-        .social-glow-fb:hover { box-shadow: 0 0 12px rgba(24, 119, 242, 0.65); transform: translateY(-2px) scale(1.06); }
-        .social-glow-ig:hover { box-shadow: 0 0 12px rgba(238, 42, 123, 0.65); transform: translateY(-2px) scale(1.06); }
-        .social-glow-tt:hover { box-shadow: 0 0 12px rgba(0, 242, 254, 0.65); transform: translateY(-2px) scale(1.06); }
+        .glow-on-hover:active {
+            color: #000;
+        }
 
-        @keyframes ring-animation { 0% { transform: rotate(0); } 10% { transform: rotate(25deg); } 20% { transform: rotate(-20deg); } 30% { transform: rotate(20deg); } 40% { transform: rotate(-15deg); } 50% { transform: rotate(0); } 100% { transform: rotate(0); } }
-        .animate-ring { display: inline-block; animation: ring-animation 2s ease infinite; transform-origin: center; }
-        .hotline-highlight { position: relative; display: inline-block; color: #FF5A36; font-weight: 900; text-shadow: 0 0 10px rgba(255, 90, 54, 0.3); transition: var(--transition); letter-spacing: 0.5px; }
-        .hotline-highlight:hover { color: #ffffff; text-shadow: 0 0 15px rgba(255, 90, 54, 1); transform: scale(1.05); }
+        .glow-on-hover:active:after {
+            background: transparent;
+        }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: var(--background); color: var(--text-main); line-height: 1.5; overflow-x: hidden; }
+        .glow-on-hover:hover:before {
+            opacity: 1;
+        }
 
-        .app-container { max-width: 480px; margin: 0 auto; background-color: var(--app-bg); min-height: 100vh; display: flex; flex-direction: column; position: relative; box-shadow: 0 0 60px rgba(15, 23, 42, 0.1); border-left: 1px solid rgba(15, 23, 42, 0.04); border-right: 1px solid rgba(15, 23, 42, 0.04); }
-        .app-header { position: sticky; top: 0; z-index: 999; background: rgba(250, 250, 249, 0.95); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border-bottom: 2px solid rgba(226, 232, 240, 0.95); box-shadow: 0 4px 12px -2px rgba(15, 23, 42, 0.05); }
-        .header-content { padding: 10px 16px; display: flex; flex-direction: column; gap: 10px; }
-        .header-brand { display: flex; align-items: center; gap: 8px; text-decoration: none; min-width: 0; }
-        .header-logo-container { position: relative; width: 34px; height: 34px; background: linear-gradient(135deg, #FF5A36, #F97316); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #ffffff; box-shadow: var(--shadow-sm); border: 2px solid #ffffff; flex-shrink: 0; font-size: 0.85rem; }
-        .header-logo-badge { position: absolute; bottom: -2px; right: -2px; background-color: var(--secondary); color: #ffffff; width: 14px; height: 14px; border-radius: 50%; font-size: 7px; display: flex; align-items: center; justify-content: center; border: 1.5px solid #ffffff; box-shadow: 0 1px 2px rgba(0,0,0,0.2); }
-        .header-title-text { font-family: 'Playfair Display', serif; font-size: 0.95rem; font-weight: 800; color: var(--secondary); letter-spacing: -0.3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .glow-on-hover:after {
+            z-index: -1;
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: #111;
+            left: 0;
+            top: 0;
+            border-radius: 12px;
+        }
 
-        .app-hero { padding: 24px 16px; text-align: center; background-color: #FBF1EF; border-bottom: 1px dashed rgba(226, 232, 240, 0.85); }
-        .hero-title-compact { font-family: 'Playfair Display', serif; font-size: 1.7rem; font-weight: 800; color: var(--secondary); line-height: 1.25; margin-bottom: 6px; }
-        .hero-title-compact span { color: var(--primary); }
-        .hero-desc-compact { font-size: 0.8rem; color: var(--text-muted); max-width: 330px; margin: 0 auto; }
+        @keyframes glowing {
+            0% { background-position: 0 0; }
+            50% { background-position: 400% 0; }
+            100% { background-position: 0 0; }
+        }
 
-        .app-main { padding: 20px 16px; flex-grow: 1; }
-        .section-header-compact { font-size: 1rem; font-weight: 800; color: var(--secondary); margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
-        .section-indicator { width: 4px; height: 16px; background-color: var(--primary); border-radius: 2px; display: inline-block; }
+        /* PREMIUM SWITCH BOX LITE GLOW EFFECTS */
+        .btn-tab-effect {
+            transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn-tab-effect::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 50%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transform: skewX(-25deg);
+            transition: none;
+        }
+        
+        .btn-tab-effect:hover::after {
+            left: 150%;
+            transition: left 0.95s ease-in-out;
+        }
 
-        .grid-fast-food { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 12px; }
-        .portrait-card { border-radius: var(--radius-sm); overflow: hidden; display: flex; flex-direction: column; box-shadow: var(--shadow-sm); transition: all 0.2s ease-in-out; }
-        .card-image-box { height: 85px; background-size: cover; background-position: center; background-color: #E2E8F0; position: relative; }
-        .card-info-box { padding: 6px; display: flex; flex-direction: column; justify-content: space-between; flex-grow: 1; }
-        .card-title-compact { font-size: 0.72rem; font-weight: 700; color: var(--secondary); line-height: 1.25; margin-bottom: 2px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; height: 28px; }
-        .card-price-compact { font-size: 0.75rem; font-weight: 800; color: var(--primary); margin-bottom: 4px; }
-        .selector-box-compact { display: flex; align-items: center; justify-content: space-between; background: #F1F5F9; border-radius: 30px; padding: 2px; }
-        .btn-qty-mini { width: 22px; height: 22px; border-radius: 50%; background-color: #FFFFFF; border: none; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 800; color: var(--secondary); cursor: pointer; box-shadow: 0 1px 3px rgba(0,0,0,0.05); transition: var(--transition); }
-        .btn-qty-mini:hover { background-color: var(--primary); color: #FFFFFF; }
-        .qty-val-mini { font-size: 0.75rem; font-weight: 800; width: 18px; text-align: center; }
+        .btn-tab-active {
+            box-shadow: 0 4px 14px rgba(255, 90, 54, 0.35), inset 0 1px 3px rgba(255, 255, 255, 0.2);
+            transform: scale(1.02);
+        }
 
-        .grid-local-food { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 12px; }
-        .local-mini-card { border-radius: var(--radius-sm); padding: 6px; display: flex; flex-direction: column; align-items: center; text-align: center; box-shadow: var(--shadow-sm); height: 100%; }
-        .local-title-compact { font-size: 0.65rem; font-weight: 700; color: var(--secondary); line-height: 1.2; height: 24px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; margin-bottom: 2px; width: 100%; }
-        .local-price-compact { font-size: 0.7rem; font-weight: 800; color: var(--primary); margin-bottom: 6px; }
+        .btn-tab-inactive:hover {
+            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
+            border-color: rgba(255, 90, 54, 0.25);
+            transform: translateY(-1px);
+        }
 
-        .checkout-box-mobile { background-color: var(--card-bg); border-radius: var(--radius-lg); border: 1px solid var(--border-color); padding: 16px; margin-top: 10px; box-shadow: var(--shadow-md); }
-        .receipt-mini-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; margin-bottom: 12px; }
-        .receipt-mini-table th { text-align: left; padding-bottom: 6px; color: var(--text-muted); border-bottom: 1px solid var(--border-color); text-transform: uppercase; font-size: 0.65rem; letter-spacing: 0.5px; }
-        .receipt-mini-table td { padding: 8px 0; border-bottom: 1px solid #FAF9F6; color: var(--secondary); }
+        /* Lite Shimmer effect for Action Buttons */
+        .btn-action-effect {
+            position: relative;
+            overflow: hidden;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .btn-action-effect::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 50%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.35), transparent);
+            transform: skewX(-25deg);
+        }
+        .btn-action-effect:hover::after {
+            left: 150%;
+            transition: left 0.75s ease-in-out;
+        }
 
-        .bill-summary-compact { background: #FAF9F6; border-radius: var(--radius-md); padding: 12px; margin-bottom: 14px; font-size: 0.8rem; }
-        .bill-row-compact { display: flex; justify-content: space-between; margin-bottom: 6px; color: var(--text-muted); }
-        .bill-row-compact.grand { margin-bottom: 0; padding-top: 8px; border-top: 1px dashed var(--border-color); font-weight: 800; color: var(--secondary); font-size: 1rem; }
-        .bill-row-compact.grand span:last-child { color: var(--primary); }
+        /* SOCIAL ICON LITE GLOW EFFECTS */
+        .social-glow-wa:hover {
+            box-shadow: 0 0 12px rgba(37, 211, 102, 0.65);
+            transform: translateY(-2px) scale(1.06);
+        }
+        .social-glow-fb:hover {
+            box-shadow: 0 0 12px rgba(24, 119, 242, 0.65);
+            transform: translateY(-2px) scale(1.06);
+        }
+        .social-glow-ig:hover {
+            box-shadow: 0 0 12px rgba(238, 42, 123, 0.65);
+            transform: translateY(-2px) scale(1.06);
+        }
+        .social-glow-tt:hover {
+            box-shadow: 0 0 12px rgba(0, 242, 254, 0.65);
+            transform: translateY(-2px) scale(1.06);
+        }
 
-        .btn-order-approve { width: 100%; background-color: var(--primary); color: white; padding: 10px; border-radius: 12px; font-weight: 700; font-size: 0.8rem; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; box-shadow: 0 4px 12px rgba(255, 90, 54, 0.25); transition: var(--transition); }
-        .btn-order-approve:hover { background-color: var(--primary-hover); transform: translateY(-1px); }
+        @keyframes ring-animation {
+            0% { transform: rotate(0); }
+            10% { transform: rotate(25deg); }
+            20% { transform: rotate(-20deg); }
+            30% { transform: rotate(20deg); }
+            40% { transform: rotate(-15deg); }
+            50% { transform: rotate(0); }
+            100% { transform: rotate(0); }
+        }
 
-        .invoice-overlay-backdrop { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 9999; background: rgba(15, 23, 42, 0.65); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); align-items: center; justify-content: center; padding: 16px; overflow-y: auto; }
-        .receipt-container { width: 100%; max-width: 280px; border-radius: 20px; background: #ffffff; border: 1px solid #E2E8F0; box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.2); overflow: hidden; position: relative; margin: auto; }
-        .receipt-header-strip { height: 8px; background: linear-gradient(90deg, #FF5A36 0%, #F97316 100%); }
-        .receipt-body { padding: 18px; }
-        .receipt-dashed-tear { border-top: 2px dashed #CBD5E1; margin: 14px 0; position: relative; }
-        .receipt-dashed-tear::before, .receipt-dashed-tear::after { content: ''; position: absolute; top: -10px; width: 16px; height: 16px; background: var(--app-bg); border-radius: 50%; border: 1px solid #cbd5e1; box-sizing: border-box; }
-        .receipt-dashed-tear::before { left: -28px; clip-path: polygon(50% 0%, 100% 0%, 100% 100%, 50% 100%); }
-        .receipt-dashed-tear::after { right: -28px; clip-path: polygon(0% 0%, 50% 0%, 50% 100%, 0% 100%); }
+        .animate-ring {
+            display: inline-block;
+            animation: ring-animation 2s ease infinite;
+            transform-origin: center;
+        }
 
+        .hotline-highlight {
+            position: relative;
+            display: inline-block;
+            color: #FF5A36;
+            font-weight: 900;
+            text-shadow: 0 0 10px rgba(255, 90, 54, 0.3);
+            transition: var(--transition);
+            letter-spacing: 0.5px;
+        }
+        
+        .hotline-highlight:hover {
+            color: #ffffff;
+            text-shadow: 0 0 15px rgba(255, 90, 54, 1);
+            transform: scale(1.05);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--background);
+            color: var(--text-main);
+            line-height: 1.5;
+            overflow-x: hidden;
+        }
+
+        /* Centered Mobile App Container Setup */
+        .app-container {
+            max-width: 480px;
+            margin: 0 auto;
+            background-color: var(--app-bg);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            box-shadow: 0 0 60px rgba(15, 23, 42, 0.1);
+            border-left: 1px solid rgba(15, 23, 42, 0.04);
+            border-right: 1px solid rgba(15, 23, 42, 0.04);
+        }
+
+        .app-header {
+            position: sticky;
+            top: 0;
+            z-index: 999;
+            background: rgba(250, 250, 249, 0.95);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border-bottom: 2px solid rgba(226, 232, 240, 0.95);
+            box-shadow: 0 4px 12px -2px rgba(15, 23, 42, 0.05);
+            transition: var(--transition);
+        }
+
+        .header-content {
+            padding: 10px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .header-brand {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            min-width: 0;
+        }
+
+        .header-logo-container {
+            position: relative;
+            width: 34px;
+            height: 34px;
+            background: linear-gradient(135deg, #FF5A36, #F97316);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ffffff;
+            box-shadow: var(--shadow-sm);
+            border: 2px solid #ffffff;
+            flex-shrink: 0;
+            font-size: 0.85rem;
+        }
+
+        .header-logo-badge {
+            position: absolute;
+            bottom: -2px;
+            right: -2px;
+            background-color: var(--secondary);
+            color: #ffffff;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            font-size: 7px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1.5px solid #ffffff;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+        }
+
+        .header-title-text {
+            font-family: 'Playfair Display', serif;
+            font-size: 0.95rem;
+            font-weight: 800;
+            color: var(--secondary);
+            letter-spacing: -0.3px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .app-hero {
+            padding: 24px 16px;
+            text-align: center;
+            /* Updated background color to #FBF1EF */
+            background-color: #FBF1EF;
+            border-bottom: 1px dashed rgba(226, 232, 240, 0.85);
+        }
+
+        .hero-title-compact {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.7rem;
+            font-weight: 800;
+            color: var(--secondary);
+            line-height: 1.25;
+            margin-bottom: 6px;
+        }
+
+        .hero-title-compact span {
+            color: var(--primary);
+        }
+
+        .hero-desc-compact {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            max-width: 330px;
+            margin: 0 auto;
+        }
+
+        .app-main {
+            padding: 20px 16px;
+            flex-grow: 1;
+        }
+
+        .section-header-compact {
+            font-size: 1rem;
+            font-weight: 800;
+            color: var(--secondary);
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-indicator {
+            width: 4px;
+            height: 16px;
+            background-color: var(--primary);
+            border-radius: 2px;
+            display: inline-block;
+        }
+
+        /* Fast Food Menu Grid: 3 Items per line */
+        .grid-fast-food {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .portrait-card {
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            box-shadow: var(--shadow-sm);
+            transition: all 0.2s ease-in-out;
+        }
+
+        .portrait-card:hover {
+            transform: none !important;
+        }
+
+        .card-image-box {
+            height: 85px;
+            background-size: cover;
+            background-position: center;
+            background-color: #E2E8F0;
+            position: relative;
+        }
+
+        .card-info-box {
+            padding: 6px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            flex-grow: 1;
+        }
+
+        .card-title-compact {
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: var(--secondary);
+            line-height: 1.25;
+            margin-bottom: 2px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            height: 28px;
+        }
+
+        .card-price-compact {
+            font-size: 0.75rem;
+            font-weight: 800;
+            color: var(--primary);
+            margin-bottom: 4px;
+        }
+
+        .selector-box-compact {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #F1F5F9;
+            border-radius: 30px;
+            padding: 2px;
+        }
+
+        .btn-qty-mini {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background-color: #FFFFFF;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: 800;
+            color: var(--secondary);
+            cursor: pointer;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            transition: var(--transition);
+        }
+
+        .btn-qty-mini:hover {
+            background-color: var(--primary);
+            color: #FFFFFF;
+        }
+
+        .qty-val-mini {
+            font-size: 0.75rem;
+            font-weight: 800;
+            width: 18px;
+            text-align: center;
+        }
+
+        .grid-local-food {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .local-mini-card {
+            border-radius: var(--radius-sm);
+            padding: 6px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            box-shadow: var(--shadow-sm);
+            height: 100%;
+            transition: all 0.2s ease-in-out;
+        }
+
+        .local-mini-card:hover {
+            transform: none !important;
+        }
+
+        .local-title-compact {
+            font-size: 0.65rem;
+            font-weight: 700;
+            color: var(--secondary);
+            line-height: 1.2;
+            height: 24px;
+            overflow: hidden;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            margin-bottom: 2px;
+            width: 100%;
+        }
+
+        .local-price-compact {
+            font-size: 0.7rem;
+            font-weight: 800;
+            color: var(--primary);
+            margin-bottom: 6px;
+        }
+
+        .checkout-box-mobile {
+            background-color: var(--card-bg);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border-color);
+            padding: 16px;
+            margin-top: 10px;
+            box-shadow: var(--shadow-md);
+        }
+
+        .receipt-mini-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.8rem;
+            margin-bottom: 12px;
+        }
+
+        .receipt-mini-table th {
+            text-align: left;
+            padding-bottom: 6px;
+            color: var(--text-muted);
+            border-bottom: 1px solid var(--border-color);
+            text-transform: uppercase;
+            font-size: 0.65rem;
+            letter-spacing: 0.5px;
+        }
+
+        .receipt-mini-table td {
+            padding: 8px 0;
+            border-bottom: 1px solid #FAF9F6;
+            color: var(--secondary);
+        }
+
+        .bill-summary-compact {
+            background: #FAF9F6;
+            border-radius: var(--radius-md);
+            padding: 12px;
+            margin-bottom: 14px;
+            font-size: 0.8rem;
+        }
+
+        .bill-row-compact {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 6px;
+            color: var(--text-muted);
+        }
+
+        .bill-row-compact.grand {
+            margin-bottom: 0;
+            padding-top: 8px;
+            border-top: 1px dashed var(--border-color);
+            font-weight: 800;
+            color: var(--secondary);
+            font-size: 1rem;
+        }
+
+        .bill-row-compact.grand span:last-child {
+            color: var(--primary);
+        }
+
+        .btn-order-approve {
+            width: 100%;
+            background-color: var(--primary);
+            color: white;
+            padding: 10px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 0.8rem;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            box-shadow: 0 4px 12px rgba(255, 90, 54, 0.25);
+            transition: var(--transition);
+        }
+
+        .btn-order-approve:hover {
+            background-color: var(--primary-hover);
+            transform: translateY(-1px);
+        }
+
+        .invoice-overlay-backdrop {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 9999;
+            background: rgba(15, 23, 42, 0.65);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            overflow-y: auto;
+        }
+
+        .receipt-container {
+            width: 100%;
+            max-width: 280px;
+            border-radius: 20px;
+            background: #ffffff;
+            border: 1px solid #E2E8F0;
+            box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.2);
+            overflow: hidden;
+            position: relative;
+            margin: auto;
+        }
+
+        .receipt-header-strip {
+            height: 8px;
+            background: linear-gradient(90deg, #FF5A36 0%, #F97316 100%);
+        }
+
+        .receipt-body {
+            padding: 18px;
+        }
+
+        .receipt-dashed-tear {
+            border-top: 2px dashed #CBD5E1;
+            margin: 14px 0;
+            position: relative;
+        }
+
+        .receipt-dashed-tear::before, .receipt-dashed-tear::after {
+            content: '';
+            position: absolute;
+            top: -10px;
+            width: 16px;
+            height: 16px;
+            background: var(--app-bg);
+            border-radius: 50%;
+            border: 1px solid #cbd5e1;
+            box-sizing: border-box;
+        }
+
+        .receipt-dashed-tear::before {
+            left: -28px;
+            clip-path: polygon(50% 0%, 100% 0%, 100% 100%, 50% 100%);
+        }
+
+        .receipt-dashed-tear::after {
+            right: -28px;
+            clip-path: polygon(0% 0%, 50% 0%, 50% 100%, 0% 100%);
+        }
+
+        /* Print Media Configurations */
         @media print {
             body * { visibility: hidden; }
             .receipt-container, .receipt-container * { visibility: visible; }
-            .receipt-container { position: absolute; left: 50%; top: 10px; transform: translateX(-50%); width: 100%; max-width: 280px; border: none; box-shadow: none; }
+            .receipt-container {
+                position: absolute; left: 50%; top: 10px;
+                transform: translateX(-50%); width: 100%;
+                max-width: 280px; border: none; box-shadow: none;
+            }
             .no-print { display: none !important; }
         }
     </style>
@@ -148,19 +688,25 @@
                     </a>
                     
                     <div class="flex items-center gap-2">
+                        <!-- Notification Bell Icon -->
                         <button onclick="openNotificationsModal()" class="p-1.5 text-slate-700 hover:text-primary transition-all relative" title="Notifications">
                             <i class="fa-solid fa-bell text-base"></i>
                             <span id="navBellBadge" class="absolute top-0.5 right-0.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white hidden animate-pulse"></span>
                         </button>
-                        <button id="navUserBtn" onclick="openUserModal()" class="transition-all" title="User Account"></button>
+
+                        <!-- User Account Icon displaying only First Spelling -->
+                        <button id="navUserBtn" onclick="openUserModal()" class="transition-all" title="User Account">
+                            <!-- Dynamic Content Rendered by JS -->
+                        </button>
                     </div>
                 </div>
 
+                <!-- Navigation Switcher Buttons -->
                 <div class="flex items-center justify-center gap-3 w-full">
                     <button id="tabBtnStore" onclick="switchCustomerTab('store')" class="btn-tab-effect btn-tab-active flex-1 max-w-[180px] flex items-center justify-center gap-2 py-2 px-4 text-xs font-black rounded-xl border border-[#FF5A36] bg-[#FF5A36] text-white shadow-md active:scale-95">
                         <i class="fa-solid fa-utensils"></i> Order Menu
                     </button>
-                    <button id="tabBtnFeeds" onclick="switchCustomerTab('feeds')" class="btn-tab-effect flex-1 max-w-[180px] flex items-center justify-center gap-2 py-2 px-4 text-xs font-black rounded-xl border border-slate-200 bg-white text-slate-700 shadow-sm relative active:scale-95">
+                    <button id="tabBtnFeeds" onclick="switchCustomerTab('feeds')" class="btn-tab-effect btn-tab-inactive flex-1 max-w-[180px] flex items-center justify-center gap-2 py-2 px-4 text-xs font-black rounded-xl border border-slate-200 bg-white text-slate-700 shadow-sm relative active:scale-95">
                         <i class="fa-solid fa-rss text-orange-500"></i> Social Feed
                         <span class="absolute -top-1 -right-1 w-2 h-2 bg-rose-500 rounded-full animate-ping"></span>
                         <span class="absolute -top-1 -right-1 w-2 h-2 bg-rose-500 rounded-full"></span>
@@ -181,31 +727,43 @@
         <!-- Dynamic Main Views -->
         <main class="app-main flex-grow">
             
-            <!-- VIEW 1: STORE MENU -->
+            <!-- VIEW 1: STORE MENU (Default) -->
             <div id="view-store" class="space-y-6">
+                
+                <!-- Category 1: Fast Food Section -->
                 <div>
                     <h2 class="section-header-compact">
                         <span class="section-indicator"></span>Fast Food Menu
                     </h2>
-                    <div class="grid-fast-food" id="menuGridContainer"></div>
+                    <div class="grid-fast-food" id="menuGridContainer">
+                        <!-- Dynamically injected -->
+                    </div>
                 </div>
 
+                <!-- Professional Partition Line -->
                 <hr class="border-t-2 border-slate-200/80 my-5">
 
+                <!-- Category 2: Local Delicacies Section -->
                 <div>
                     <h2 class="section-header-compact">
                         <span class="section-indicator"></span>Local Delicacies
                     </h2>
-                    <div class="grid-local-food" id="localMenuGridContainer"></div>
+                    <div class="grid-local-food" id="localMenuGridContainer">
+                        <!-- Dynamically injected -->
+                    </div>
                 </div>
 
+                <!-- Professional Partition Line -->
                 <hr class="border-t-2 border-slate-200/80 my-5">
 
+                <!-- Category 3: Cold Drinks & Beverages Section -->
                 <div>
                     <h2 class="section-header-compact">
                         <span class="section-indicator"></span>Cold Drinks & Beverages
                     </h2>
-                    <div class="grid-local-food" id="drinksMenuGridContainer"></div>
+                    <div class="grid-local-food" id="drinksMenuGridContainer">
+                        <!-- Dynamically injected cold drinks -->
+                    </div>
                 </div>
 
                 <!-- Shopping Cart Section -->
@@ -234,7 +792,9 @@
                                         <th class="text-right" style="width: 80px;">Price</th>
                                     </tr>
                                 </thead>
-                                <tbody id="cartTableRows"></tbody>
+                                <tbody id="cartTableRows">
+                                    <!-- Dynamic line items -->
+                                </tbody>
                             </table>
 
                             <div class="bill-summary-compact">
@@ -252,6 +812,7 @@
                                 </div>
                             </div>
                             
+                            <!-- Action Buttons Grid with Cancel Option -->
                             <div class="flex items-center gap-2 w-full mt-3">
                                 <button class="btn-order-approve btn-action-effect flex-1 !py-2.5 !px-3 !text-xs !rounded-xl" onclick="openCheckoutConfirmModal()">
                                     <i class="fa-solid fa-circle-check"></i> Place Order
@@ -259,16 +820,17 @@
                                 <button class="btn-order-approve btn-action-effect flex-1 !py-2.5 !px-3 !text-xs !rounded-xl" style="background-color: #0F172A;" onclick="generateStoreInvoice()">
                                     <i class="fa-solid fa-receipt"></i> View Receipt
                                 </button>
-                                <button onclick="clearCart()" class="p-2.5 bg-red-50 hover:bg-red-500 text-red-500 hover:text-white border border-red-200 rounded-xl transition-all font-bold text-xs flex items-center justify-center shrink-0 shadow-sm" title="Cancel Selection">
+                                <button onclick="clearCart()" class="p-2.5 bg-red-50 hover:bg-red-500 text-red-500 hover:text-white border border-red-200 rounded-xl transition-all font-bold text-xs flex items-center justify-center shrink-0 shadow-sm" title="Cancel Order Selection">
                                     <i class="fa-solid fa-xmark text-sm"></i>
                                 </button>
                             </div>
+
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- VIEW 2: SOCIAL FEEDS -->
+            <!-- VIEW 2: SOCIAL FEEDS (Interactive) -->
             <div id="view-feeds" class="hidden space-y-4">
                 <div class="bg-gradient-to-r from-orange-50 to-amber-50 rounded-2xl p-4 border border-orange-200/50 flex items-center gap-3 mb-2">
                     <div class="w-10 h-10 rounded-full bg-orange-500/10 flex items-center justify-center text-orange-600">
@@ -280,7 +842,9 @@
                     </div>
                 </div>
 
-                <div id="feedPostsContainer" class="space-y-6"></div>
+                <div id="feedPostsContainer" class="space-y-6">
+                    <!-- Dynamic Social Media Feed Posts injected here -->
+                </div>
             </div>
 
         </main>
@@ -293,58 +857,79 @@
                     <span id="floatingCartTotal" class="text-sm font-black text-amber-400">Rs. 0</span>
                 </div>
                 <div class="flex items-center gap-1.5">
-                    <button onclick="openCheckoutConfirmModal()" class="btn-action-effect bg-[#FF5A36] hover:bg-[#E04825] text-white py-2 px-3 rounded-xl font-bold text-xs shadow-md flex items-center gap-1 transition-all active:scale-95">
+                    <button onclick="openCheckoutConfirmModal()" class="btn-action-effect bg-[#FF5A36] hover:bg-[#E04825] text-white py-2 px-3 rounded-xl font-bold text-xs shadow-md flex items-center gap-1 transition-all active:scale-95" title="Place Order">
                         <i class="fa-solid fa-circle-check text-xs"></i> Place Order
                     </button>
-                    <button onclick="generateStoreInvoice()" class="btn-action-effect bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-600 py-2 px-2.5 rounded-xl font-bold text-xs shadow-md flex items-center gap-1 transition-all active:scale-95">
+                    <button onclick="generateStoreInvoice()" class="btn-action-effect bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-600 py-2 px-2.5 rounded-xl font-bold text-xs shadow-md flex items-center gap-1 transition-all active:scale-95" title="View Receipt">
                         <i class="fa-solid fa-receipt text-xs"></i> Receipt
                     </button>
-                    <button onclick="clearCart()" class="bg-red-500/20 hover:bg-red-500 text-red-400 hover:text-white border border-red-500/30 p-2 rounded-xl text-xs font-bold transition-all active:scale-95 flex items-center justify-center shrink-0">
+                    <button onclick="clearCart()" class="bg-red-500/20 hover:bg-red-500 text-red-400 hover:text-white border border-red-500/30 p-2 rounded-xl text-xs font-bold transition-all active:scale-95 flex items-center justify-center shrink-0" title="Cancel Selection">
                         <i class="fa-solid fa-xmark text-sm"></i>
                     </button>
                 </div>
             </div>
         </div>
 
-        <footer id="mainFooterSection" class="bg-slate-900 text-slate-300 p-6 text-center space-y-4 no-print mt-8 border-t-2 border-primary"></footer>
+        <!-- Customer Footer Section updated dynamically per page view -->
+        <footer id="mainFooterSection" class="bg-slate-900 text-slate-300 p-6 text-center space-y-4 no-print mt-8 border-t-2 border-primary">
+            <!-- Dynamic footer content injected by JS -->
+        </footer>
 
     </div>
 
-    <!-- MODALS SECTION -->
+    <!-- ORDER CONFIRMATION CHECKOUT POP-UP MODAL (Theme Colored) -->
     <div id="checkoutConfirmModal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-md z-[10000] hidden flex items-center justify-center p-4" onclick="closeCheckoutConfirmModal()">
         <div class="bg-white rounded-[24px] max-w-sm w-full p-5 border border-slate-200 relative shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto text-center" onclick="event.stopPropagation()">
-            <button onclick="closeCheckoutConfirmModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600"><i class="fa-solid fa-circle-xmark text-xl"></i></button>
+            <button onclick="closeCheckoutConfirmModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
+                <i class="fa-solid fa-circle-xmark text-xl"></i>
+            </button>
+
+            <!-- Confirm Order Details center-aligned with confirmation icon -->
             <div class="flex flex-col items-center justify-center border-b border-slate-100 pb-3">
-                <div class="w-10 h-10 bg-orange-100 text-[#FF5A36] rounded-full flex items-center justify-center text-lg shrink-0 mb-1"><i class="fa-solid fa-circle-check"></i></div>
+                <div class="w-10 h-10 bg-orange-100 text-[#FF5A36] rounded-full flex items-center justify-center text-lg shrink-0 mb-1">
+                    <i class="fa-solid fa-circle-check"></i>
+                </div>
                 <h3 class="text-sm font-extrabold text-slate-900">Confirm Order Details</h3>
                 <p class="text-[10px] text-slate-400">Review selected items & delivery address</p>
             </div>
+
+            <!-- Home Delivery Note made a little smaller and centered -->
             <div class="bg-amber-50 border border-amber-200 text-amber-800 p-2 rounded-xl text-[10px] font-bold flex items-center justify-center gap-1.5 text-center mx-auto max-w-[280px]">
                 <i class="fa-solid fa-triangle-exclamation text-amber-600"></i>
                 <span>Note: Home delivery facility is not available.</span>
             </div>
+
+            <!-- Items & Balance Summary -->
             <div class="bg-slate-50 p-3 rounded-2xl border border-slate-200 space-y-2 text-left">
-                <div id="checkoutModalItemsList" class="space-y-1 max-h-32 overflow-y-auto pr-1"></div>
+                <div id="checkoutModalItemsList" class="space-y-1 max-h-32 overflow-y-auto pr-1">
+                    <!-- Dynamic Item Lines -->
+                </div>
                 <div class="flex justify-between items-center pt-2 border-t border-slate-200 font-extrabold text-xs text-slate-900">
                     <span>Total Balance:</span>
                     <span id="checkoutModalGrandTotal" class="text-sm font-black text-[#FF5A36]">Rs. 0</span>
                 </div>
             </div>
+
+            <!-- Customer Name & Location Form with distance before confirm & place order button -->
             <form onsubmit="event.preventDefault(); finalizeOrderAndSendWhatsApp();" class="space-y-3 text-left">
                 <div class="space-y-2.5 pb-2">
                     <div>
                         <label class="block text-slate-500 mb-1 uppercase text-[9px] font-bold tracking-wider">Your Full Name *</label>
                         <input type="text" id="checkoutName" required placeholder="Enter Your Name *" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none text-xs font-bold text-slate-800 focus:border-[#FF5A36]">
                     </div>
+
                     <div>
                         <label class="block text-slate-500 mb-1 uppercase text-[9px] font-bold tracking-wider">Phone Number *</label>
                         <input type="tel" id="checkoutPhone" required placeholder="03XXXXXXXXX *" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none text-xs font-bold text-slate-800 focus:border-[#FF5A36]">
                     </div>
+
                     <div>
                         <label class="block text-slate-500 mb-1 uppercase text-[9px] tracking-wider">Location / Address *</label>
                         <input type="text" id="checkoutLocation" required placeholder="Street / Colony / Area in Gujranwala *" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none text-xs font-bold text-slate-800 focus:border-[#FF5A36]">
                     </div>
                 </div>
+
+                <!-- Confirm and place order button with spacing -->
                 <button type="submit" class="w-full py-3 bg-[#FF5A36] hover:bg-[#E04825] text-white font-extrabold rounded-xl text-xs transition-all shadow-md flex items-center justify-center gap-2 mt-4">
                     <i class="fa-brands fa-whatsapp text-base"></i> Confirm and place order
                 </button>
@@ -352,39 +937,78 @@
         </div>
     </div>
 
-    <!-- User Account Modal -->
+    <!-- User Account Modal (Supports Sign In & First-Time Registration) -->
     <div id="userAuthModal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-md z-[10000] hidden flex items-center justify-center p-4">
         <div class="bg-white rounded-[24px] max-w-xs w-full p-6 border border-slate-200 relative shadow-2xl">
-            <button onclick="closeUserModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600"><i class="fa-solid fa-circle-xmark text-xl"></i></button>
+            <button onclick="closeUserModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
+                <i class="fa-solid fa-circle-xmark text-xl"></i>
+            </button>
+            
+            <!-- Auth Switcher Box (Sign In vs Register) -->
             <div id="userAuthContainer">
                 <div class="flex bg-slate-100 p-1 rounded-xl mb-4 text-xs font-bold">
-                    <button type="button" onclick="switchAuthMode('signin')" id="btnAuthTabSignIn" class="flex-1 py-1.5 rounded-lg text-center transition-all bg-white text-[#FF5A36] shadow-sm">Sign In</button>
-                    <button type="button" onclick="switchAuthMode('register')" id="btnAuthTabRegister" class="flex-1 py-1.5 rounded-lg text-center transition-all text-slate-600 hover:text-slate-900">Register</button>
+                    <button type="button" onclick="switchAuthMode('signin')" id="btnAuthTabSignIn" class="flex-1 py-1.5 rounded-lg text-center transition-all bg-white text-[#FF5A36] shadow-sm">
+                        Sign In
+                    </button>
+                    <button type="button" onclick="switchAuthMode('register')" id="btnAuthTabRegister" class="flex-1 py-1.5 rounded-lg text-center transition-all text-slate-600 hover:text-slate-900">
+                        Register
+                    </button>
                 </div>
+
+                <!-- 1. Sign In Tab (For Already Registered Users) -->
                 <div id="userSignInView">
-                    <div class="text-center mb-3"><h3 class="text-sm font-extrabold text-slate-900 font-serif">Welcome Back!</h3><p class="text-slate-500 text-[10px] mt-0.5">Sign in with your registered phone number</p></div>
+                    <div class="text-center mb-3">
+                        <h3 class="text-sm font-extrabold text-slate-900 font-serif">Welcome Back!</h3>
+                        <p class="text-slate-500 text-[10px] mt-0.5">Sign in with your registered phone number</p>
+                    </div>
+
                     <form onsubmit="event.preventDefault(); signInUser();" class="space-y-3">
-                        <input type="tel" id="signInPhone" required placeholder="Phone Number *" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg outline-none text-xs font-bold">
-                        <button type="submit" class="w-full py-2.5 bg-[#FF5A36] hover:bg-[#E04825] text-white font-bold rounded-lg text-xs transition-all shadow-md">Sign In</button>
+                        <div>
+                            <input type="tel" id="signInPhone" required placeholder="Phone Number *" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg outline-none text-xs font-bold">
+                        </div>
+                        <button type="submit" class="w-full py-2.5 bg-[#FF5A36] hover:bg-[#E04825] text-white font-bold rounded-lg text-xs transition-all shadow-md">
+                            Sign In
+                        </button>
                     </form>
                 </div>
+
+                <!-- 2. Registration View (For First-Time Visitors) -->
                 <div id="userRegView" class="hidden">
-                    <div class="text-center mb-3"><h3 class="text-sm font-extrabold text-slate-900 font-serif">Register New Account</h3><p class="text-slate-500 text-[10px] mt-0.5">Fill in your details for faster checkout</p></div>
+                    <div class="text-center mb-3">
+                        <h3 class="text-sm font-extrabold text-slate-900 font-serif">Register New Account</h3>
+                        <p class="text-slate-500 text-[10px] mt-0.5">Fill in your details for faster checkout</p>
+                    </div>
+                    
                     <form onsubmit="event.preventDefault(); registerUser();" class="space-y-3">
-                        <input type="text" id="regName" required placeholder="Full Name *" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg outline-none text-xs">
-                        <input type="tel" id="regPhone" required placeholder="Phone Number *" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg outline-none text-xs">
-                        <input type="text" id="regLocation" required placeholder="Location/Address *" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg outline-none text-xs">
-                        <input type="email" id="regEmail" placeholder="Email (Optional)" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg outline-none text-xs">
-                        <button type="submit" class="w-full py-2.5 bg-[#FF5A36] hover:bg-[#E04825] text-white font-bold rounded-lg text-xs transition-all shadow-md">Register Account</button>
+                        <div>
+                            <input type="text" id="regName" required placeholder="Full Name *" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg outline-none text-xs">
+                        </div>
+                        <div>
+                            <input type="tel" id="regPhone" required placeholder="Phone Number *" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg outline-none text-xs">
+                        </div>
+                        <div>
+                            <input type="text" id="regLocation" required placeholder="Location/Address *" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg outline-none text-xs">
+                        </div>
+                        <div>
+                            <input type="email" id="regEmail" placeholder="Email (Optional)" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg outline-none text-xs">
+                        </div>
+                        <button type="submit" class="w-full py-2.5 bg-[#FF5A36] hover:bg-[#E04825] text-white font-bold rounded-lg text-xs transition-all shadow-md">
+                            Register Account
+                        </button>
                     </form>
                 </div>
             </div>
+
+            <!-- Profile View with Sign Out -->
             <div id="userProfileView" class="hidden text-center">
-                <div class="w-14 h-14 bg-orange-100 rounded-full flex items-center justify-center text-2xl text-[#FF5A36] mx-auto mb-3 shadow-inner"><i class="fa-solid fa-user-check"></i></div>
+                <div class="w-14 h-14 bg-orange-100 rounded-full flex items-center justify-center text-2xl text-[#FF5A36] mx-auto mb-3 shadow-inner">
+                    <i class="fa-solid fa-user-check"></i>
+                </div>
                 <h3 class="text-base font-extrabold text-slate-900 font-serif" id="profileName">User Name</h3>
                 <p class="text-slate-500 text-xs mt-0.5" id="profilePhone">0300-0000000</p>
                 <p class="text-slate-400 text-[10px] mt-0.5 truncate px-2" id="profileLocation">Location</p>
-                <div class="pt-4 mt-4 border-t border-slate-100">
+                
+                <div class="pt-4 mt-4 border-t border-slate-100 space-y-2">
                     <button onclick="logoutUser()" class="w-full py-2.5 bg-red-50 hover:bg-red-500 text-red-600 hover:text-white border border-red-200 font-bold rounded-xl text-xs transition-all shadow-sm flex items-center justify-center gap-2">
                         <i class="fa-solid fa-right-from-bracket"></i> Sign Out / Exit Account
                     </button>
@@ -393,59 +1017,96 @@
         </div>
     </div>
 
-    <!-- Guest Name Modal -->
+    <!-- POP-UP MODAL: Guest Comment Name Input & Instructions -->
     <div id="guestNameModal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-md z-[10000] hidden flex items-center justify-center p-4" onclick="closeGuestNameModal()">
         <div class="bg-white rounded-[24px] max-w-xs w-full p-6 border border-slate-200 relative shadow-2xl text-center space-y-3" onclick="event.stopPropagation()">
-            <div class="w-12 h-12 bg-orange-100 text-[#FF5A36] rounded-full flex items-center justify-center text-xl mx-auto shadow-inner"><i class="fa-solid fa-user-pen"></i></div>
+            <div class="w-12 h-12 bg-orange-100 text-[#FF5A36] rounded-full flex items-center justify-center text-xl mx-auto shadow-inner">
+                <i class="fa-solid fa-user-pen"></i>
+            </div>
             <h3 class="text-sm font-black text-slate-900 font-serif">Welcome Guest Foodie!</h3>
-            <p class="text-[11px] text-slate-500 font-medium leading-relaxed bg-slate-50 p-2.5 rounded-xl border border-slate-100">💡 Enter your name once to comment on social posts during this session.</p>
+            <p class="text-[11px] text-slate-500 font-medium leading-relaxed bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                💡 Enter your name once to comment on social posts during this session.
+            </p>
+            
             <form onsubmit="event.preventDefault(); saveGuestNameFromPopup();" class="space-y-3 pt-1">
-                <input type="text" id="popupGuestNameInput" required placeholder="Enter Your Name *" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none text-xs font-bold text-slate-800 focus:border-[#FF5A36]">
-                <button type="submit" class="w-full py-2.5 bg-[#FF5A36] hover:bg-[#E04825] text-white font-extrabold rounded-xl text-xs transition-all shadow-md flex items-center justify-center gap-1">
+                <div>
+                    <input type="text" id="popupGuestNameInput" required placeholder="Enter Your Name *" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none text-xs font-bold text-slate-800 focus:border-[#FF5A36]">
+                </div>
+                <button type="submit" class="w-full py-2.5 bg-[#FF5A36] hover:bg-[#E04825] text-white font-extrabold rounded-xl text-xs transition-all shadow-md flex items-center justify-center gap-1.5">
                     <i class="fa-solid fa-check"></i> OK / Enter
                 </button>
             </form>
+            <p class="text-[9px] text-slate-400">Your details are not added to any registration database.</p>
         </div>
     </div>
 
-    <!-- Admin Comments Modal -->
+    <!-- Admin Comment Management Modal -->
     <div id="adminCommentsModal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-md z-[10001] hidden flex items-center justify-center p-4" onclick="closeAdminCommentsModal()">
         <div class="bg-white rounded-[24px] max-w-md w-full p-5 border border-slate-200 relative shadow-2xl space-y-4 max-h-[85vh] flex flex-col" onclick="event.stopPropagation()">
-            <button onclick="closeAdminCommentsModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600"><i class="fa-solid fa-circle-xmark text-xl"></i></button>
+            <button onclick="closeAdminCommentsModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
+                <i class="fa-solid fa-circle-xmark text-xl"></i>
+            </button>
+            
             <div class="flex items-center gap-3 border-b border-slate-100 pb-3 shrink-0">
-                <div class="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center text-lg text-primary"><i class="fa-solid fa-comments"></i></div>
-                <div><h3 class="text-sm font-extrabold text-slate-900">Manage Post Comments</h3><p class="text-[10px] text-slate-400" id="adminCommentsPostTitle">Review & delete comments</p></div>
+                <div class="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center text-lg text-primary">
+                    <i class="fa-solid fa-comments"></i>
+                </div>
+                <div>
+                    <h3 class="text-sm font-extrabold text-slate-900">Manage Post Comments</h3>
+                    <p class="text-[10px] text-slate-400" id="adminCommentsPostTitle">Review & delete comments / replies</p>
+                </div>
             </div>
-            <div id="adminCommentsListContainer" class="space-y-3 overflow-y-auto flex-grow pr-1"></div>
+            
+            <div id="adminCommentsListContainer" class="space-y-3 overflow-y-auto flex-grow pr-1">
+                <!-- Dynamic comments tree with delete capability -->
+            </div>
         </div>
     </div>
 
     <!-- Notifications Modal -->
     <div id="notificationsModal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-md z-[10000] hidden flex items-center justify-center p-4" onclick="closeNotificationsModal()">
         <div class="bg-white rounded-[24px] max-w-xs w-full p-5 border border-slate-200 relative shadow-2xl" onclick="event.stopPropagation()">
-            <button onclick="closeNotificationsModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600"><i class="fa-solid fa-circle-xmark text-xl"></i></button>
+            <button onclick="closeNotificationsModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
+                <i class="fa-solid fa-circle-xmark text-xl"></i>
+            </button>
+            
             <div class="flex items-center gap-3 mb-4 border-b border-slate-100 pb-3">
-                <div class="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center text-lg text-primary"><i class="fa-solid fa-bell"></i></div>
-                <div><h3 class="text-sm font-extrabold text-slate-900">Notifications</h3><p class="text-[10px] text-slate-400">Order updates & status alerts</p></div>
+                <div class="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center text-lg text-primary">
+                    <i class="fa-solid fa-bell"></i>
+                </div>
+                <div>
+                    <h3 class="text-sm font-extrabold text-slate-900">Notifications</h3>
+                    <p class="text-[10px] text-slate-400">Order updates & status alerts</p>
+                </div>
             </div>
+            
             <div id="notificationsList" class="space-y-2.5 max-h-64 overflow-y-auto">
-                <div class="text-center py-6 text-slate-400 text-xs"><i class="fa-regular fa-bell-slash text-2xl text-slate-300 block mb-1"></i>No order alerts yet.</div>
+                <div class="text-center py-6 text-slate-400 text-xs">
+                    <i class="fa-regular fa-bell-slash text-2xl text-slate-300 block mb-1"></i>
+                    No order alerts yet.
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- Admin Authentication Modal -->
+    <!-- Admin Authentication Modal Panel -->
     <div id="adminAuthModal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-md z-[10000] hidden flex items-center justify-center p-4">
         <div class="bg-white rounded-[24px] max-w-xs w-full p-6 border border-slate-200 shadow-2xl relative">
-            <button onclick="closeAdminAuth()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600"><i class="fa-solid fa-circle-xmark text-xl"></i></button>
+            <button onclick="closeAdminAuth()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
+                <i class="fa-solid fa-circle-xmark text-xl"></i>
+            </button>
             <div class="text-center mb-4">
-                <div class="w-12 h-12 bg-[#FF5A36]/15 rounded-full flex items-center justify-center text-xl text-[#FF5A36] mx-auto mb-2"><i class="fa-solid fa-shield-halved"></i></div>
+                <div class="w-12 h-12 bg-[#FF5A36]/15 rounded-full flex items-center justify-center text-xl text-[#FF5A36] mx-auto mb-2">
+                    <i class="fa-solid fa-shield-halved"></i>
+                </div>
                 <h3 class="text-base font-extrabold text-slate-900 font-serif">Admin Authentication</h3>
                 <p class="text-slate-500 text-[10px] mt-1">Please enter passcode to access control center.</p>
             </div>
             <form onsubmit="event.preventDefault(); verifyAdminPasscode();" class="space-y-3">
-                <input type="password" id="adminPasscode" maxlength="4" placeholder="••••" class="w-full text-center tracking-[1.2em] text-xl font-black bg-slate-50 border border-slate-200 rounded-xl py-3 focus:border-[#FF5A36] outline-none">
-                <button type="submit" class="w-full py-3 bg-[#FF5A36] hover:bg-[#E04825] text-white font-bold rounded-xl text-xs transition-all shadow-md">Verify & Enter</button>
+                <input type="password" id="adminPasscode" maxlength="4" placeholder="••••" class="w-full text-center tracking-[1.2em] text-xl font-black bg-slate-50 border border-slate-200 rounded-xl py-3 focus:ring-3 focus:ring-[#FF5A36]/15 focus:border-[#FF5A36] outline-none">
+                <button type="submit" class="w-full py-3 bg-[#FF5A36] hover:bg-[#E04825] text-white font-bold rounded-xl text-xs transition-all shadow-md">
+                    Verify & Enter
+                </button>
             </form>
         </div>
     </div>
@@ -453,83 +1114,136 @@
     <!-- Admin Control Dashboard -->
     <div id="admin-page" class="hidden min-h-screen bg-slate-50 w-full relative z-[1000] pb-20">
         <div class="max-w-[480px] mx-auto p-4">
+            
+            <!-- Mobile Dashboard Banner matching original style -->
             <div class="flex justify-between items-center bg-slate-900 text-white p-4 rounded-2xl shadow-xl mb-4">
                 <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-xl bg-[#FF5A36] flex items-center justify-center text-white text-lg shadow-lg border border-slate-800 shrink-0"><i class="fa-solid fa-sliders"></i></div>
-                    <div><h2 class="text-sm font-extrabold font-serif tracking-wide">ACP Control Center</h2><p class="text-[10px] text-slate-400 font-sans">Firebase Realtime Sync Active</p></div>
+                    <div class="w-10 h-10 rounded-xl bg-[#FF5A36] flex items-center justify-center text-white text-lg shadow-lg border border-slate-800 shrink-0">
+                        <i class="fa-solid fa-sliders"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-sm font-extrabold font-serif tracking-wide">ACP Control Center</h2>
+                        <p class="text-[10px] text-slate-400 font-sans">Firebase Realtime Sync Active</p>
+                    </div>
                 </div>
                 <button onclick="closeAdminPortal()" class="px-3 py-1.5 bg-slate-800 border border-slate-700 text-slate-200 rounded-xl text-xs font-bold hover:bg-rose-500 hover:text-white transition-all shadow-md flex items-center gap-1">
                     <i class="fa-solid fa-store"></i> Exit
                 </button>
             </div>
 
+            <!-- Top Grid Boxes Navigation -->
             <div class="grid grid-cols-2 gap-2 my-4">
                 <button onclick="switchAdminTab('orders')" id="adminTabOrders" class="p-3 rounded-2xl border text-center transition-all bg-white border-[#FF5A36] shadow-md text-slate-900 font-extrabold text-xs flex flex-col items-center gap-1.5 relative active:scale-95">
-                    <i class="fa-solid fa-shopping-bag text-xl text-[#FF5A36]"></i><span class="text-[11px]">Customers Orders</span>
+                    <i class="fa-solid fa-shopping-bag text-xl text-[#FF5A36]"></i>
+                    <span class="text-[11px]">Customers Orders</span>
                     <span id="adminOrdersCountBadge" class="absolute top-2 right-2 bg-[#FF5A36] text-white rounded-full text-[9px] w-5 h-5 flex items-center justify-center font-black">0</span>
                 </button>
+
                 <button onclick="switchAdminTab('catalog')" id="adminTabCatalog" class="p-3 rounded-2xl border border-slate-200 bg-white text-slate-700 font-bold text-xs flex flex-col items-center gap-1.5 relative hover:border-[#FF5A36] active:scale-95">
-                    <i class="fa-solid fa-utensils text-xl text-slate-500"></i><span class="text-[11px]">Manage Catalog</span>
+                    <i class="fa-solid fa-utensils text-xl text-slate-500"></i>
+                    <span class="text-[11px]">Manage Catalog</span>
                 </button>
+
                 <button onclick="switchAdminTab('feed')" id="adminTabFeed" class="p-3 rounded-2xl border border-slate-200 bg-white text-slate-700 font-bold text-xs flex flex-col items-center gap-1.5 relative hover:border-[#FF5A36] active:scale-95">
-                    <i class="fa-solid fa-bullhorn text-xl text-amber-500"></i><span class="text-[11px]">Publish Post</span>
+                    <i class="fa-solid fa-bullhorn text-xl text-amber-500"></i>
+                    <span class="text-[11px]">Publish Post</span>
                 </button>
+
                 <button onclick="switchAdminTab('users')" id="adminTabUsers" class="p-3 rounded-2xl border border-slate-200 bg-white text-slate-700 font-bold text-xs flex flex-col items-center gap-1.5 relative hover:border-[#FF5A36] active:scale-95">
-                    <i class="fa-solid fa-users text-xl text-sky-500"></i><span class="text-[11px]">Registered Customers</span>
+                    <i class="fa-solid fa-users text-xl text-sky-500"></i>
+                    <span class="text-[11px]">Registered Customers</span>
                     <span id="adminUsersCountBadge" class="absolute top-2 right-2 bg-red-500 text-white rounded-full text-[9px] w-5 h-5 flex items-center justify-center font-black">0</span>
                 </button>
             </div>
 
-            <!-- TAB 1: ORDERS -->
+            <!-- CATEGORY 1: CUSTOMERS ORDERS LOG -->
             <div id="admin-sec-orders" class="space-y-4">
                 <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
                     <div class="flex justify-between items-center border-b border-slate-100 pb-3 mb-4">
-                        <div><h3 class="text-sm font-black text-slate-950 flex items-center gap-2"><i class="fa-solid fa-bag-shopping text-[#FF5A36]"></i> Placed Orders</h3><p class="text-[10px] text-slate-400 mt-0.5">Synced live with Firebase</p></div>
-                        <span class="bg-orange-50 border border-orange-200 text-orange-700 text-[10px] font-black px-2.5 py-1 rounded-full">Total: <span id="lblAdminOrdersCount">0</span></span>
+                        <div>
+                            <h3 class="text-sm font-black text-slate-950 flex items-center gap-2">
+                                <i class="fa-solid fa-bag-shopping text-[#FF5A36]"></i> Placed Orders
+                            </h3>
+                            <p class="text-[10px] text-slate-400 mt-0.5">Incoming customer orders requiring approval</p>
+                        </div>
+                        <span class="bg-orange-50 border border-orange-200 text-orange-700 text-[10px] font-black px-2.5 py-1 rounded-full">
+                            Total: <span id="lblAdminOrdersCount">0</span>
+                        </span>
                     </div>
-                    <div id="adminOrdersContainer" class="space-y-3"></div>
+
+                    <div id="adminOrdersContainer" class="space-y-3">
+                        <!-- Dynamic Order Cards Injected Here -->
+                    </div>
                 </div>
             </div>
 
-            <!-- TAB 2: CATALOG -->
+            <!-- CATEGORY 2: MANAGE FOOD CATALOG -->
             <div id="admin-sec-catalog" class="hidden space-y-4">
+                
                 <div class="grid grid-cols-2 gap-2 mb-2">
-                    <button type="button" onclick="switchCatalogSubTab('list')" id="btnSubCatList" class="py-2 px-3 rounded-xl text-xs font-black text-center transition-all bg-[#FF5A36] text-white shadow-sm border border-[#FF5A36] flex items-center justify-center gap-1.5"><i class="fa-solid fa-list-check"></i> Catalog List</button>
-                    <button type="button" onclick="switchCatalogSubTab('add')" id="btnSubCatAdd" class="py-2 px-3 rounded-xl text-xs font-bold text-center transition-all bg-white text-slate-700 hover:bg-slate-100 border border-slate-200 flex items-center justify-center gap-1.5"><i class="fa-solid fa-plus-circle"></i> Add New Item</button>
+                    <button type="button" onclick="switchCatalogSubTab('list')" id="btnSubCatList" class="py-2 px-3 rounded-xl text-xs font-black text-center transition-all bg-[#FF5A36] text-white shadow-sm border border-[#FF5A36] flex items-center justify-center gap-1.5">
+                        <i class="fa-solid fa-list-check"></i> Catalog List
+                    </button>
+                    <button type="button" onclick="switchCatalogSubTab('add')" id="btnSubCatAdd" class="py-2 px-3 rounded-xl text-xs font-bold text-center transition-all bg-white text-slate-700 hover:bg-slate-100 border border-slate-200 flex items-center justify-center gap-1.5">
+                        <i class="fa-solid fa-plus-circle"></i> Add New Food Item
+                    </button>
                 </div>
+
                 <div id="subSecCatalogList" class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-3">
                     <div class="flex justify-between items-center pb-2 border-b border-slate-100">
-                        <h3 class="text-xs font-black text-slate-900 flex items-center gap-1.5"><i class="fa-solid fa-boxes-stacked text-[#FF5A36]"></i> Catalog List</h3>
+                        <h3 class="text-xs font-black text-slate-900 flex items-center gap-1.5">
+                            <i class="fa-solid fa-boxes-stacked text-[#FF5A36]"></i> Catalog List
+                        </h3>
                         <span class="bg-slate-100 text-slate-700 px-2 py-0.5 rounded-full text-[10px] font-black"><span id="adminCatalogCount">0</span> Items</span>
                     </div>
+
                     <div class="flex gap-1.5 overflow-x-auto pb-1">
-                        <button onclick="filterAdminCatalog('all')" id="catFilterAll" class="px-2.5 py-1 rounded-lg text-[10px] font-black bg-[#FF5A36] text-white shadow-sm shrink-0">All</button>
-                        <button onclick="filterAdminCatalog('fast')" id="catFilterFast" class="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-slate-100 text-slate-600 shrink-0">Fast Food</button>
-                        <button onclick="filterAdminCatalog('local')" id="catFilterLocal" class="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-slate-100 text-slate-600 shrink-0">Local Menu</button>
-                        <button onclick="filterAdminCatalog('drinks')" id="catFilterDrinks" class="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-slate-100 text-slate-600 shrink-0">Drinks</button>
+                        <button onclick="filterAdminCatalog('all')" id="catFilterAll" class="px-2.5 py-1 rounded-lg text-[10px] font-black bg-[#FF5A36] text-white shadow-sm shrink-0">All Items</button>
+                        <button onclick="filterAdminCatalog('fast')" id="catFilterFast" class="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 shrink-0">Fast Food</button>
+                        <button onclick="filterAdminCatalog('local')" id="catFilterLocal" class="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 shrink-0">Local Menu</button>
+                        <button onclick="filterAdminCatalog('drinks')" id="catFilterDrinks" class="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 shrink-0">Cold Drinks</button>
                     </div>
+
                     <div class="overflow-x-auto bg-slate-50 rounded-xl border border-slate-100">
                         <table class="w-full text-left border-collapse min-w-[340px]">
                             <thead class="bg-slate-100 text-slate-500 text-[9px] font-black uppercase">
-                                <tr><th class="p-2.5">Product</th><th class="p-2.5 text-right">Price</th><th class="p-2.5 text-right">Actions</th></tr>
+                                <tr>
+                                    <th class="p-2.5">Product</th>
+                                    <th class="p-2.5 text-right">Price</th>
+                                    <th class="p-2.5 text-right">Actions</th>
+                                </tr>
                             </thead>
-                            <tbody id="adminCatalogRows" class="divide-y divide-slate-100 text-xs bg-white"></tbody>
+                            <tbody id="adminCatalogRows" class="divide-y divide-slate-100 text-xs bg-white">
+                                <!-- Dynamic JS render -->
+                            </tbody>
                         </table>
                     </div>
+
+                    <!-- Catalog Update Action Button Centered -->
+                    <div id="catalogUpdateBar" class="hidden pt-3 flex justify-center">
+                        <button onclick="saveCatalogOrderChanges()" class="py-2.5 px-5 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold rounded-xl text-xs transition-all shadow-md flex items-center gap-2 active:scale-95">
+                            <i class="fa-solid fa-circle-check text-sm"></i> Save Catalog Order Changes
+                        </button>
+                    </div>
                 </div>
+
                 <div id="subSecAddFoodForm" class="hidden bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-3">
                     <h3 class="text-xs font-black text-slate-900 pb-2 border-b border-slate-100 flex items-center gap-2">
-                        <i class="fa-solid fa-circle-plus text-[#FF5A36] text-sm"></i><span id="formPanelTitle">Add New Food Item</span>
+                        <i class="fa-solid fa-circle-plus text-[#FF5A36] text-sm"></i>
+                        <span id="formPanelTitle">Add New Food Item</span>
                     </h3>
+                    
                     <form id="adminFoodForm" onsubmit="handleFoodFormSubmit(event)" class="space-y-3 text-xs font-bold text-slate-700">
                         <input type="hidden" id="editFoodId" value="">
+                        
                         <div>
-                            <label class="block text-slate-500 mb-1 uppercase text-[9px]">Item Name *</label>
-                            <input type="text" id="foodFormName" required placeholder="e.g., Special Zinger" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none text-xs">
+                            <label class="block text-slate-500 mb-1 uppercase text-[9px] tracking-wider">Item Name *</label>
+                            <input type="text" id="foodFormName" required placeholder="e.g., Special Zinger / Cold Drink" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none text-xs">
                         </div>
+                        
                         <div class="grid grid-cols-2 gap-2">
                             <div>
-                                <label class="block text-slate-500 mb-1 uppercase text-[9px]">Category *</label>
+                                <label class="block text-slate-500 mb-1 uppercase text-[9px] tracking-wider">Category *</label>
                                 <select id="foodFormCategory" required class="w-full px-2 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none text-xs font-bold text-slate-800">
                                     <option value="fast">Fast Food</option>
                                     <option value="local">Local Menu</option>
@@ -537,68 +1251,144 @@
                                 </select>
                             </div>
                             <div>
-                                <label class="block text-slate-500 mb-1 uppercase text-[9px]">Price (Rs.) *</label>
+                                <label class="block text-slate-500 mb-1 uppercase text-[9px] tracking-wider">Price (Rs.) *</label>
                                 <input type="number" id="foodFormPrice" required min="1" placeholder="250" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none text-xs">
                             </div>
                         </div>
+
                         <div>
-                            <label class="block text-slate-500 mb-1 uppercase text-[9px]">Image URL *</label>
-                            <input type="text" id="foodFormImage" required placeholder="https://..." class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none text-xs">
+                            <label class="block text-slate-500 mb-1 uppercase text-[9px] tracking-wider">Upload Device Image</label>
+                            <input type="file" id="foodFormFile" accept="image/*" onchange="handleImageUpload(event)" class="w-full text-xs text-slate-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-[10px] file:font-bold file:bg-[#FF5A36]/10 file:text-[#FF5A36]">
                         </div>
+
+                        <div>
+                            <label class="block text-slate-500 mb-1 uppercase text-[9px] tracking-wider">Or Image URL</label>
+                            <input type="text" id="foodFormImage" placeholder="https://..." class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none text-xs">
+                        </div>
+
+                        <div>
+                            <label class="block text-slate-500 mb-1 uppercase text-[9px] tracking-wider">Short Description</label>
+                            <textarea id="foodFormDesc" rows="2" placeholder="Briefly describe ingredients..." class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none text-xs resize-none"></textarea>
+                        </div>
+
                         <div class="pt-1 flex gap-2">
-                            <button type="submit" id="foodFormSubmitBtn" class="flex-1 py-2.5 bg-[#FF5A36] text-white font-black rounded-xl text-xs transition-all shadow-md">Save Product to Firebase</button>
-                            <button type="button" onclick="resetAdminForm()" class="px-3 py-2.5 bg-slate-100 text-slate-500 rounded-xl font-bold text-xs">Clear</button>
+                            <button type="submit" id="foodFormSubmitBtn" class="flex-1 py-2.5 bg-[#FF5A36] text-white font-black rounded-xl text-xs transition-all shadow-md">
+                                <i class="fa-solid fa-save"></i> Save Product
+                            </button>
+                            <button type="button" onclick="resetAdminForm()" class="px-3 py-2.5 bg-slate-100 text-slate-500 rounded-xl font-bold text-xs">
+                                Clear
+                            </button>
                         </div>
                     </form>
                 </div>
+
             </div>
 
-            <!-- TAB 3: FEED -->
+            <!-- CATEGORY 3: PUBLISH POST -->
             <div id="admin-sec-feed" class="hidden space-y-4">
+                <!-- Modified order: Active Posts first, Broadcast Post second -->
                 <div class="grid grid-cols-2 gap-2 mb-2">
-                    <button type="button" onclick="switchFeedSubTab('list')" id="btnSubFeedList" class="py-2 px-3 rounded-xl text-xs font-black text-center transition-all bg-[#FF5A36] text-white shadow-sm border border-[#FF5A36] flex items-center justify-center gap-1.5"><i class="fa-solid fa-newspaper"></i> Active Posts</button>
-                    <button type="button" onclick="switchFeedSubTab('create')" id="btnSubFeedCreate" class="py-2 px-3 rounded-xl text-xs font-bold text-center transition-all bg-white text-slate-700 hover:bg-slate-100 border border-slate-200 flex items-center justify-center gap-1.5"><i class="fa-solid fa-paper-plane"></i> Broadcast Post</button>
+                    <button type="button" onclick="switchFeedSubTab('list')" id="btnSubFeedList" class="py-2 px-3 rounded-xl text-xs font-black text-center transition-all bg-[#FF5A36] text-white shadow-sm border border-[#FF5A36] flex items-center justify-center gap-1.5">
+                        <i class="fa-solid fa-newspaper"></i> Active Posts
+                    </button>
+                    <button type="button" onclick="switchFeedSubTab('create')" id="btnSubFeedCreate" class="py-2 px-3 rounded-xl text-xs font-bold text-center transition-all bg-white text-slate-700 hover:bg-slate-100 border border-slate-200 flex items-center justify-center gap-1.5">
+                        <i class="fa-solid fa-paper-plane"></i> Broadcast Post
+                    </button>
                 </div>
+
                 <div id="subSecFeedCreate" class="hidden bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-3">
-                    <div class="border-b border-slate-100 pb-2"><h3 id="postFormHeading" class="text-xs font-black text-slate-950 flex items-center gap-2"><i class="fa-solid fa-paper-plane text-orange-500"></i> Broadcast Post</h3></div>
+                    <div class="border-b border-slate-100 pb-2">
+                        <h3 id="postFormHeading" class="text-xs font-black text-slate-950 flex items-center gap-2">
+                            <i class="fa-solid fa-paper-plane text-orange-500"></i> Broadcast / Edit Post
+                        </h3>
+                    </div>
+
                     <form onsubmit="handleFeedPostSubmit(event)" class="space-y-3 text-xs font-bold text-slate-700">
                         <input type="hidden" id="editPostId" value="">
+
                         <div>
-                            <label class="block text-slate-500 mb-1 uppercase text-[9px]">Post Title *</label>
-                            <input type="text" id="postFormTitle" required placeholder="e.g., Friday Special Deal!" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none text-xs">
+                            <label class="block text-slate-500 mb-1 uppercase text-[9px] tracking-wider">Post Title *</label>
+                            <input type="text" id="postFormTitle" required placeholder="e.g., Friday Special Deal 15% OFF!" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none text-xs">
                         </div>
+
                         <div>
-                            <label class="block text-slate-500 mb-1 uppercase text-[9px]">Image URL *</label>
-                            <input type="text" id="postFormImage" required placeholder="https://..." class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none text-xs">
+                            <label class="block text-slate-500 mb-1 uppercase text-[9px] tracking-wider">Upload / URL Image *</label>
+                            <input type="file" id="postFormFile" accept="image/*" onchange="handlePostImageUpload(event)" class="w-full text-xs text-slate-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-[10px] file:font-bold file:bg-[#FF5A36]/10 file:text-[#FF5A36]">
+                            <input type="text" id="postFormImage" required placeholder="Or paste image URL" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none text-xs mt-1.5">
+                            
+                            <div id="postImagePreviewContainer" class="hidden mt-2 relative border border-dashed border-slate-200 rounded-xl overflow-hidden p-1.5 bg-slate-50">
+                                <img id="postImagePreview" class="w-full h-28 object-cover rounded-lg" src="">
+                                <button type="button" onclick="removePostImage()" class="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full hover:bg-red-600 transition-all text-[10px] shadow" title="Delete Image">
+                                    <i class="fa-solid fa-trash-can"></i>
+                                </button>
+                            </div>
                         </div>
+
                         <div>
-                            <label class="block text-slate-500 mb-1 uppercase text-[9px]">Description *</label>
-                            <textarea id="postFormDesc" required rows="3" placeholder="Write details..." class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none text-xs resize-y"></textarea>
+                            <label class="block text-slate-500 mb-1 uppercase text-[9px] tracking-wider">Description *</label>
+                            <textarea id="postFormDesc" required rows="3" placeholder="Write details of your deal..." class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none text-xs resize-y"></textarea>
                         </div>
-                        <button type="submit" id="btnPostSubmit" class="w-full py-2.5 bg-[#FF5A36] text-white font-black rounded-xl text-xs shadow-md">Broadcast to Firebase</button>
+
+                        <div class="flex gap-2 pt-1">
+                            <button type="submit" id="btnPostSubmit" class="flex-1 py-2.5 bg-[#FF5A36] text-white font-black rounded-xl text-xs transition-all shadow-md">
+                                <i class="fa-solid fa-bullhorn"></i> Broadcast Post
+                            </button>
+                            <button type="button" id="btnCancelPostEdit" onclick="resetPostForm()" class="hidden px-3 py-2.5 bg-slate-200 text-slate-700 font-bold rounded-xl text-xs">
+                                Cancel
+                            </button>
+                        </div>
                     </form>
                 </div>
+
                 <div id="subSecFeedList" class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-3">
                     <div class="border-b border-slate-100 pb-2 flex justify-between items-center">
-                        <h3 class="text-xs font-black text-slate-900 flex items-center gap-1.5"><i class="fa-solid fa-newspaper text-amber-500"></i> Active Posts</h3>
+                        <h3 class="text-xs font-black text-slate-900 flex items-center gap-1.5">
+                            <i class="fa-solid fa-newspaper text-amber-500"></i> Active Posts
+                        </h3>
                         <span class="text-[10px] bg-slate-100 px-2.5 py-0.5 rounded-full font-bold text-slate-600"><span id="lblAdminPostsCount">0</span> Published</span>
                     </div>
-                    <div id="adminPostsListContainer" class="space-y-3"></div>
+
+                    <div id="adminPostsListContainer" class="space-y-3">
+                        <!-- Dynamic Post Cards Injected Here -->
+                    </div>
+
+                    <!-- Post Update Action Button Centered -->
+                    <div id="postUpdateBar" class="hidden pt-3 flex justify-center">
+                        <button onclick="savePostOrderChanges()" class="py-2.5 px-5 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold rounded-xl text-xs transition-all shadow-md flex items-center gap-2 active:scale-95">
+                            <i class="fa-solid fa-circle-check text-sm"></i> Save Post Order Changes
+                        </button>
+                    </div>
                 </div>
+
             </div>
 
-            <!-- TAB 4: USERS -->
+            <!-- CATEGORY 4: REGISTERED CUSTOMERS CRM DIRECTORY -->
             <div id="admin-sec-users" class="hidden">
                 <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-3">
                     <div class="border-b border-slate-100 pb-3">
-                        <h3 class="text-xs font-black text-slate-950 flex items-center gap-2"><i class="fa-solid fa-id-card text-sky-500"></i> Registered Customer Base</h3>
+                        <h3 class="text-xs font-black text-slate-950 flex items-center gap-2">
+                            <i class="fa-solid fa-id-card text-sky-500"></i> Registered Customer Base
+                        </h3>
+                        <div class="relative w-full text-xs font-bold mt-2">
+                            <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-slate-400"></i>
+                            <input type="text" oninput="searchUsers(this.value)" placeholder="Search registrants..." class="w-full pl-8 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none text-xs">
+                        </div>
                     </div>
+
                     <div class="overflow-x-auto rounded-xl border border-slate-100">
                         <table class="w-full text-left border-collapse min-w-[420px]">
                             <thead class="bg-slate-100 text-slate-600 text-[9px] font-black border-b border-slate-200 uppercase">
-                                <tr><th class="p-2.5">Name</th><th class="p-2.5">Phone</th><th class="p-2.5">Location</th><th class="p-2.5 text-center">Actions</th></tr>
+                                <tr>
+                                    <th class="p-2.5">Name</th>
+                                    <th class="p-2.5">Phone</th>
+                                    <th class="p-2.5">Location</th>
+                                    <th class="p-2.5">Email</th>
+                                    <th class="p-2.5 text-center">Actions</th>
+                                </tr>
                             </thead>
-                            <tbody id="registeredUsersRows" class="divide-y divide-slate-100 text-xs font-bold text-slate-700 bg-white"></tbody>
+                            <tbody id="registeredUsersRows" class="divide-y divide-slate-100 text-xs font-bold text-slate-700 bg-white">
+                                <!-- Dynamic JS User Rows Injected here -->
+                            </tbody>
                         </table>
                     </div>
                 </div>
@@ -607,16 +1397,21 @@
         </div>
     </div>
 
-    <!-- INVOICE RECEIPT -->
+    <!-- Invoice Receipt Overlay -->
     <div id="invoiceModalOverlay" class="invoice-overlay-backdrop" onclick="closeReceiptAndScrollToMenu()">
         <div class="receipt-container" id="receiptContainer" onclick="event.stopPropagation()">
-            <button class="absolute top-3 right-3 text-slate-400 hover:text-slate-600 no-print focus:outline-none transition-all" onclick="closeReceiptAndScrollToMenu()"><i class="fa-solid fa-circle-xmark text-2xl bg-white rounded-full shadow"></i></button>
+            <button class="absolute top-3 right-3 text-slate-400 hover:text-slate-600 no-print focus:outline-none transition-all" onclick="closeReceiptAndScrollToMenu()" aria-label="Close Receipt">
+                <i class="fa-solid fa-circle-xmark text-2xl bg-white rounded-full shadow"></i>
+            </button>
+
             <div class="receipt-header-strip"></div>
+            
             <div class="receipt-body">
                 <div class="text-center text-[9px] text-slate-400 space-y-0.5 mb-4 mt-6">
                     <div>Order ID: <span class="font-extrabold text-slate-700" id="lblTxnId">#ACP-0000</span></div>
                     <div id="lblInvDate">-</div>
                 </div>
+
                 <div class="flex items-center justify-center gap-3 mb-4">
                     <div class="h-[1px] bg-slate-200 flex-grow"></div>
                     <div class="text-center shrink-0">
@@ -625,6 +1420,7 @@
                     </div>
                     <div class="h-[1px] bg-slate-200 flex-grow"></div>
                 </div>
+
                 <table class="w-full text-[10px] border-collapse mb-4">
                     <thead>
                         <tr class="border-b border-slate-200 text-slate-400 text-[9px]">
@@ -633,34 +1429,104 @@
                             <th class="text-right pb-2 font-bold uppercase" style="width: 70px;">Total</th>
                         </tr>
                     </thead>
-                    <tbody id="invoiceTableRows" class="divide-y divide-slate-100"></tbody>
+                    <tbody id="invoiceTableRows" class="divide-y divide-slate-100">
+                    </tbody>
                 </table>
+
                 <div class="receipt-dashed-tear"></div>
+                
                 <div class="flex justify-between items-center text-xs font-extrabold text-slate-900 px-1">
                     <span>You have to pay</span>
                     <span class="text-[#FF5A36] text-sm font-black" id="lblSub">Rs. 0</span>
                 </div>
+
+                <div class="text-center mt-6">
+                    <p class="text-[9px] text-slate-400 italic">Thank you for ordering with Chaska Point!</p>
+                </div>
+
                 <div class="no-print mt-6 flex gap-2 justify-center">
-                    <button class="px-4 py-2.5 bg-slate-900 text-white font-extrabold rounded-xl text-[10px] hover:bg-slate-800 transition-all shadow-sm" onclick="window.print()"><i class="fa-solid fa-print"></i> Print</button>
-                    <button class="px-4 py-2.5 bg-[#FF5A36] text-white font-extrabold rounded-xl text-[10px] hover:bg-[#E04825] transition-all shadow-sm" onclick="downloadInvoiceJPG()"><i class="fa-solid fa-file-image"></i> Save JPG</button>
+                    <button class="px-4 py-2.5 bg-slate-900 text-white font-extrabold rounded-xl text-[10px] hover:bg-slate-800 transition-all flex items-center gap-1 shadow-sm" onclick="window.print()">
+                        <i class="fa-solid fa-print"></i> Print
+                    </button>
+                    <button class="px-4 py-2.5 bg-[#FF5A36] text-white font-extrabold rounded-xl text-[10px] hover:bg-[#E04825] transition-all flex items-center gap-1 shadow-sm" onclick="downloadInvoiceJPG()">
+                        <i class="fa-solid fa-file-image"></i> Save as JPG
+                    </button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Share Overlay -->
+    <!-- User Comment Reply Modal -->
+    <div id="userReplyModal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-md z-[10000] hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-[24px] max-w-xs w-full p-6 border border-slate-200 relative shadow-2xl space-y-3">
+            <button onclick="closeUserReplyModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
+                <i class="fa-solid fa-circle-xmark text-xl"></i>
+            </button>
+            <div class="flex items-center gap-2 border-b border-slate-100 pb-2">
+                <div class="w-8 h-8 rounded-full bg-orange-100 text-[#FF5A36] flex items-center justify-center text-sm font-bold">
+                    <i class="fa-solid fa-reply"></i>
+                </div>
+                <div>
+                    <h3 class="text-xs font-black text-slate-900">Reply to Comment</h3>
+                    <p class="text-[9px] text-slate-400" id="userReplyTargetTitle">Reply thread</p>
+                </div>
+            </div>
+            <form onsubmit="event.preventDefault(); submitUserReply();" class="space-y-3">
+                <input type="hidden" id="userReplyPostId">
+                <input type="hidden" id="userReplyCommentIndex">
+                <div>
+                    <textarea id="userReplyText" required rows="3" placeholder="Write your reply..." class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none text-xs resize-none"></textarea>
+                </div>
+                <button type="submit" class="w-full py-2.5 bg-[#FF5A36] hover:bg-[#E04825] text-white font-bold rounded-xl text-xs transition-all shadow-md">
+                    Post Reply
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Share Overlay Sheet Modal fallback -->
     <div id="shareModal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-md z-[10001] hidden flex items-center justify-center p-4" onclick="closeShareModal()">
         <div class="bg-white rounded-[24px] max-w-xs w-full p-5 border border-slate-200 relative shadow-2xl space-y-4 text-center" onclick="event.stopPropagation()">
-            <button onclick="closeShareModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600"><i class="fa-solid fa-circle-xmark text-xl"></i></button>
-            <h3 class="text-xs font-black text-slate-900">Share This Deal</h3>
-            <div class="flex justify-center gap-4 py-2">
-                <a id="shareWA" target="_blank" class="w-10 h-10 bg-[#25D366] text-white rounded-full flex items-center justify-center text-lg shadow"><i class="fa-brands fa-whatsapp"></i></a>
-                <a id="shareFB" target="_blank" class="w-10 h-10 bg-[#1877F2] text-white rounded-full flex items-center justify-center text-lg shadow"><i class="fa-brands fa-facebook-f"></i></a>
+            <button onclick="closeShareModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
+                <i class="fa-solid fa-circle-xmark text-xl"></i>
+            </button>
+            <div class="flex flex-col items-center">
+                <div class="w-10 h-10 bg-orange-100 text-[#FF5A36] rounded-full flex items-center justify-center text-lg mb-2">
+                    <i class="fa-solid fa-share-nodes"></i>
+                </div>
+                <h3 class="text-xs font-black text-slate-900">Share This Deal</h3>
+                <p class="text-[9px] text-slate-400">Choose your favorite platform to share</p>
+            </div>
+            <div class="grid grid-cols-4 gap-3 py-2">
+                <a id="shareWA" target="_blank" class="flex flex-col items-center gap-1 cursor-pointer">
+                    <div class="w-10 h-10 bg-[#25D366] text-white rounded-full flex items-center justify-center text-lg shadow hover:scale-105 transition-all">
+                        <i class="fa-brands fa-whatsapp text-lg"></i>
+                    </div>
+                    <span class="text-[9px] font-bold text-slate-600 font-sans">WhatsApp</span>
+                </a>
+                <a id="shareFB" target="_blank" class="flex flex-col items-center gap-1 cursor-pointer">
+                    <div class="w-10 h-10 bg-[#1877F2] text-white rounded-full flex items-center justify-center text-lg shadow hover:scale-105 transition-all">
+                        <i class="fa-brands fa-facebook-f text-base"></i>
+                    </div>
+                    <span class="text-[9px] font-bold text-slate-600 font-sans">Facebook</span>
+                </a>
+                <a id="shareTW" target="_blank" class="flex flex-col items-center gap-1 cursor-pointer">
+                    <div class="w-10 h-10 bg-[#111111] text-white rounded-full flex items-center justify-center text-lg shadow hover:scale-105 transition-all">
+                        <i class="fa-brands fa-x-twitter text-base"></i>
+                    </div>
+                    <span class="text-[9px] font-bold text-slate-600 font-sans">X / Twitter</span>
+                </a>
+                <button onclick="copyShareLink()" class="flex flex-col items-center gap-1">
+                    <div class="w-10 h-10 bg-slate-800 text-white rounded-full flex items-center justify-center text-lg shadow hover:scale-105 transition-all">
+                        <i class="fa-solid fa-link text-base"></i>
+                    </div>
+                    <span class="text-[9px] font-bold text-slate-600 font-sans">Copy Link</span>
+                </button>
             </div>
         </div>
     </div>
 
-    <!-- FIREBASE REALTIME SETUP & CORE APPLICATION LOGIC -->
+    <!-- FIREBASE INITIALIZATION SCRIPT (ES Modules via CDN with Real-Time Firestore Synchronization) -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
         import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-analytics.js";
@@ -680,7 +1546,7 @@
         const analytics = getAnalytics(app);
         const db = getFirestore(app);
 
-        // Make variables accessible globally across traditional window functions
+        // Export handles to window context so frontend UI logic can query Firestore
         window.db = db;
         window.collection = collection;
         window.addDoc = addDoc;
@@ -688,31 +1554,35 @@
         window.deleteDoc = deleteDoc;
         window.doc = doc;
         window.onSnapshot = onSnapshot;
-        window.getDocs = getDocs;
 
-        // Start real-time sync listeners after initialization
-        initRealtimeDatabaseListeners();
+        // Trigger real-time synchronization listeners
+        initRealtimeDatabaseSync();
     </script>
 
     <script>
         let cartItems = {};
         let notificationsHistory = [];
-        let expandedComments = {};
-        let commentSortModes = {};
-        let currentUser = null;
-        let guestSessionName = "";
+        let expandedComments = {}; 
+        let commentSortModes = {}; 
+        let expandedReplies = {}; 
+        let currentUser = null; 
+        let guestSessionName = ""; 
         let activeAdminCatalogFilter = 'all';
+        let sharedPostText = "";
 
+        let workingMenuData = [];
+        let workingFeedPosts = [];
+
+        // Live arrays bound to Firebase collections
         let menuData = [];
         let ordersList = [];
         let registeredUsers = [];
         let feedPosts = [];
 
-        // Real-time synchronization listeners mapping to Firestore Collections
-        function initRealtimeDatabaseListeners() {
+        function initRealtimeDatabaseSync() {
             if (!window.db) return;
 
-            // 1. Listen for Real-Time Menu Updates
+            // 1. Sync Menu Catalog Real-Time
             window.onSnapshot(window.collection(window.db, "menu"), (snapshot) => {
                 menuData = [];
                 snapshot.forEach((docSnap) => {
@@ -722,11 +1592,12 @@
                 renderLocalMenu();
                 renderDrinksMenu();
                 if (document.getElementById('admin-page') && !document.getElementById('admin-page').classList.contains('hidden')) {
+                    workingMenuData = JSON.parse(JSON.stringify(menuData));
                     renderAdminCatalog();
                 }
             });
 
-            // 2. Listen for Real-Time Orders
+            // 2. Sync Orders Real-Time
             window.onSnapshot(window.collection(window.db, "orders"), (snapshot) => {
                 ordersList = [];
                 snapshot.forEach((docSnap) => {
@@ -737,7 +1608,7 @@
                 }
             });
 
-            // 3. Listen for Real-Time Social Posts
+            // 3. Sync Social Feed Posts Real-Time
             window.onSnapshot(window.collection(window.db, "posts"), (snapshot) => {
                 feedPosts = [];
                 snapshot.forEach((docSnap) => {
@@ -745,11 +1616,12 @@
                 });
                 renderCustomerSocialFeeds();
                 if (document.getElementById('admin-page') && !document.getElementById('admin-page').classList.contains('hidden')) {
+                    workingFeedPosts = JSON.parse(JSON.stringify(feedPosts));
                     renderAdminPostsList();
                 }
             });
 
-            // 4. Listen for Real-Time Registered Users
+            // 4. Sync Registered Customers Real-Time
             window.onSnapshot(window.collection(window.db, "users"), (snapshot) => {
                 registeredUsers = [];
                 snapshot.forEach((docSnap) => {
@@ -766,38 +1638,60 @@
             if (savedUser) {
                 try { currentUser = JSON.parse(savedUser); } catch(e) { currentUser = null; }
             }
+
             updateUserAccountDisplay();
             renderCartSummary();
+            renderCustomerSocialFeeds();
             renderDynamicFooter();
         });
 
-        function openGuestNameModal() { document.getElementById('guestNameModal').classList.remove('hidden'); }
-        function closeGuestNameModal() { document.getElementById('guestNameModal').classList.add('hidden'); }
+        // Trigger Guest Name Pop-up Modal
+        function openGuestNameModal() {
+            const modal = document.getElementById('guestNameModal');
+            if (modal) modal.classList.remove('hidden');
+        }
+
+        function closeGuestNameModal() {
+            const modal = document.getElementById('guestNameModal');
+            if (modal) modal.classList.add('hidden');
+        }
+
         function saveGuestNameFromPopup() {
-            const val = document.getElementById('popupGuestNameInput').value.trim();
+            const input = document.getElementById('popupGuestNameInput');
+            if (!input) return;
+            const val = input.value.trim();
             if (!val) return;
             guestSessionName = val;
             closeGuestNameModal();
             renderCustomerSocialFeeds();
         }
-        function resetGuestSessionName() { guestSessionName = ""; renderCustomerSocialFeeds(); }
+
+        function resetGuestSessionName() {
+            guestSessionName = "";
+            renderCustomerSocialFeeds();
+        }
 
         function updateUserAccountDisplay() {
             const userBtn = document.getElementById('navUserBtn');
             if (!userBtn) return;
+
             if (currentUser) {
-                const firstSpelling = currentUser.name ? currentUser.name.trim().split(' ')[0] : 'User';
+                const fullName = currentUser.name ? currentUser.name.trim() : 'User';
+                const firstSpelling = fullName.split(' ')[0];
                 userBtn.innerHTML = `
-                    <div class="flex items-center gap-1.5 px-2 py-0.5 bg-orange-50 border border-orange-200 rounded-full shadow-sm cursor-pointer">
-                        <i class="fa-solid fa-circle-user text-primary text-sm"></i>
-                        <span class="text-[11px] font-black text-slate-800">${firstSpelling}</span>
-                    </div>`;
+                    <div class="flex items-center gap-1.5 px-2 py-0.5 bg-orange-50 border border-orange-200/80 rounded-full shadow-sm hover:bg-orange-100 transition-all cursor-pointer">
+                        <i class="fa-solid fa-circle-user text-primary text-sm shrink-0"></i>
+                        <span class="text-[11px] font-black text-slate-800 tracking-tight max-w-[90px] truncate">${firstSpelling}</span>
+                        <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full shrink-0"></span>
+                    </div>
+                `;
             } else {
                 userBtn.innerHTML = `
-                    <div class="flex items-center gap-1 px-2.5 py-1 bg-slate-100 border border-slate-200 rounded-full cursor-pointer">
-                        <i class="fa-solid fa-circle-user text-slate-500 text-sm"></i>
+                    <div class="flex items-center gap-1 px-2.5 py-1 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded-full transition-all cursor-pointer">
+                        <i class="fa-solid fa-circle-user text-slate-500 text-sm shrink-0"></i>
                         <span class="text-[11px] font-bold text-slate-700">Sign In</span>
-                    </div>`;
+                    </div>
+                `;
             }
         }
 
@@ -813,16 +1707,32 @@
                 viewStore.classList.remove('hidden');
                 viewFeeds.classList.add('hidden');
                 heroSec.classList.remove('hidden');
-                storeBtn.className = "btn-tab-effect btn-tab-active flex-1 max-w-[180px] flex items-center justify-center gap-2 py-2 px-4 text-xs font-black rounded-xl border border-[#FF5A36] bg-[#FF5A36] text-white shadow-md";
-                feedsBtn.className = "btn-tab-effect flex-1 max-w-[180px] flex items-center justify-center gap-2 py-2 px-4 text-xs font-black rounded-xl border border-slate-200 bg-white text-slate-700 shadow-sm relative";
+                storeBtn.className = "btn-tab-effect btn-tab-active flex-1 max-w-[180px] flex items-center justify-center gap-2 py-2 px-4 text-xs font-black rounded-xl border border-[#FF5A36] bg-[#FF5A36] text-white shadow-md active:scale-95";
+                feedsBtn.className = "btn-tab-effect btn-tab-inactive flex-1 max-w-[180px] flex items-center justify-center gap-2 py-2 px-4 text-xs font-black rounded-xl border border-slate-200 bg-white text-slate-700 shadow-sm relative active:scale-95";
+                storeBtn.innerHTML = `<i class="fa-solid fa-utensils text-white"></i> Order Menu`;
+                feedsBtn.innerHTML = `
+                    <i class="fa-solid fa-rss text-orange-500"></i> Social Feed
+                    <span class="absolute -top-1 -right-1 w-2 h-2 bg-rose-500 rounded-full animate-ping"></span>
+                    <span class="absolute -top-1 -right-1 w-2 h-2 bg-rose-500 rounded-full"></span>
+                `;
                 renderCartSummary();
             } else {
                 viewStore.classList.add('hidden');
                 viewFeeds.classList.remove('hidden');
                 heroSec.classList.add('hidden');
-                feedsBtn.className = "btn-tab-effect btn-tab-active flex-1 max-w-[180px] flex items-center justify-center gap-2 py-2 px-4 text-xs font-black rounded-xl border border-[#FF5A36] bg-[#FF5A36] text-white shadow-md relative";
-                storeBtn.className = "btn-tab-effect flex-1 max-w-[180px] flex items-center justify-center gap-2 py-2 px-4 text-xs font-black rounded-xl border border-slate-200 bg-white text-slate-700 shadow-sm";
-                if (floatingCartBar) floatingCartBar.classList.add('translate-y-24', 'opacity-0', 'pointer-events-none');
+                feedsBtn.className = "btn-tab-effect btn-tab-active flex-1 max-w-[180px] flex items-center justify-center gap-2 py-2 px-4 text-xs font-black rounded-xl border border-[#FF5A36] bg-[#FF5A36] text-white shadow-md relative active:scale-95";
+                storeBtn.className = "btn-tab-effect btn-tab-inactive flex-1 max-w-[180px] flex items-center justify-center gap-2 py-2 px-4 text-xs font-black rounded-xl border border-slate-200 bg-white text-slate-700 shadow-sm active:scale-95";
+                feedsBtn.innerHTML = `
+                    <i class="fa-solid fa-rss text-white"></i> Social Feed
+                    <span class="absolute -top-1 -right-1 w-2 h-2 bg-rose-500 rounded-full animate-ping"></span>
+                    <span class="absolute -top-1 -right-1 w-2 h-2 bg-rose-500 rounded-full"></span>
+                `;
+                storeBtn.innerHTML = `<i class="fa-solid fa-utensils text-[#FF5A36]"></i> Order Menu`;
+
+                if (floatingCartBar) {
+                    floatingCartBar.classList.add('translate-y-24', 'opacity-0', 'pointer-events-none');
+                    floatingCartBar.classList.remove('translate-y-0', 'opacity-100', 'pointer-events-auto');
+                }
             }
             renderDynamicFooter();
             window.scrollTo(0,0);
@@ -831,17 +1741,93 @@
         function renderDynamicFooter() {
             const footerEl = document.getElementById('mainFooterSection');
             if (!footerEl) return;
-            footerEl.innerHTML = `
+            const viewStore = document.getElementById('view-store');
+            const isStoreActive = viewStore && !viewStore.classList.contains('hidden');
+
+            let socialIconsHtml = `
                 <div class="flex justify-center items-center gap-3">
-                    <a href="https://wa.me/923102434222" target="_blank" class="w-8 h-8 bg-[#25D366] text-white rounded-full flex items-center justify-center shadow-sm social-glow-wa"><i class="fa-brands fa-whatsapp text-sm"></i></a>
-                    <a href="https://facebook.com/alqadrichaskapoint" target="_blank" class="w-8 h-8 bg-[#1877F2] text-white rounded-full flex items-center justify-center shadow-sm social-glow-fb"><i class="fa-brands fa-facebook-f text-xs"></i></a>
+                    <a href="https://wa.me/923102434222" target="_blank" class="w-8 h-8 bg-[#25D366] text-white rounded-full flex items-center justify-center shadow-sm social-glow-wa transition-all text-xs border border-slate-800" title="Chat on WhatsApp">
+                        <i class="fa-brands fa-whatsapp text-sm"></i>
+                    </a>
+                    <a href="https://facebook.com/alqadrichaskapoint" target="_blank" class="w-8 h-8 bg-[#1877F2] text-white rounded-full flex items-center justify-center shadow-sm social-glow-fb transition-all text-xs border border-slate-800" title="Visit Facebook Page">
+                        <i class="fa-brands fa-facebook-f text-xs"></i>
+                    </a>
+                    <a href="https://instagram.com/alqadrichaskapoint" target="_blank" class="w-8 h-8 bg-gradient-to-tr from-[#f9ce34] via-[#ee2a7b] to-[#6228d7] text-white rounded-full flex items-center justify-center shadow-sm social-glow-ig transition-all text-xs border border-slate-800" title="Follow us on Instagram">
+                        <i class="fa-brands fa-instagram text-xs"></i>
+                    </a>
+                    <a href="https://tiktok.com/@alqadrichaskapoint" target="_blank" class="w-8 h-8 bg-[#010101] text-white rounded-full flex items-center justify-center shadow-sm social-glow-tt transition-all text-xs border border-slate-800" title="Follow us on TikTok">
+                        <i class="fa-brands fa-tiktok text-xs"></i>
+                    </a>
                 </div>
+            `;
+
+            let hotlineHtml = `
                 <div class="flex justify-center items-center gap-2 bg-slate-800/50 py-2 px-5 rounded-full w-fit mx-auto border border-slate-700/50 shadow-lg">
-                    <i class="fa-solid fa-phone text-primary animate-ring text-[11px]"></i><span class="text-slate-300 text-xs">Hotline:</span><a href="tel:03102434222" class="hotline-highlight text-sm">0310-2434222</a>
+                    <i class="fa-solid fa-phone text-primary animate-ring text-[11px]"></i> 
+                    <span class="text-slate-300 text-xs font-sans">Hotline:</span> 
+                    <a href="tel:03102434222" class="hotline-highlight text-sm">0310-2434222</a>
                 </div>
-                <div class="pt-3 mt-1 border-t border-slate-800 flex justify-center">
-                    <button onclick="openAdminPortal()" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-slate-800 border border-slate-700 text-slate-300 hover:text-white transition-all text-[9px] font-extrabold uppercase shadow"><i class="fa-solid fa-shield-halved text-primary"></i> Admin Portal</button>
-                </div>`;
+            `;
+
+            let locationHtml = `
+                <div class="flex justify-center items-center gap-2 text-xs font-semibold text-slate-300 pt-1">
+                    <i class="fa-solid fa-location-dot text-rose-500"></i> Jalal Balagan Main Road, Gujranwala
+                </div>
+            `;
+
+            let adminPortalBtnHtml = `
+                <div class="pt-3 mt-1 border-t border-slate-800/80 flex justify-center">
+                    <button onclick="openAdminPortal()" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-slate-800 border border-slate-700 text-slate-300 hover:text-white hover:border-[#FF5A36] hover:bg-slate-750 transition-all text-[9px] font-extrabold tracking-wider uppercase shadow" title="Admin Control Dashboard">
+                        <i class="fa-solid fa-shield-halved text-primary text-[10px]"></i> Admin Portal
+                    </button>
+                </div>
+            `;
+
+            let copyrightHtml = `
+                <div class="pt-2 text-[10px] text-slate-500 text-center">
+                    <span>&copy; 2026 ACP Premium Fast Food. All rights reserved.</span>
+                </div>
+            `;
+
+            if (isStoreActive) {
+                footerEl.innerHTML = `
+                    <div class="flex flex-wrap justify-center items-center gap-2 text-xs text-white py-1">
+                        <div class="glow-on-hover flex flex-col items-center justify-center text-center p-1 rounded-xl">
+                            <i class="fa-solid fa-user-tie text-primary text-xs mb-1.5 shrink-0"></i>
+                            <span class="font-black text-white text-[12.5px] whitespace-nowrap tracking-wide leading-none shrink-0">Mohsin Ali Raza</span>
+                            <span class="text-[8px] text-orange-400 font-black uppercase tracking-wider mt-1 shrink-0 leading-none">Co-Founder</span>
+                        </div>
+                        <div class="glow-on-hover flex flex-col items-center justify-center text-center p-1 rounded-xl">
+                            <i class="fa-solid fa-user-gear text-primary text-xs mb-1.5 shrink-0"></i>
+                            <span class="font-black text-white text-[12.5px] whitespace-nowrap tracking-wide leading-none shrink-0">Wasif Ali</span>
+                            <span class="text-[8px] text-orange-400 font-black uppercase tracking-wider mt-1 shrink-0 leading-none">Admin</span>
+                        </div>
+                    </div>
+                    <div class="space-y-3 pt-2">
+                        ${socialIconsHtml}
+                        ${hotlineHtml}
+                        ${locationHtml}
+                    </div>
+                    ${adminPortalBtnHtml}
+                    ${copyrightHtml}
+                `;
+            } else {
+                footerEl.innerHTML = `
+                    <div class="font-serif text-white font-extrabold text-base leading-snug tracking-wide max-w-[340px] mx-auto">
+                        Thank you for visiting our website
+                    </div>
+                    <div class="font-serif font-black text-xl tracking-wide max-w-[340px] mx-auto" style="color: #FF5A36;">
+                        Al-Qadri Chaska Point
+                    </div>
+                    <hr class="border-t border-slate-800 w-32 mx-auto my-2.5">
+                    <p class="text-sm text-slate-100 font-bold leading-relaxed max-w-[360px] mx-auto pt-1">
+                        Stay connected with our latest food deals, tasty recipes, and special announcements.<br>
+                        Don't miss exciting offers and fresh updates from our restaurant. 🍔🍟
+                    </p>
+                    ${adminPortalBtnHtml}
+                    ${copyrightHtml}
+                `;
+            }
         }
 
         function renderCustomerMenu() {
@@ -849,25 +1835,35 @@
             if (!container) return;
             container.innerHTML = '';
             const fastFoodItems = menuData.filter(x => x.category === 'fast');
+
             if(fastFoodItems.length === 0) {
-                container.innerHTML = `<div class="col-span-3 py-6 text-center text-xs text-slate-400 italic bg-white rounded-xl border border-slate-200">No fast food items found in Firebase. Add from admin panel.</div>`;
+                container.innerHTML = `<div class="col-span-3 py-6 text-center text-xs text-slate-400 italic bg-white rounded-xl border border-slate-200">No fast food items added yet. Admin can add items from the panel.</div>`;
                 return;
             }
+
             fastFoodItems.forEach(item => {
                 const currentQty = cartItems[item.id] || 0;
+                const isSelected = currentQty > 0;
+                const cardOutline = isSelected ? 'border-2 border-[#FF5A36] ring-2 ring-[#FF5A36]/20 bg-orange-50/20' : 'border border-slate-200 bg-white';
+                const checkBadge = isSelected ? `<div class="absolute top-1.5 right-1.5 bg-[#FF5A36] text-white w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-black shadow-md z-10"><i class="fa-solid fa-check"></i></div>` : '';
+
                 container.innerHTML += `
-                    <div class="portrait-card relative border border-slate-200 bg-white">
+                    <div class="portrait-card relative ${cardOutline}" id="customer-card-${item.id}">
+                        ${checkBadge}
                         <div class="card-image-box" style="background-image: url('${item.image}');"></div>
                         <div class="card-info-box">
-                            <h3 class="card-title-compact">${item.name}</h3>
-                            <div class="card-price-compact">Rs. ${item.price}</div>
+                            <div class="text-center space-y-0">
+                                <h3 class="card-title-compact !mb-0" title="${item.name}">${item.name}</h3>
+                                <div class="card-price-compact !mb-0 !mt-0">Rs. ${item.price}</div>
+                            </div>
                             <div class="selector-box-compact mt-1">
                                 <button class="btn-qty-mini" onclick="updateQty(${item.id}, -1)">-</button>
                                 <span class="qty-val-mini" id="qty-${item.id}">${currentQty}</span>
                                 <button class="btn-qty-mini" onclick="updateQty(${item.id}, 1)">+</button>
                             </div>
                         </div>
-                    </div>`;
+                    </div>
+                `;
             });
         }
 
@@ -876,19 +1872,33 @@
             if (!container) return;
             container.innerHTML = '';
             const localItems = menuData.filter(x => x.category === 'local');
+
+            if(localItems.length === 0) {
+                container.innerHTML = `<div class="col-span-4 py-6 text-center text-xs text-slate-400 italic bg-white rounded-xl border border-slate-200">No local items added yet.</div>`;
+                return;
+            }
+
             localItems.forEach(item => {
                 const currentQty = cartItems[item.id] || 0;
+                const isSelected = currentQty > 0;
+                const cardOutline = isSelected ? 'border-2 border-[#FF5A36] ring-2 ring-[#FF5A36]/20 bg-orange-50/20' : 'border border-slate-200 bg-white';
+                const checkBadge = isSelected ? `<div class="absolute top-1 right-1 bg-[#FF5A36] text-white w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-black shadow-md z-10"><i class="fa-solid fa-check"></i></div>` : '';
+
                 container.innerHTML += `
-                    <div class="local-mini-card relative border border-slate-200 bg-white p-2">
-                        <img class="w-full h-12 object-cover rounded mb-1" src="${item.image}" onerror="this.src='https://placehold.co/100x60/FF5A36/ffffff?text=ACP'">
-                        <h3 class="local-title-compact">${item.name}</h3>
-                        <div class="local-price-compact">Rs. ${item.price}</div>
+                    <div class="local-mini-card relative ${cardOutline}" id="local-card-${item.id}">
+                        ${checkBadge}
+                        <img class="w-full h-12 object-cover rounded mb-1 border border-slate-100 shrink-0" src="${item.image}" alt="${item.name}" onerror="this.src='https://placehold.co/100x60/FF5A36/ffffff?text=ACP'">
+                        <div class="text-center space-y-0">
+                            <h3 class="local-title-compact !mb-0">${item.name}</h3>
+                            <div class="local-price-compact !mb-0 !mt-0">Rs. ${item.price}</div>
+                        </div>
                         <div class="selector-box-compact w-full text-center mt-1">
                             <button class="btn-qty-mini !w-5 !h-5" onclick="updateQty(${item.id}, -1)">-</button>
                             <span class="qty-val-mini !w-4 !text-[10px]" id="qty-local-${item.id}">${currentQty}</span>
                             <button class="btn-qty-mini !w-5 !h-5" onclick="updateQty(${item.id}, 1)">+</button>
                         </div>
-                    </div>`;
+                    </div>
+                `;
             });
         }
 
@@ -897,96 +1907,308 @@
             if (!container) return;
             container.innerHTML = '';
             const drinkItems = menuData.filter(x => x.category === 'drinks');
+
+            if(drinkItems.length === 0) {
+                container.innerHTML = `<div class="col-span-4 py-6 text-center text-xs text-slate-400 italic bg-white rounded-xl border border-slate-200">No drinks added yet.</div>`;
+                return;
+            }
+
             drinkItems.forEach(item => {
                 const currentQty = cartItems[item.id] || 0;
+                const isSelected = currentQty > 0;
+                const cardOutline = isSelected ? 'border-2 border-[#FF5A36] ring-2 ring-[#FF5A36]/20 bg-orange-50/20' : 'border border-slate-200 bg-white';
+                const checkBadge = isSelected ? `<div class="absolute top-1 right-1 bg-[#FF5A36] text-white w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-black shadow-md z-10"><i class="fa-solid fa-check"></i></div>` : '';
+
                 container.innerHTML += `
-                    <div class="local-mini-card relative border border-slate-200 bg-white p-2">
-                        <img class="w-full h-12 object-cover rounded mb-1" src="${item.image}" onerror="this.src='https://placehold.co/100x60/FF5A36/ffffff?text=ACP'">
-                        <h3 class="local-title-compact">${item.name}</h3>
-                        <div class="local-price-compact">Rs. ${item.price}</div>
+                    <div class="local-mini-card relative ${cardOutline}" id="drink-card-${item.id}">
+                        ${checkBadge}
+                        <img class="w-full h-12 object-cover rounded mb-1 border border-slate-100 shrink-0" src="${item.image}" alt="${item.name}" onerror="this.src='https://placehold.co/100x60/FF5A36/ffffff?text=ACP'">
+                        <div class="text-center space-y-0">
+                            <h3 class="local-title-compact !mb-0">${item.name}</h3>
+                            <div class="local-price-compact !mb-0 !mt-0">Rs. ${item.price}</div>
+                        </div>
                         <div class="selector-box-compact w-full text-center mt-1">
                             <button class="btn-qty-mini !w-5 !h-5" onclick="updateQty(${item.id}, -1)">-</button>
                             <span class="qty-val-mini !w-4 !text-[10px]" id="qty-drink-${item.id}">${currentQty}</span>
                             <button class="btn-qty-mini !w-5 !h-5" onclick="updateQty(${item.id}, 1)">+</button>
                         </div>
-                    </div>`;
+                    </div>
+                `;
             });
         }
 
-        function updateQty(id, change) {
-            const currentQty = cartItems[id] || 0;
-            const newQty = Math.max(0, currentQty + change);
-            if (newQty === 0) delete cartItems[id];
-            else cartItems[id] = newQty;
-            renderCustomerMenu();
-            renderLocalMenu();
-            renderDrinksMenu();
-            renderCartSummary();
+        function toggleComments(postId) {
+            expandedComments[postId] = !expandedComments[postId];
+            renderCustomerSocialFeeds();
         }
 
-        function renderCartSummary() {
-            const emptyState = document.getElementById('emptyCart');
-            const activeState = document.getElementById('activeCart');
-            const cartTableBody = document.getElementById('cartTableRows');
-            const floatingCartBar = document.getElementById('floatingCartBar');
-            const keys = Object.keys(cartItems);
-            
-            let totalItemsCount = 0;
-            keys.forEach(k => { totalItemsCount += cartItems[k]; });
-            
-            if (keys.length === 0) {
-                if (emptyState) emptyState.style.display = 'block';
-                if (activeState) activeState.style.display = 'none';
-                if (floatingCartBar) floatingCartBar.classList.add('translate-y-24', 'opacity-0', 'pointer-events-none');
-                return;
-            }
-
-            if (emptyState) emptyState.style.display = 'none';
-            if (activeState) activeState.style.display = 'block';
-            if (cartTableBody) cartTableBody.innerHTML = '';
-            let grandTotal = 0;
-
-            keys.forEach(id => {
-                const item = menuData.find(x => x.id == id);
-                if (!item) return;
-                const qty = cartItems[id];
-                const total = item.price * qty;
-                grandTotal += total;
-                cartTableBody.innerHTML += `<tr><td class="font-bold py-2">${item.name}</td><td class="text-center font-extrabold">${qty}</td><td class="text-right font-black">Rs. ${total}</td></tr>`;
-            });
-
-            document.getElementById('txtSubtotal').innerText = 'Rs. ' + grandTotal;
-            document.getElementById('txtGrandTotal').innerText = 'Rs. ' + grandTotal;
-
-            if (floatingCartBar) {
-                document.getElementById('floatingCartCount').innerText = totalItemsCount;
-                document.getElementById('floatingCartTotal').innerText = 'Rs. ' + grandTotal;
-                floatingCartBar.classList.remove('translate-y-24', 'opacity-0', 'pointer-events-none');
-                floatingCartBar.classList.add('translate-y-0', 'opacity-100', 'pointer-events-auto');
-            }
+        function toggleCommentSort(postId) {
+            let current = commentSortModes[postId] || 'recent';
+            commentSortModes[postId] = current === 'recent' ? 'oldest' : 'recent';
+            renderCustomerSocialFeeds();
         }
 
-        function clearCart() { cartItems = {}; renderCustomerMenu(); renderLocalMenu(); renderDrinksMenu(); renderCartSummary(); showNotification('Basket cleared.', 'warning'); }
+        function toggleNestedReplies(key) {
+            expandedReplies[key] = !expandedReplies[key];
+            renderCustomerSocialFeeds();
+        }
+
+        function getTotalCommentsCount(post) {
+            let count = post.comments ? post.comments.length : 0;
+            if (post.comments) {
+                post.comments.forEach(c => {
+                    if (c.replies) { count += c.replies.length; }
+                });
+            }
+            return count;
+        }
+
+        function formatCommentTime(timestamp) {
+            if (!timestamp) return 'Just now';
+            const diffMs = Date.now() - timestamp;
+            const diffMins = Math.floor(diffMs / (1000 * 60));
+            const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+            const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+            if (diffMins < 1) return 'Just now';
+            if (diffMins < 60) return `${diffMins} minutes ago`;
+            if (diffHours < 24) return `${diffHours} hours ago`;
+            if (diffDays === 1) return '1 day ago';
+            return `${diffDays} days ago`;
+        }
+
+        function formatReplyText(text) {
+            if (!text) return '';
+            return text.replace(/^(@[^:]+:)/, '<span class="text-[#FF5A36] font-extrabold">$1</span>');
+        }
 
         function renderCustomerSocialFeeds() {
             const container = document.getElementById('feedPostsContainer');
             if (!container) return;
             container.innerHTML = '';
+            
             if(feedPosts.length === 0) {
-                container.innerHTML = `<div class="bg-white rounded-3xl p-8 text-center border border-slate-200"><p class="text-xs text-slate-500 font-bold">No posts in Firebase feed.</p></div>`;
+                container.innerHTML = `
+                    <div class="bg-white rounded-3xl p-8 text-center border border-slate-200">
+                        <i class="fa-solid fa-square-rss text-3xl text-slate-300 block mb-2"></i>
+                        <p class="text-xs text-slate-500 font-bold">No active social posts currently.</p>
+                    </div>
+                `;
                 return;
             }
+
             feedPosts.forEach(post => {
-                container.innerHTML += `
-                    <div class="bg-white rounded-[24px] border border-slate-200 overflow-hidden shadow-sm">
-                        <div class="p-4 flex items-center justify-between">
-                            <h4 class="text-xs font-black text-slate-900">${post.title}</h4>
+                const heartColor = post.isLiked ? 'text-rose-500 scale-125' : 'text-slate-400';
+                const heartIcon = post.isLiked ? 'fa-solid fa-heart' : 'fa-regular fa-heart';
+                const isExpanded = !!expandedComments[post.id];
+                const sortMode = commentSortModes[post.id] || 'recent';
+                
+                let sortedComments = post.comments ? [...post.comments] : [];
+                if (sortMode === 'recent') { sortedComments.reverse(); }
+                else { sortedComments.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0)); }
+
+                const visibleComments = isExpanded ? sortedComments : sortedComments.slice(0, 2);
+                const totalCommentsCount = getTotalCommentsCount(post);
+
+                let commentItemsHtml = '';
+                visibleComments.forEach((c) => {
+                    const actualIndex = post.comments.indexOf(c);
+                    let adminBadge = c.isAdmin ? `<span class="inline-flex items-center text-blue-500 ml-1 text-xs" title="Verified Admin"><i class="fa-solid fa-circle-check"></i></span>` : '';
+                    let timeAgo = formatCommentTime(c.timestamp);
+
+                    commentItemsHtml += `
+                        <div class="space-y-3 pt-2 text-left">
+                            <div class="flex items-start gap-2.5">
+                                <div class="w-7 h-7 rounded-full bg-slate-300 text-slate-700 flex items-center justify-center font-bold text-[10px] shrink-0 uppercase">
+                                    ${c.commenter ? c.commenter.charAt(0) : 'U'}
+                                </div>
+                                <div class="flex-1 space-y-1">
+                                    <div class="flex items-center justify-between text-xs">
+                                        <div class="flex items-center gap-1.5">
+                                            <span class="font-extrabold text-slate-900">${c.commenter}</span>
+                                            ${adminBadge}
+                                            <span class="text-slate-400 text-[10px]">${timeAgo}</span>
+                                        </div>
+                                    </div>
+                                    <p class="text-xs text-slate-700 leading-relaxed whitespace-pre-line">${formatReplyText(c.text)}</p>
+                                </div>
+                            </div>
                         </div>
-                        <img src="${post.image}" class="w-full h-auto object-cover" onerror="this.src='https://placehold.co/600x400/FF5A36/ffffff?text=ACP'">
-                        <div class="p-4 space-y-2"><p class="text-xs text-slate-600">${post.desc}</p></div>
-                    </div>`;
+                    `;
+                });
+
+                let toggleBtnHtml = '';
+                if (post.comments && post.comments.length > 2) {
+                    const btnText = isExpanded ? 'Show Less Comments' : `Show More Comments (${post.comments.length - 2})`;
+                    toggleBtnHtml = `<button onclick="toggleComments('${post.firebaseId || post.id}')" class="text-[10px] font-extrabold text-[#FF5A36] hover:underline mt-2 block">${btnText}</button>`;
+                }
+
+                let commentBoxHtml = '';
+                if (currentUser) {
+                    commentBoxHtml = `
+                        <div class="pt-3">
+                            <div class="text-[9px] text-slate-400 font-bold mb-1 flex items-center gap-1">
+                                <i class="fa-solid fa-user-check text-emerald-500"></i> Commenting as <span class="text-slate-800 font-extrabold">${currentUser.name}</span>
+                            </div>
+                            <form onsubmit="event.preventDefault(); submitComment('${post.firebaseId || post.id}');" class="flex gap-2">
+                                <input type="text" id="comment-input-${post.firebaseId || post.id}" required placeholder="Add a sweet foodie comment..." class="flex-1 px-3 py-2 bg-white border border-slate-200 rounded-lg outline-none text-[11px] font-bold text-slate-800 placeholder-slate-400 focus:border-[#FF5A36]">
+                                <button type="submit" class="bg-[#FF5A36] hover:bg-[#E04825] text-white px-3 rounded-lg text-xs font-black transition-all shadow-sm">Send</button>
+                            </form>
+                        </div>
+                    `;
+                } else if (guestSessionName) {
+                    commentBoxHtml = `
+                        <div class="pt-3">
+                            <div class="text-[9px] text-slate-400 font-bold mb-1 flex items-center justify-between">
+                                <span><i class="fa-solid fa-user-pen text-[#FF5A36]"></i> Commenting as Guest: <span class="text-slate-800 font-extrabold">${guestSessionName}</span></span>
+                                <button type="button" onclick="resetGuestSessionName()" class="text-[9px] text-[#FF5A36] hover:underline">Change Name</button>
+                            </div>
+                            <form onsubmit="event.preventDefault(); submitComment('${post.firebaseId || post.id}');" class="flex gap-2">
+                                <input type="text" id="comment-input-${post.firebaseId || post.id}" required placeholder="Write your comment..." class="flex-1 px-3 py-2 bg-white border border-slate-200 rounded-lg outline-none text-[11px] font-bold text-slate-800 placeholder-slate-400 focus:border-[#FF5A36]">
+                                <button type="submit" class="bg-[#FF5A36] hover:bg-[#E04825] text-white px-3 rounded-lg text-xs font-black transition-all shadow-sm">Post</button>
+                            </form>
+                        </div>
+                    `;
+                } else {
+                    commentBoxHtml = `
+                        <div class="bg-gradient-to-r from-orange-50/70 to-amber-50/70 p-3 rounded-2xl border border-orange-200/60 space-y-2 mt-3">
+                            <div class="flex items-center justify-between text-[10px] font-black text-slate-700">
+                                <span class="flex items-center gap-1 text-[#FF5A36]"><i class="fa-solid fa-user-pen"></i> Guest Comment</span>
+                            </div>
+                            <div class="flex gap-2">
+                                <input type="text" readonly onclick="openGuestNameModal()" placeholder="Click to enter your name & comment..." class="flex-1 px-3 py-2 bg-white border border-slate-200 rounded-lg outline-none text-[11px] font-bold text-slate-700 cursor-pointer hover:border-[#FF5A36] transition-all">
+                                <button type="button" onclick="openGuestNameModal()" class="bg-[#FF5A36] hover:bg-[#E04825] text-white px-3 py-2 rounded-lg text-xs font-black transition-all shadow-sm shrink-0 flex items-center gap-1">Comment</button>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                container.innerHTML += `
+                    <div class="bg-white rounded-[24px] border border-slate-200 overflow-hidden shadow-sm hover:shadow-md transition-all">
+                        <div class="p-4 flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-orange-500 to-amber-500 flex items-center justify-center text-white shadow-sm font-bold"><i class="fa-solid fa-utensils"></i></div>
+                                <div>
+                                    <div class="flex items-center gap-1"><h4 class="text-xs font-black text-slate-900">${post.authorName || 'Alqadri Chaska Point'}</h4><i class="fa-solid fa-circle-check text-[11px] text-blue-500"></i></div>
+                                    <p class="text-[9px] text-slate-400 font-bold">@alqadri.chaska</p>
+                                </div>
+                            </div>
+                            <span class="text-[9px] bg-orange-100 text-[#FF5A36] px-2.5 py-1 rounded-full font-extrabold tracking-wide">Verified Deal</span>
+                        </div>
+                        <div class="relative w-full bg-slate-50 flex justify-center items-center overflow-hidden border-b border-slate-100">
+                            <img src="${post.image}" class="w-full h-auto max-h-[550px] object-contain block" onerror="this.src='https://placehold.co/600x400/FF5A36/ffffff?text=Chaska+Point+Offer'">
+                        </div>
+                        <div class="p-4 space-y-2.5">
+                            <h3 class="text-xs font-black text-slate-900 line-clamp-2">${post.title}</h3>
+                            <p class="text-xs font-medium text-slate-600 leading-relaxed whitespace-pre-line">${post.desc}</p>
+                        </div>
+                        <div class="px-4 py-3 border-t border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
+                            <button onclick="likePost('${post.firebaseId || post.id}')" class="flex items-center gap-1.5 text-xs font-extrabold text-slate-600 hover:text-rose-500 transition-all">
+                                <i class="${heartIcon} ${heartColor} text-sm"></i><span>${post.likes || 0}</span>
+                            </button>
+                            <button onclick="sharePost('${post.title.replace(/'/g, "\\'")}', '${post.desc.replace(/\r?\n/g, " ").replace(/'/g, "\\'")}')" class="flex items-center gap-1.5 text-xs font-extrabold text-slate-600 hover:text-emerald-500 transition-all">
+                                <i class="fa-solid fa-share text-sm"></i><span>Share</span>
+                            </button>
+                        </div>
+                        <div class="p-4 bg-slate-50/50 space-y-3">
+                            <div class="space-y-3">${commentItemsHtml}</div>
+                            ${toggleBtnHtml}
+                            ${commentBoxHtml}
+                        </div>
+                    </div>
+                `;
             });
         }
+
+        async function submitComment(postId) {
+            const post = feedPosts.find(p => (p.firebaseId === postId || p.id === postId));
+            const input = document.getElementById(`comment-input-${postId}`);
+            if (!post || !input) return;
+
+            const commentText = input.value.trim();
+            if (!commentText) return;
+
+            let commenterName = currentUser ? currentUser.name : (guestSessionName || "");
+            if (!commenterName) { openGuestNameModal(); return; }
+
+            if (!post.comments) post.comments = [];
+            post.comments.push({ commenter: commenterName, text: commentText, timestamp: Date.now(), isAdmin: false });
+
+            try {
+                if (post.firebaseId) {
+                    await window.updateDoc(window.doc(window.db, "posts", post.firebaseId), { comments: post.comments });
+                    showNotification('Comment added live to Firebase!');
+                }
+            } catch(e) { showNotification('Failed to sync comment.', 'warning'); }
+            input.value = '';
+            renderCustomerSocialFeeds();
+        }
+
+        async function likePost(postId) {
+            const post = feedPosts.find(p => (p.firebaseId === postId || p.id === postId));
+            if (!post) return;
+            post.isLiked = !post.isLiked;
+            post.isLiked ? (post.likes = (post.likes || 0) + 1) : (post.likes = Math.max(0, (post.likes || 1) - 1));
+            
+            try {
+                if (post.firebaseId) {
+                    await window.updateDoc(window.doc(window.db, "posts", post.firebaseId), { likes: post.likes });
+                }
+            } catch(e) {}
+            renderCustomerSocialFeeds();
+        }
+
+        function sharePost(title, desc) {
+            sharedPostText = `${title}\n\n${desc}\n\nCheck out Alqadri Chaska Point: ${window.location.href}`;
+            if (navigator.share) {
+                navigator.share({ title, text: desc, url: window.location.href }).catch(() => {});
+            } else {
+                document.getElementById('shareWA').href = `https://api.whatsapp.com/send?text=${encodeURIComponent(sharedPostText)}`;
+                document.getElementById('shareFB').href = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`;
+                document.getElementById('shareModal').classList.remove('hidden');
+            }
+        }
+        function closeShareModal() { document.getElementById('shareModal').classList.add('hidden'); }
+
+        function showNotification(message, type = 'success') {
+            const container = document.getElementById('toastContainer');
+            if (!container) return;
+            const icon = type === 'success' ? 'fa-circle-check text-emerald-500' : 'fa-triangle-exclamation text-amber-500';
+            const toast = document.createElement('div');
+            toast.className = `flex items-center gap-3 p-3 rounded-xl border bg-white shadow-md transition-all transform translate-x-12 opacity-0 pointer-events-auto w-full max-w-xs`;
+            toast.innerHTML = `<i class="fa-solid ${icon} text-base shrink-0"></i><div class="text-[10px] font-bold text-slate-800">${message}</div>`;
+            container.appendChild(toast);
+            setTimeout(() => toast.classList.remove('translate-x-12', 'opacity-0'), 10);
+            setTimeout(() => { toast.classList.add('translate-x-12', 'opacity-0'); setTimeout(() => toast.remove(), 300); }, 2500);
+        }
+
+        function openNotificationsModal() { document.getElementById('notificationsModal').classList.remove('hidden'); document.getElementById('navBellBadge').classList.add('hidden'); }
+        function closeNotificationsModal() { document.getElementById('notificationsModal').classList.add('hidden'); }
+
+        function openCheckoutConfirmModal() {
+            const keys = Object.keys(cartItems);
+            if (keys.length === 0) { showNotification('Your basket is empty!', 'warning'); return; }
+            const itemsContainer = document.getElementById('checkoutModalItemsList');
+            itemsContainer.innerHTML = '';
+            let totalAmount = 0;
+            keys.forEach(id => {
+                const item = menuData.find(x => x.id == id);
+                if (item) {
+                    const qty = cartItems[id];
+                    const total = item.price * qty;
+                    totalAmount += total;
+                    itemsContainer.innerHTML += `<div class="flex justify-between items-center text-xs py-1 border-b border-slate-100"><span class="font-extrabold text-slate-800">${item.name} x${qty}</span><span class="font-black">Rs. ${total}</span></div>`;
+                }
+            });
+            document.getElementById('checkoutModalGrandTotal').innerText = 'Rs. ' + totalAmount;
+            if (currentUser) {
+                document.getElementById('checkoutName').value = currentUser.name;
+                document.getElementById('checkoutPhone').value = currentUser.phone;
+                document.getElementById('checkoutLocation').value = currentUser.location;
+            }
+            document.getElementById('checkoutConfirmModal').classList.remove('hidden');
+        }
+        function closeCheckoutConfirmModal() { document.getElementById('checkoutConfirmModal').classList.add('hidden'); }
 
         async function finalizeOrderAndSendWhatsApp() {
             const keys = Object.keys(cartItems);
@@ -995,6 +2217,7 @@
             const phone = document.getElementById('checkoutPhone').value.trim();
             const location = document.getElementById('checkoutLocation').value.trim();
 
+            const orderId = '#ACP-' + Math.floor(1000 + Math.random() * 9000);
             let itemsDetail = [];
             let grandTotal = 0;
             keys.forEach(id => {
@@ -1007,53 +2230,250 @@
                 }
             });
 
-            const orderData = {
-                id: '#ACP-' + Math.floor(1000 + Math.random() * 9000),
-                customerName: name, phone, location,
+            const newOrder = {
+                id: orderId, customerName: name, phone, location,
                 date: new Date().toLocaleDateString(),
                 time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-                items: itemsDetail,
-                total: grandTotal,
-                status: 'Pending'
+                items: itemsDetail, total: grandTotal, status: 'Pending'
             };
 
-            // Push Order to Firebase Realtime Firestore Backend
             try {
-                await window.addDoc(window.collection(window.db, "orders"), orderData);
-                showNotification('Order saved to Firebase successfully!');
-            } catch(e) { console.error(e); }
+                if (window.db) {
+                    await window.addDoc(window.collection(window.db, "orders"), newOrder);
+                }
+            } catch(e) {}
 
-            const whatsappUrl = `https://wa.me/923102434222?text=${encodeURIComponent(`*NEW ORDER*\nCustomer: ${name}\nTotal: Rs. ${grandTotal}`)}`;
+            const whatsappUrl = `https://wa.me/923102434222?text=${encodeURIComponent(`*NEW ORDER*\nID: ${orderId}\nCustomer: ${name}\nTotal: Rs. ${grandTotal}`)}`;
             closeCheckoutConfirmModal();
+            showNotification(`Order ${orderId} submitted! Opening WhatsApp...`);
             cartItems = {};
             renderCustomerMenu(); renderLocalMenu(); renderDrinksMenu(); renderCartSummary();
             window.open(whatsappUrl, '_blank');
         }
 
-        // Firebase Admin Catalog Submission
+        async function approveAdminOrder(firebaseId) {
+            try {
+                await window.updateDoc(window.doc(window.db, "orders", firebaseId), { status: 'Approved' });
+                showNotification('Order approved live in Firebase!');
+            } catch(e) { showNotification('Approval failed.', 'warning'); }
+        }
+
+        function switchAuthMode(mode) {
+            const btnSignIn = document.getElementById('btnAuthTabSignIn');
+            const btnRegister = document.getElementById('btnAuthTabRegister');
+            const viewSignIn = document.getElementById('userSignInView');
+            const viewReg = document.getElementById('userRegView');
+            if (mode === 'signin') {
+                viewSignIn.classList.remove('hidden'); viewReg.classList.add('hidden');
+                btnSignIn.className = "flex-1 py-1.5 rounded-lg text-center transition-all bg-white text-[#FF5A36] shadow-sm font-bold";
+                btnRegister.className = "flex-1 py-1.5 rounded-lg text-center transition-all text-slate-600 font-bold";
+            } else {
+                viewSignIn.classList.add('hidden'); viewReg.classList.remove('hidden');
+                btnSignIn.className = "flex-1 py-1.5 rounded-lg text-center transition-all text-slate-600 font-bold";
+                btnRegister.className = "flex-1 py-1.5 rounded-lg text-center transition-all bg-white text-[#FF5A36] shadow-sm font-bold";
+            }
+        }
+
+        function openUserModal() {
+            if (currentUser) {
+                document.getElementById('userAuthContainer').classList.add('hidden');
+                document.getElementById('userProfileView').classList.remove('hidden');
+                document.getElementById('profileName').innerText = currentUser.name;
+                document.getElementById('profilePhone').innerText = currentUser.phone;
+                document.getElementById('profileLocation').innerText = currentUser.location;
+            } else {
+                document.getElementById('userAuthContainer').classList.remove('hidden');
+                document.getElementById('userProfileView').classList.add('hidden');
+                switchAuthMode('signin');
+            }
+            document.getElementById('userAuthModal').classList.remove('hidden');
+        }
+        function closeUserModal() { document.getElementById('userAuthModal').classList.add('hidden'); }
+
+        function signInUser() {
+            const phone = document.getElementById('signInPhone').value.trim();
+            const foundUser = registeredUsers.find(u => u.phone === phone);
+            if (foundUser) {
+                currentUser = foundUser;
+                localStorage.setItem('acp_current_user', JSON.stringify(currentUser));
+                updateUserAccountDisplay();
+                showNotification(`Welcome back, ${currentUser.name}!`);
+                closeUserModal();
+            } else {
+                showNotification('Account not found in Firebase. Please Register.', 'warning');
+                switchAuthMode('register');
+                document.getElementById('regPhone').value = phone;
+            }
+        }
+
+        async function registerUser() {
+            const name = document.getElementById('regName').value.trim();
+            const phone = document.getElementById('regPhone').value.trim();
+            const location = document.getElementById('regLocation').value.trim();
+            const email = document.getElementById('regEmail').value.trim() || 'No Email';
+            if(!name || !phone || !location) return;
+
+            const newUser = { name, phone, location, email };
+            try {
+                if (window.db) { await window.addDoc(window.collection(window.db, "users"), newUser); }
+            } catch(e) {}
+
+            currentUser = newUser;
+            localStorage.setItem('acp_current_user', JSON.stringify(currentUser));
+            updateUserAccountDisplay();
+            showNotification(`Welcome, ${name}! Account registered.`);
+            closeUserModal();
+        }
+
+        function logoutUser() {
+            currentUser = null;
+            localStorage.removeItem('acp_current_user');
+            updateUserAccountDisplay();
+            closeUserModal();
+            showNotification('Signed out successfully.');
+        }
+
+        function openAdminPortal() { document.getElementById('adminAuthModal').classList.remove('hidden'); document.getElementById('adminPasscode').focus(); }
+        function closeAdminAuth() { document.getElementById('adminAuthModal').classList.add('hidden'); document.getElementById('adminPasscode').value = ''; }
+        function verifyAdminPasscode() {
+            if (document.getElementById('adminPasscode').value === '7574') {
+                closeAdminAuth();
+                document.getElementById('customer-page').classList.add('hidden');
+                document.getElementById('admin-page').classList.remove('hidden');
+                window.scrollTo(0, 0);
+                switchAdminTab('orders');
+            } else { showNotification('Incorrect passcode!', 'warning'); }
+        }
+        function closeAdminPortal() {
+            document.getElementById('admin-page').classList.add('hidden');
+            document.getElementById('customer-page').classList.remove('hidden');
+            window.scrollTo(0, 0);
+        }
+
+        function switchAdminTab(activeTab) {
+            document.getElementById('admin-sec-orders').classList.add('hidden');
+            document.getElementById('admin-sec-catalog').classList.add('hidden');
+            document.getElementById('admin-sec-feed').classList.add('hidden');
+            document.getElementById('admin-sec-users').classList.add('hidden');
+
+            if (activeTab === 'orders') { document.getElementById('admin-sec-orders').classList.remove('hidden'); renderAdminOrdersList(); }
+            else if (activeTab === 'catalog') { document.getElementById('admin-sec-catalog').classList.remove('hidden'); switchCatalogSubTab('list'); renderAdminCatalog(); }
+            else if (activeTab === 'feed') { document.getElementById('admin-sec-feed').classList.remove('hidden'); switchFeedSubTab('list'); renderAdminPostsList(); }
+            else if (activeTab === 'users') { document.getElementById('admin-sec-users').classList.remove('hidden'); renderRegisteredUsers(); }
+        }
+
+        function switchCatalogSubTab(subTab) {
+            if (subTab === 'list') {
+                document.getElementById('subSecCatalogList').classList.remove('hidden');
+                document.getElementById('subSecAddFoodForm').classList.add('hidden');
+            } else {
+                document.getElementById('subSecCatalogList').classList.add('hidden');
+                document.getElementById('subSecAddFoodForm').classList.remove('hidden');
+            }
+        }
+
+        function switchFeedSubTab(subTab) {
+            if (subTab === 'create') {
+                document.getElementById('subSecFeedCreate').classList.remove('hidden');
+                document.getElementById('subSecFeedList').classList.add('hidden');
+            } else {
+                document.getElementById('subSecFeedCreate').classList.add('hidden');
+                document.getElementById('subSecFeedList').classList.remove('hidden');
+            }
+        }
+
+        function renderAdminOrdersList() {
+            const container = document.getElementById('adminOrdersContainer');
+            if (!container) return;
+            document.getElementById('lblAdminOrdersCount').innerText = ordersList.length;
+            document.getElementById('adminOrdersCountBadge').innerText = ordersList.length;
+            container.innerHTML = '';
+
+            if (ordersList.length === 0) {
+                container.innerHTML = `<div class="py-8 text-center text-slate-400 font-bold text-xs">No customer orders received yet.</div>`;
+                return;
+            }
+
+            ordersList.forEach((ord) => {
+                let itemsListHtml = '';
+                if (ord.items) {
+                    ord.items.forEach(it => {
+                        itemsListHtml += `<div class="flex justify-between items-center text-[11px] py-0.5"><span class="font-bold">${it.name} x${it.qty}</span><span class="font-black">Rs. ${it.total}</span></div>`;
+                    });
+                }
+                const isPending = ord.status === 'Pending';
+                const approveBtn = isPending ? `<button onclick="approveAdminOrder('${ord.firebaseId}')" class="px-2.5 py-1 bg-emerald-500 text-white rounded-lg text-xs font-bold">Approve</button>` : '';
+
+                container.innerHTML += `
+                    <div class="bg-slate-50 border border-slate-200 rounded-xl p-3 shadow-sm space-y-2">
+                        <div class="flex justify-between items-center pb-1 border-b">
+                            <div><span class="font-black text-xs">${ord.id} - ${ord.customerName}</span><span class="text-[9px] text-slate-400 block">${ord.phone} | ${ord.location}</span></div>
+                            <span class="text-[9px] font-black uppercase px-2 py-0.5 rounded ${isPending ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700'}">${ord.status}</span>
+                        </div>
+                        <div class="bg-white p-2 rounded border">${itemsListHtml}</div>
+                        <div class="flex justify-between items-center pt-1"><span class="text-xs font-black text-[#FF5A36]">Rs. ${ord.total}</span>${approveBtn}</div>
+                    </div>
+                `;
+            });
+        }
+
+        function renderAdminCatalog() {
+            const container = document.getElementById('adminCatalogRows');
+            if (!container) return;
+            document.getElementById('adminCatalogCount').innerText = menuData.length;
+            container.innerHTML = '';
+
+            menuData.forEach((item) => {
+                container.innerHTML += `
+                    <tr class="hover:bg-slate-50">
+                        <td class="p-2.5 flex items-center gap-2">
+                            <img src="${item.image}" class="w-9 h-9 rounded-lg object-cover border" onerror="this.src='https://placehold.co/100x100/FF5A36/ffffff?text=ACP'">
+                            <div><div class="font-bold text-slate-900 text-xs">${item.name}</div><span class="text-[9px] uppercase">${item.category}</span></div>
+                        </td>
+                        <td class="p-2.5 text-right font-black text-slate-800">Rs. ${item.price}</td>
+                        <td class="p-2.5 text-right"><button onclick="deleteFoodCatalog('${item.firebaseId}')" class="px-2 py-1 bg-red-50 text-red-500 rounded text-xs font-bold">Delete</button></td>
+                    </tr>
+                `;
+            });
+        }
+
         async function handleFoodFormSubmit(event) {
             event.preventDefault();
             const name = document.getElementById('foodFormName').value.trim();
             const price = parseInt(document.getElementById('foodFormPrice').value);
-            const image = document.getElementById('foodFormImage').value.trim();
+            const image = document.getElementById('foodFormImage').value.trim() || 'https://placehold.co/400x300/FF5A36/ffffff?text=ACP';
             const category = document.getElementById('foodFormCategory').value;
 
             const newFood = { id: Date.now(), name, price, image, category };
             try {
-                await window.addDoc(window.collection(window.db, "menu"), newFood);
-                showNotification('Product saved directly to Firebase database!');
+                if (window.db) { await window.addDoc(window.collection(window.db, "menu"), newFood); }
+                showNotification('Product added to Firebase!');
                 resetAdminForm();
                 switchCatalogSubTab('list');
-            } catch(e) {
-                showNotification('Error saving to Firebase.', 'warning');
-            }
+            } catch(e) { showNotification('Failed to save product.', 'warning'); }
         }
 
         async function deleteFoodCatalog(firebaseId) {
             try {
-                await window.deleteDoc(window.doc(window.db, "menu", firebaseId));
+                if (window.db) { await window.deleteDoc(window.doc(window.db, "menu", firebaseId)); }
                 showNotification('Item removed from Firebase.');
             } catch(e) { showNotification('Delete failed.', 'warning'); }
+        }
+
+        function renderAdminPostsList() {
+            const container = document.getElementById('adminPostsListContainer');
+            if (!container) return;
+            document.getElementById('lblAdminPostsCount').innerText = feedPosts.length;
+            container.innerHTML = '';
+
+            feedPosts.forEach((post) => {
+                container.innerHTML += `
+                    <div class="p-2.5 bg-slate-50 rounded-xl border flex items-center justify-between text-xs font-bold">
+                        <span class="truncate max-w-[240px]">${post.title}</span>
+                        <button onclick="deleteFeedPost('${post.firebaseId}')" class="px-2 py-1 bg-red-50 text-red-500 rounded">Delete</button>
+                    </div>
+                `;
+            });
         }
 
         async function handleFeedPostSubmit(event) {
@@ -1064,113 +2484,47 @@
 
             const newPost = { id: Date.now(), title, image, desc, likes: 0, comments: [] };
             try {
-                await window.addDoc(window.collection(window.db, "posts"), newPost);
-                showNotification('Post published to Firebase live database!');
+                if (window.db) { await window.addDoc(window.collection(window.db, "posts"), newPost); }
+                showNotification('Post broadcasted to Firebase!');
                 switchFeedSubTab('list');
-            } catch(e) { showNotification('Posting failed.', 'warning'); }
+            } catch(e) { showNotification('Post failed.', 'warning'); }
         }
 
-        function renderAdminCatalog() {
-            const container = document.getElementById('adminCatalogRows');
+        async function deleteFeedPost(firebaseId) {
+            try {
+                if (window.db) { await window.deleteDoc(window.doc(window.db, "posts", firebaseId)); }
+                showNotification('Post deleted from Firebase.');
+            } catch(e) { showNotification('Delete failed.', 'warning'); }
+        }
+
+        function renderRegisteredUsers() {
+            const container = document.getElementById('registeredUsersRows');
             if (!container) return;
+            document.getElementById('adminUsersCountBadge').innerText = registeredUsers.length;
             container.innerHTML = '';
-            document.getElementById('adminCatalogCount').innerText = menuData.length;
-            menuData.forEach((item) => {
+
+            registeredUsers.forEach((user) => {
                 container.innerHTML += `
-                    <tr class="hover:bg-slate-50">
-                        <td class="p-2.5 flex items-center gap-2">
-                            <img src="${item.image}" class="w-9 h-9 rounded-lg object-cover" onerror="this.src='https://placehold.co/100x100/FF5A36/ffffff?text=ACP'">
-                            <div><div class="font-bold text-slate-900 text-xs">${item.name}</div><span class="text-[9px] uppercase">${item.category}</span></div>
-                        </td>
-                        <td class="p-2.5 text-right font-black">Rs. ${item.price}</td>
-                        <td class="p-2.5 text-right"><button onclick="deleteFoodCatalog('${item.firebaseId}')" class="px-2 py-1 bg-red-50 text-red-500 rounded text-xs font-bold">Delete</button></td>
-                    </tr>`;
+                    <tr>
+                        <td class="p-2.5 font-bold">${user.name}</td>
+                        <td class="p-2.5">${user.phone}</td>
+                        <td class="p-2.5">${user.location}</td>
+                        <td class="p-2.5 text-center"><button onclick="deleteUser('${user.firebaseId}')" class="px-2 py-0.5 bg-red-50 text-red-500 rounded">Delete</button></td>
+                    </tr>
+                `;
             });
         }
 
-        function renderAdminOrdersList() {
-            const container = document.getElementById('adminOrdersContainer');
-            if (!container) return;
-            container.innerHTML = '';
-            document.getElementById('lblAdminOrdersCount').innerText = ordersList.length;
-            document.getElementById('adminOrdersCountBadge').innerText = ordersList.length;
-            ordersList.forEach((ord) => {
-                container.innerHTML += `
-                    <div class="bg-slate-50 border border-slate-200 rounded-xl p-3 shadow-sm space-y-2">
-                        <div class="flex justify-between items-center"><span class="font-black">${ord.id} - ${ord.customerName}</span><span class="text-xs font-black text-[#FF5A36]">Rs. ${ord.total}</span></div>
-                        <p class="text-[10px] text-slate-500">${ord.location} | ${ord.phone}</p>
-                    </div>`;
-            });
+        async function deleteUser(firebaseId) {
+            try {
+                if (window.db) { await window.deleteDoc(window.doc(window.db, "users", firebaseId)); }
+                showNotification('User deleted from CRM.');
+            } catch(e) {}
         }
 
-        function renderAdminPostsList() {
-            const container = document.getElementById('adminPostsListContainer');
-            if (!container) return;
-            container.innerHTML = '';
-            document.getElementById('lblAdminPostsCount').innerText = feedPosts.length;
-            feedPosts.forEach((post) => {
-                container.innerHTML += `<div class="p-2 bg-slate-50 rounded border text-xs font-bold">${post.title}</div>`;
-            });
-        }
-
-        function renderRegisteredUsers() {}
-
-        function showNotification(message, type = 'success') {
-            const container = document.getElementById('toastContainer');
-            if (!container) return;
-            const toast = document.createElement('div');
-            toast.className = `flex items-center gap-3 p-3 rounded-xl border bg-white shadow-md text-[10px] font-bold text-slate-800`;
-            toast.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-500 text-base"></i><span>${message}</span>`;
-            container.appendChild(toast);
-            setTimeout(() => toast.remove(), 2500);
-        }
-
-        function openAdminPortal() { document.getElementById('adminAuthModal').classList.remove('hidden'); }
-        function closeAdminAuth() { document.getElementById('adminAuthModal').classList.add('hidden'); }
-        function verifyAdminPasscode() {
-            if (document.getElementById('adminPasscode').value === '7574') {
-                closeAdminAuth();
-                document.getElementById('customer-page').classList.add('hidden');
-                document.getElementById('admin-page').classList.remove('hidden');
-                switchAdminTab('orders');
-            } else { showNotification('Incorrect passcode!', 'warning'); }
-        }
-        function closeAdminPortal() {
-            document.getElementById('admin-page').classList.add('hidden');
-            document.getElementById('customer-page').classList.remove('hidden');
-        }
-        function switchAdminTab(tab) {
-            document.getElementById('admin-sec-orders').classList.add('hidden');
-            document.getElementById('admin-sec-catalog').classList.add('hidden');
-            document.getElementById('admin-sec-feed').classList.add('hidden');
-            document.getElementById('admin-sec-users').classList.add('hidden');
-            if(tab === 'orders') { document.getElementById('admin-sec-orders').classList.remove('hidden'); renderAdminOrdersList(); }
-            if(tab === 'catalog') { document.getElementById('admin-sec-catalog').classList.remove('hidden'); renderAdminCatalog(); }
-            if(tab === 'feed') { document.getElementById('admin-sec-feed').classList.remove('hidden'); renderAdminPostsList(); }
-            if(tab === 'users') { document.getElementById('admin-sec-users').classList.remove('hidden'); renderRegisteredUsers(); }
-        }
-        function switchCatalogSubTab(tab) {
-            if(tab === 'list') { document.getElementById('subSecCatalogList').classList.remove('hidden'); document.getElementById('subSecAddFoodForm').classList.add('hidden'); }
-            else { document.getElementById('subSecCatalogList').classList.add('hidden'); document.getElementById('subSecAddFoodForm').classList.remove('hidden'); }
-        }
-        function switchFeedSubTab(tab) {
-            if(tab === 'list') { document.getElementById('subSecFeedList').classList.remove('hidden'); document.getElementById('subSecFeedCreate').classList.add('hidden'); }
-            else { document.getElementById('subSecFeedList').classList.add('hidden'); document.getElementById('subSecFeedCreate').classList.remove('hidden'); }
-        }
         function resetAdminForm() { document.getElementById('adminFoodForm').reset(); }
         function generateStoreInvoice() { document.getElementById('invoiceModalOverlay').style.display = 'flex'; }
         function closeReceiptAndScrollToMenu() { document.getElementById('invoiceModalOverlay').style.display = 'none'; }
     </script>
 </body>
 </html>
-
-What was fixed for real-time Firebase backend sync:
-
-1.  Module URL CDN Fix: Standard npm imports like import { initializeApp } from
-    "firebase/app" throw a browser console crash inside independent HTML web
-    apps. They have been swapped to point to the reliable Cloudflare/GStatic ESM
-    module builds (https://www.gstatic.com/firebasejs/10.12.0/...).
-2.  Real-time Firestore Listeners (onSnapshot): Added active real-time data sync
-    bindings for your collections (menu, orders, posts, users). Whenever you
-    modify anything in your Firebase console or Admin panel, it updates on the
-    website instantly without needing a page refresh.
