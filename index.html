@@ -3824,13 +3824,13 @@
     </script>
 </body>
 </html>
-
     <!-- FIREBASE REALTIME BACKEND SCRIPT -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.3.0/firebase-app.js";
         import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.3.0/firebase-analytics.js";
         import { 
-            getFirestore, collection, doc, setDoc, addDoc, updateDoc, deleteDoc, onSnapshot 
+            initializeFirestore, persistentLocalCache, persistentMultipleTabManager, 
+            collection, doc, setDoc, addDoc, updateDoc, deleteDoc, onSnapshot 
         } from "https://www.gstatic.com/firebasejs/11.3.0/firebase-firestore.js";
 
         // Your web app's Firebase configuration (Delhi Server)
@@ -3844,10 +3844,14 @@
             measurementId: "G-ZKPVH2RPW5" 
         }; 
 
-        // Initialize Firebase & Firestore
+        // Initialize Firebase & Firestore with Persistent Local Caching (Speeds up loading instantly)
         const app = initializeApp(firebaseConfig); 
         const analytics = getAnalytics(app);
-        const db = getFirestore(app);
+        const db = initializeFirestore(app, {
+            localCache: persistentLocalCache({
+                tabManager: persistentMultipleTabManager()
+            })
+        });
 
         // Core App State
         let cartItems = {};
@@ -3869,7 +3873,7 @@
         let registeredUsers = [];
 
         // -----------------------------------------------------------------
-        // FIRESTORE HELPER FUNCTION (As requested for custom item additions)
+        // FIRESTORE HELPER FUNCTION (For custom item additions)
         // -----------------------------------------------------------------
         async function addNewItem(collectionName = "items", dataObject = {}) {
             try {
