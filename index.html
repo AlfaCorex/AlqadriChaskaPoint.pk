@@ -14,6 +14,10 @@
     <!-- Tailwind CSS for modern responsive layout helper utilities -->
     <script src="https://cdn.tailwindcss.com"></script>
 
+    <!-- Firebase SDK Scripts (CDN version for instant, non-blocking execution without ES module delays) -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-analytics-compat.js"></script>
+
     <style>
         :root {
             --primary: #FF5A36; /* Signature Vibrant Warm Orange */
@@ -312,6 +316,7 @@
         .app-hero {
             padding: 24px 16px;
             text-align: center;
+            /* Updated background color to #FBF1EF */
             background-color: #FBF1EF;
             border-bottom: 1px dashed rgba(226, 232, 240, 0.85);
         }
@@ -374,6 +379,10 @@
             flex-direction: column;
             box-shadow: var(--shadow-sm);
             transition: all 0.2s ease-in-out;
+        }
+
+        .portrait-card:hover {
+            transform: none !important;
         }
 
         .card-image-box {
@@ -466,6 +475,11 @@
             text-align: center;
             box-shadow: var(--shadow-sm);
             height: 100%;
+            transition: all 0.2s ease-in-out;
+        }
+
+        .local-mini-card:hover {
+            transform: none !important;
         }
 
         .local-title-compact {
@@ -638,6 +652,7 @@
             clip-path: polygon(0% 0%, 50% 0%, 50% 100%, 0% 100%);
         }
 
+        /* Print Media Configurations */
         @media print {
             body * { visibility: hidden; }
             .receipt-container, .receipt-container * { visibility: visible; }
@@ -719,7 +734,7 @@
                         <span class="section-indicator"></span>Fast Food Menu
                     </h2>
                     <div class="grid-fast-food" id="menuGridContainer">
-                        <!-- Dynamically injected from Firestore -->
+                        <!-- Dynamically injected -->
                     </div>
                 </div>
 
@@ -732,7 +747,7 @@
                         <span class="section-indicator"></span>Local Delicacies
                     </h2>
                     <div class="grid-local-food" id="localMenuGridContainer">
-                        <!-- Dynamically injected from Firestore -->
+                        <!-- Dynamically injected -->
                     </div>
                 </div>
 
@@ -745,7 +760,7 @@
                         <span class="section-indicator"></span>Cold Drinks & Beverages
                     </h2>
                     <div class="grid-local-food" id="drinksMenuGridContainer">
-                        <!-- Dynamically injected from Firestore -->
+                        <!-- Dynamically injected cold drinks -->
                     </div>
                 </div>
 
@@ -1201,6 +1216,13 @@
                             </tbody>
                         </table>
                     </div>
+
+                    <!-- Catalog Update Action Button Centered -->
+                    <div id="catalogUpdateBar" class="hidden pt-3 flex justify-center">
+                        <button onclick="saveCatalogOrderChanges()" class="py-2.5 px-5 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold rounded-xl text-xs transition-all shadow-md flex items-center gap-2 active:scale-95">
+                            <i class="fa-solid fa-circle-check text-sm"></i> Save Catalog Order Changes
+                        </button>
+                    </div>
                 </div>
 
                 <div id="subSecAddFoodForm" class="hidden bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-3">
@@ -1247,12 +1269,6 @@
                             <textarea id="foodFormDesc" rows="2" placeholder="Briefly describe ingredients..." class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none text-xs resize-none"></textarea>
                         </div>
 
-                        <!-- Availability toggle checkbox -->
-                        <div class="flex items-center gap-2 pt-1">
-                            <input type="checkbox" id="foodFormAvailable" checked class="w-4 h-4 text-[#FF5A36] rounded border-slate-300 focus:ring-[#FF5A36]">
-                            <label for="foodFormAvailable" class="text-xs font-bold text-slate-700">Available in Menu</label>
-                        </div>
-
                         <div class="pt-1 flex gap-2">
                             <button type="submit" id="foodFormSubmitBtn" class="flex-1 py-2.5 bg-[#FF5A36] text-white font-black rounded-xl text-xs transition-all shadow-md">
                                 <i class="fa-solid fa-save"></i> Save Product
@@ -1268,6 +1284,7 @@
 
             <!-- CATEGORY 3: PUBLISH POST -->
             <div id="admin-sec-feed" class="hidden space-y-4">
+                <!-- Modified order: Active Posts first, Broadcast Post second -->
                 <div class="grid grid-cols-2 gap-2 mb-2">
                     <button type="button" onclick="switchFeedSubTab('list')" id="btnSubFeedList" class="py-2 px-3 rounded-xl text-xs font-black text-center transition-all bg-[#FF5A36] text-white shadow-sm border border-[#FF5A36] flex items-center justify-center gap-1.5">
                         <i class="fa-solid fa-newspaper"></i> Active Posts
@@ -1331,6 +1348,13 @@
 
                     <div id="adminPostsListContainer" class="space-y-3">
                         <!-- Dynamic Post Cards Injected Here -->
+                    </div>
+
+                    <!-- Post Update Action Button Centered -->
+                    <div id="postUpdateBar" class="hidden pt-3 flex justify-center">
+                        <button onclick="savePostOrderChanges()" class="py-2.5 px-5 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold rounded-xl text-xs transition-all shadow-md flex items-center gap-2 active:scale-95">
+                            <i class="fa-solid fa-circle-check text-sm"></i> Save Post Order Changes
+                        </button>
                     </div>
                 </div>
 
@@ -1500,146 +1524,101 @@
         </div>
     </div>
 
-    <!-- Firebase SDK Setup and Main Logic -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
-        import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-analytics.js";
-        import { 
-            getFirestore, collection, getDocs, addDoc, updateDoc, deleteDoc, doc, onSnapshot, query, orderBy 
-        } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-firestore.js";
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyBuR55aUNW71kiYS2AAN9LnRo6UlFG9mdg",
-            authDomain: "alfa-corex-1-a9761.firebaseapp.com",
-            projectId: "alfa-corex-1-a9761",
-            storageBucket: "alfa-corex-1-a9761.firebasestorage.app",
-            messagingSenderId: "211023448949",
-            appId: "1:211023448949:web:df5c519352868a12cea13c",
-            measurementId: "G-BFVW5HY59P"
+    <script>
+        // Initialize Firebase instantly using compat libraries to eliminate network latency or ES module loading pauses
+        const firebaseConfig = { 
+            apiKey: "AIzaSyCnTvjumYj8qXN8rsQtmkGOAmNuJDummBI", 
+            authDomain: "alfa-corex.firebaseapp.com", 
+            projectId: "alfa-corex", 
+            storageBucket: "alfa-corex.firebasestorage.app", 
+            messagingSenderId: "137972735130", 
+            appId: "1:137972735130:web:8edac3d79ebea4046b1323", 
+            measurementId: "G-FERT7LM1W6"
         };
+        firebase.initializeApp(firebaseConfig);
+        const analytics = firebase.analytics();
 
-        const app = initializeApp(firebaseConfig);
-        const analytics = getAnalytics(app);
-        const db = getFirestore(app);
+        let cartItems = {};
+        let notificationsHistory = [];
+        let expandedComments = {}; 
+        let commentSortModes = {}; 
+        let expandedReplies = {}; 
+        let currentUser = null; 
+        let guestSessionName = ""; 
+        let activeAdminCatalogFilter = 'all';
+        let sharedPostText = ""; // Holds post formatting for desktop clipboard sharing
 
-        // Global Application State bound to Firebase
-        window.cartItems = {};
-        window.notificationsHistory = [];
-        window.expandedComments = {}; 
-        window.commentSortModes = {}; 
-        window.expandedReplies = {}; 
-        window.currentUser = null; 
-        window.guestSessionName = ""; 
-        window.activeAdminCatalogFilter = 'all';
-        window.sharedPostText = ""; 
+        // Staging arrays for pending sort changes before confirmation update
+        let workingMenuData = [];
+        let workingFeedPosts = [];
 
-        window.menuData = [];
-        window.ordersList = [];
-        window.registeredUsers = [];
-        window.feedPosts = [];
+        // Food Menu Data (Emptied per user request)
+        let menuData = [];
+
+        // Placed Orders Log Database
+        let ordersList = [];
+
+        // Registered Customers CRM Database
+        let registeredUsers = [];
+
+        // Pre-populated Social Feed Board (Emptied per user request)
+        let feedPosts = [];
 
         window.addEventListener('DOMContentLoaded', () => {
             const savedUser = localStorage.getItem('acp_current_user');
             if (savedUser) {
                 try {
-                    window.currentUser = JSON.parse(savedUser);
+                    currentUser = JSON.parse(savedUser);
                 } catch(e) {
-                    window.currentUser = null;
+                    currentUser = null;
                 }
             }
 
             updateUserAccountDisplay();
+            renderCustomerMenu();
+            renderLocalMenu();
+            renderDrinksMenu();
+            renderCartSummary();
+            renderCustomerSocialFeeds();
             renderDynamicFooter();
-
-            // Real-time Firestore synchronizations
-            initFirestoreListeners();
         });
 
-        function initFirestoreListeners() {
-            // 1. Listen to Menu Catalog changes in real-time
-            onSnapshot(collection(db, "menuItems"), (snapshot) => {
-                window.menuData = [];
-                snapshot.forEach((docSnap) => {
-                    window.menuData.push({ firebaseId: docSnap.id, ...docSnap.data() });
-                });
-                renderCustomerMenu();
-                renderLocalMenu();
-                renderDrinksMenu();
-                renderAdminCatalog();
-                renderCartSummary();
-            }, (error) => {
-                console.error("Error fetching menu items: ", error);
-            });
-
-            // 2. Listen to Orders changes in real-time
-            onSnapshot(collection(db, "orders"), (snapshot) => {
-                window.ordersList = [];
-                snapshot.forEach((docSnap) => {
-                    window.ordersList.push({ firebaseId: docSnap.id, ...docSnap.data() });
-                });
-                renderAdminOrdersList();
-            }, (error) => {
-                console.error("Error fetching orders: ", error);
-            });
-
-            // 3. Listen to Social Feed Posts changes in real-time
-            onSnapshot(collection(db, "feedPosts"), (snapshot) => {
-                window.feedPosts = [];
-                snapshot.forEach((docSnap) => {
-                    window.feedPosts.push({ firebaseId: docSnap.id, ...docSnap.data() });
-                });
-                renderCustomerSocialFeeds();
-                renderAdminPostsList();
-            }, (error) => {
-                console.error("Error fetching feed posts: ", error);
-            });
-
-            // 4. Listen to Registered Users changes in real-time
-            onSnapshot(collection(db, "registeredUsers"), (snapshot) => {
-                window.registeredUsers = [];
-                snapshot.forEach((docSnap) => {
-                    window.registeredUsers.push({ firebaseId: docSnap.id, ...docSnap.data() });
-                });
-                renderRegisteredUsers();
-            }, (error) => {
-                console.error("Error fetching users: ", error);
-            });
-        }
-
         // Trigger Guest Name Pop-up Modal
-        window.openGuestNameModal = function() {
+        function openGuestNameModal() {
             const modal = document.getElementById('guestNameModal');
             if (modal) modal.classList.remove('hidden');
         }
 
-        window.closeGuestNameModal = function() {
+        // Close Guest Name Pop-up Modal
+        function closeGuestNameModal() {
             const modal = document.getElementById('guestNameModal');
             if (modal) modal.classList.add('hidden');
         }
 
-        window.saveGuestNameFromPopup = function() {
+        function saveGuestNameFromPopup() {
             const input = document.getElementById('popupGuestNameInput');
             if (!input) return;
 
             const val = input.value.trim();
             if (!val) return;
 
-            window.guestSessionName = val;
+            guestSessionName = val;
             closeGuestNameModal();
             renderCustomerSocialFeeds();
         }
 
-        window.resetGuestSessionName = function() {
-            window.guestSessionName = "";
+        function resetGuestSessionName() {
+            guestSessionName = "";
             renderCustomerSocialFeeds();
         }
 
+        // Display only the first spelling of the user's name on the header icon
         function updateUserAccountDisplay() {
             const userBtn = document.getElementById('navUserBtn');
             if (!userBtn) return;
 
-            if (window.currentUser) {
-                const fullName = window.currentUser.name ? window.currentUser.name.trim() : 'User';
+            if (currentUser) {
+                const fullName = currentUser.name ? currentUser.name.trim() : 'User';
                 const firstSpelling = fullName.split(' ')[0];
                 userBtn.innerHTML = `
                     <div class="flex items-center gap-1.5 px-2 py-0.5 bg-orange-50 border border-orange-200/80 rounded-full shadow-sm hover:bg-orange-100 transition-all cursor-pointer">
@@ -1658,7 +1637,8 @@
             }
         }
 
-        window.switchCustomerTab = function(tabName) {
+        // Toggle Main User View Tabs & Render dynamic footer per tab view
+        function switchCustomerTab(tabName) {
             const storeBtn = document.getElementById('tabBtnStore');
             const feedsBtn = document.getElementById('tabBtnFeeds');
             const viewStore = document.getElementById('view-store');
@@ -1673,6 +1653,7 @@
                 storeBtn.className = "btn-tab-effect btn-tab-active flex-1 max-w-[180px] flex items-center justify-center gap-2 py-2 px-4 text-xs font-black rounded-xl border border-[#FF5A36] bg-[#FF5A36] text-white shadow-md active:scale-95";
                 feedsBtn.className = "btn-tab-effect btn-tab-inactive flex-1 max-w-[180px] flex items-center justify-center gap-2 py-2 px-4 text-xs font-black rounded-xl border border-slate-200 bg-white text-slate-700 shadow-sm relative active:scale-95";
                 
+                // Keep icons correctly color-coded
                 storeBtn.innerHTML = `<i class="fa-solid fa-utensils text-white"></i> Order Menu`;
                 feedsBtn.innerHTML = `
                     <i class="fa-solid fa-rss text-orange-500"></i> Social Feed
@@ -1688,6 +1669,7 @@
                 feedsBtn.className = "btn-tab-effect btn-tab-active flex-1 max-w-[180px] flex items-center justify-center gap-2 py-2 px-4 text-xs font-black rounded-xl border border-[#FF5A36] bg-[#FF5A36] text-white shadow-md relative active:scale-95";
                 storeBtn.className = "btn-tab-effect btn-tab-inactive flex-1 max-w-[180px] flex items-center justify-center gap-2 py-2 px-4 text-xs font-black rounded-xl border border-slate-200 bg-white text-slate-700 shadow-sm active:scale-95";
                 
+                // Feeds active: icon becomes white inside the tab selection
                 feedsBtn.innerHTML = `
                     <i class="fa-solid fa-rss text-white"></i> Social Feed
                     <span class="absolute -top-1 -right-1 w-2 h-2 bg-rose-500 rounded-full animate-ping"></span>
@@ -1704,6 +1686,7 @@
             window.scrollTo(0,0);
         }
 
+        // Dynamic footer content depending on whether Order Menu or Social Feed is active
         function renderDynamicFooter() {
             const footerEl = document.getElementById('mainFooterSection');
             if (!footerEl) return;
@@ -1797,21 +1780,21 @@
             }
         }
 
-        // Render Fast Food catalog (filters availability and active status)
+        // Render Fast Food catalog
         function renderCustomerMenu() {
             const container = document.getElementById('menuGridContainer');
             if (!container) return;
 
             container.innerHTML = '';
-            const fastFoodItems = window.menuData.filter(x => x.category === 'fast' && (x.available !== false));
+            const fastFoodItems = menuData.filter(x => x.category === 'fast');
 
             if(fastFoodItems.length === 0) {
-                container.innerHTML = `<div class="col-span-3 py-6 text-center text-xs text-slate-400 italic bg-white rounded-xl border border-slate-200">No fast food items available at the moment.</div>`;
+                container.innerHTML = `<div class="col-span-3 py-6 text-center text-xs text-slate-400 italic bg-white rounded-xl border border-slate-200">No fast food items added yet. Admin can add items from the panel.</div>`;
                 return;
             }
 
             fastFoodItems.forEach(item => {
-                const currentQty = window.cartItems[item.id] || 0;
+                const currentQty = cartItems[item.id] || 0;
                 const isSelected = currentQty > 0;
 
                 const cardOutline = isSelected 
@@ -1832,9 +1815,9 @@
                                 <div class="card-price-compact !mb-0 !mt-0">Rs. ${item.price}</div>
                             </div>
                             <div class="selector-box-compact mt-1">
-                                <button class="btn-qty-mini" onclick="updateQty('${item.id}', -1)">-</button>
+                                <button class="btn-qty-mini" onclick="updateQty(${item.id}, -1)">-</button>
                                 <span class="qty-val-mini" id="qty-${item.id}">${currentQty}</span>
-                                <button class="btn-qty-mini" onclick="updateQty('${item.id}', 1)">+</button>
+                                <button class="btn-qty-mini" onclick="updateQty(${item.id}, 1)">+</button>
                             </div>
                         </div>
                     </div>
@@ -1848,15 +1831,15 @@
             if (!container) return;
 
             container.innerHTML = '';
-            const localItems = window.menuData.filter(x => x.category === 'local' && (x.available !== false));
+            const localItems = menuData.filter(x => x.category === 'local');
 
             if(localItems.length === 0) {
-                container.innerHTML = `<div class="col-span-4 py-6 text-center text-xs text-slate-400 italic bg-white rounded-xl border border-slate-200">No local items available.</div>`;
+                container.innerHTML = `<div class="col-span-4 py-6 text-center text-xs text-slate-400 italic bg-white rounded-xl border border-slate-200">No local items added yet.</div>`;
                 return;
             }
 
             localItems.forEach(item => {
-                const currentQty = window.cartItems[item.id] || 0;
+                const currentQty = cartItems[item.id] || 0;
                 const isSelected = currentQty > 0;
 
                 const cardOutline = isSelected 
@@ -1877,9 +1860,9 @@
                         </div>
                         
                         <div class="selector-box-compact w-full text-center mt-1">
-                            <button class="btn-qty-mini !w-5 !h-5" onclick="updateQty('${item.id}', -1)">-</button>
+                            <button class="btn-qty-mini !w-5 !h-5" onclick="updateQty(${item.id}, -1)">-</button>
                             <span class="qty-val-mini !w-4 !text-[10px]" id="qty-local-${item.id}">${currentQty}</span>
-                            <button class="btn-qty-mini !w-5 !h-5" onclick="updateQty('${item.id}', 1)">+</button>
+                            <button class="btn-qty-mini !w-5 !h-5" onclick="updateQty(${item.id}, 1)">+</button>
                         </div>
                     </div>
                 `;
@@ -1892,15 +1875,15 @@
             if (!container) return;
 
             container.innerHTML = '';
-            const drinkItems = window.menuData.filter(x => x.category === 'drinks' && (x.available !== false));
+            const drinkItems = menuData.filter(x => x.category === 'drinks');
 
             if(drinkItems.length === 0) {
-                container.innerHTML = `<div class="col-span-4 py-6 text-center text-xs text-slate-400 italic bg-white rounded-xl border border-slate-200">No drinks available.</div>`;
+                container.innerHTML = `<div class="col-span-4 py-6 text-center text-xs text-slate-400 italic bg-white rounded-xl border border-slate-200">No drinks added yet.</div>`;
                 return;
             }
 
             drinkItems.forEach(item => {
-                const currentQty = window.cartItems[item.id] || 0;
+                const currentQty = cartItems[item.id] || 0;
                 const isSelected = currentQty > 0;
 
                 const cardOutline = isSelected 
@@ -1921,31 +1904,35 @@
                         </div>
                         
                         <div class="selector-box-compact w-full text-center mt-1">
-                            <button class="btn-qty-mini !w-5 !h-5" onclick="updateQty('${item.id}', -1)">-</button>
+                            <button class="btn-qty-mini !w-5 !h-5" onclick="updateQty(${item.id}, -1)">-</button>
                             <span class="qty-val-mini !w-4 !text-[10px]" id="qty-drink-${item.id}">${currentQty}</span>
-                            <button class="btn-qty-mini !w-5 !h-5" onclick="updateQty('${item.id}', 1)">+</button>
+                            <button class="btn-qty-mini !w-5 !h-5" onclick="updateQty(${item.id}, 1)">+</button>
                         </div>
                     </div>
                 `;
             });
         }
 
-        window.toggleComments = function(postId) {
-            window.expandedComments[postId] = !window.expandedComments[postId];
+        // Toggle Comments Expansion
+        function toggleComments(postId) {
+            expandedComments[postId] = !expandedComments[postId];
             renderCustomerSocialFeeds();
         }
 
-        window.toggleCommentSort = function(postId) {
-            let current = window.commentSortModes[postId] || 'recent';
-            window.commentSortModes[postId] = current === 'recent' ? 'oldest' : 'recent';
+        // Toggle comment sort mode ('recent' or 'oldest')
+        function toggleCommentSort(postId) {
+            let current = commentSortModes[postId] || 'recent';
+            commentSortModes[postId] = current === 'recent' ? 'oldest' : 'recent';
             renderCustomerSocialFeeds();
         }
 
-        window.toggleNestedReplies = function(key) {
-            window.expandedReplies[key] = !window.expandedReplies[key];
+        // Toggle visibility of nested replies for a specific comment key
+        function toggleNestedReplies(key) {
+            expandedReplies[key] = !expandedReplies[key];
             renderCustomerSocialFeeds();
         }
 
+        // Helper to count total comments including nested replies
         function getTotalCommentsCount(post) {
             let count = post.comments ? post.comments.length : 0;
             if (post.comments) {
@@ -1958,11 +1945,12 @@
             return count;
         }
 
-        window.likeComment = function(postId, commentIndex) {
-            const post = window.feedPosts.find(p => p.id === postId || p.firebaseId === postId);
+        // Like toggle logic on comments
+        function likeComment(postId, commentIndex) {
+            const post = feedPosts.find(p => p.id === postId);
             if (!post || !post.comments[commentIndex]) return;
 
-            let identifier = window.currentUser ? window.currentUser.phone : (window.guestSessionName || "guest_session");
+            let identifier = currentUser ? currentUser.phone : (guestSessionName || "guest_session");
             const comment = post.comments[commentIndex];
             
             if (!comment.likedUsers) comment.likedUsers = [];
@@ -1986,11 +1974,12 @@
             renderCustomerSocialFeeds();
         }
 
-        window.dislikeComment = function(postId, commentIndex) {
-            const post = window.feedPosts.find(p => p.id === postId || p.firebaseId === postId);
+        // Dislike toggle logic on comments
+        function dislikeComment(postId, commentIndex) {
+            const post = feedPosts.find(p => p.id === postId);
             if (!post || !post.comments[commentIndex]) return;
 
-            let identifier = window.currentUser ? window.currentUser.phone : (window.guestSessionName || "guest_session");
+            let identifier = currentUser ? currentUser.phone : (guestSessionName || "guest_session");
             const comment = post.comments[commentIndex];
             
             if (!comment.likedUsers) comment.likedUsers = [];
@@ -2014,11 +2003,12 @@
             renderCustomerSocialFeeds();
         }
 
-        window.likeReply = function(postId, commentIndex, replyIndex) {
-            const post = window.feedPosts.find(p => p.id === postId || p.firebaseId === postId);
+        // Like toggle logic on nested replies (sub-comments)
+        function likeReply(postId, commentIndex, replyIndex) {
+            const post = feedPosts.find(p => p.id === postId);
             if (!post || !post.comments[commentIndex] || !post.comments[commentIndex].replies[replyIndex]) return;
 
-            let identifier = window.currentUser ? window.currentUser.phone : (window.guestSessionName || "guest_session");
+            let identifier = currentUser ? currentUser.phone : (guestSessionName || "guest_session");
             const reply = post.comments[commentIndex].replies[replyIndex];
             
             if (!reply.likedUsers) reply.likedUsers = [];
@@ -2042,11 +2032,12 @@
             renderCustomerSocialFeeds();
         }
 
-        window.dislikeReply = function(postId, commentIndex, replyIndex) {
-            const post = window.feedPosts.find(p => p.id === postId || p.firebaseId === postId);
+        // Dislike toggle logic on nested replies (sub-comments)
+        function dislikeReply(postId, commentIndex, replyIndex) {
+            const post = feedPosts.find(p => p.id === postId);
             if (!post || !post.comments[commentIndex] || !post.comments[commentIndex].replies[replyIndex]) return;
 
-            let identifier = window.currentUser ? window.currentUser.phone : (window.guestSessionName || "guest_session");
+            let identifier = currentUser ? currentUser.phone : (guestSessionName || "guest_session");
             const reply = post.comments[commentIndex].replies[replyIndex];
             
             if (!reply.likedUsers) reply.likedUsers = [];
@@ -2070,8 +2061,8 @@
             renderCustomerSocialFeeds();
         }
 
-        window.deleteComment = function(postId, commentIndex) {
-            const post = window.feedPosts.find(p => p.id === postId || p.firebaseId === postId);
+        function deleteComment(postId, commentIndex) {
+            const post = feedPosts.find(p => p.id === postId);
             if (post && post.comments[commentIndex]) {
                 post.comments.splice(commentIndex, 1);
                 showNotification('Comment was deleted successfully!', 'warning');
@@ -2084,8 +2075,8 @@
             }
         }
 
-        window.deleteReply = function(postId, commentIndex, replyIndex) {
-            const post = window.feedPosts.find(p => p.id === postId || p.firebaseId === postId);
+        function deleteReply(postId, commentIndex, replyIndex) {
+            const post = feedPosts.find(p => p.id === postId);
             if (post && post.comments[commentIndex] && post.comments[commentIndex].replies[replyIndex]) {
                 post.comments[commentIndex].replies.splice(replyIndex, 1);
                 showNotification('Reply was deleted successfully!', 'warning');
@@ -2123,7 +2114,7 @@
 
             container.innerHTML = '';
             
-            if(window.feedPosts.length === 0) {
+            if(feedPosts.length === 0) {
                 container.innerHTML = `
                     <div class="bg-white rounded-3xl p-8 text-center border border-slate-200">
                         <i class="fa-solid fa-square-rss text-3xl text-slate-300 block mb-2"></i>
@@ -2133,14 +2124,14 @@
                 return;
             }
 
-            window.feedPosts.forEach(post => {
+            feedPosts.forEach(post => {
                 const heartColor = post.isLiked ? 'text-rose-500 scale-125' : 'text-slate-400';
                 const heartIcon = post.isLiked ? 'fa-solid fa-heart' : 'fa-regular fa-heart';
                 
-                const isExpanded = !!window.expandedComments[post.id];
-                const sortMode = window.commentSortModes[post.id] || 'recent';
+                const isExpanded = !!expandedComments[post.id];
+                const sortMode = commentSortModes[post.id] || 'recent';
                 
-                let sortedComments = post.comments ? [...post.comments] : [];
+                let sortedComments = [...post.comments];
                 if (sortMode === 'recent') {
                     sortedComments.reverse();
                 } else {
@@ -2154,17 +2145,21 @@
                 visibleComments.forEach((c) => {
                     const actualIndex = post.comments.indexOf(c);
                     
-                    let adminBadge = c.isAdmin ? `<span class="inline-flex items-center text-blue-500 ml-1 text-xs" title="Verified Admin"><i class="fa-solid fa-circle-check"></i></span>` : '';
-                    let currentIdentifier = window.currentUser ? window.currentUser.name : window.guestSessionName;
+                    let adminBadge = '';
+                    if (c.isAdmin) {
+                        adminBadge = `<span class="inline-flex items-center text-blue-500 ml-1 text-xs" title="Verified Admin"><i class="fa-solid fa-circle-check"></i></span>`;
+                    }
+
+                    let currentIdentifier = currentUser ? currentUser.name : guestSessionName;
                     let canDelete = currentIdentifier && (currentIdentifier === c.commenter);
-                    let deleteBtnHtml = canDelete ? `<button onclick="deleteComment('${post.id || post.firebaseId}', ${actualIndex})" class="text-red-400 hover:text-red-600 ml-2" title="Delete comment"><i class="fa-solid fa-trash-can text-[10px]"></i></button>` : '';
+                    let deleteBtnHtml = canDelete ? `<button onclick="deleteComment(${post.id}, ${actualIndex})" class="text-red-400 hover:text-red-600 ml-2" title="Delete comment"><i class="fa-solid fa-trash-can text-[10px]"></i></button>` : '';
 
                     let likesCount = c.likes || 0;
                     let dislikesCount = c.dislikes || 0;
                     let timeAgo = formatCommentTime(c.timestamp);
 
-                    let replyKey = `${post.id || post.firebaseId}_${actualIndex}`;
-                    let isRepliesExpanded = !!window.expandedReplies[replyKey];
+                    let replyKey = `${post.id}_${actualIndex}`;
+                    let isRepliesExpanded = !!expandedReplies[replyKey];
                     let repliesHtml = '';
 
                     if (c.replies && c.replies.length > 0) {
@@ -2175,6 +2170,7 @@
                             let repAdminBadge = rep.isAdmin ? `<span class="inline-flex items-center text-blue-500 ml-1 text-xs" title="Verified Admin"><i class="fa-solid fa-circle-check"></i></span>` : '';
                             let formattedReplyText = formatReplyText(rep.text);
                             let repTimeAgo = formatCommentTime(rep.timestamp);
+                            
                             let repLikes = rep.likes || 0;
                             let repDislikes = rep.dislikes || 0;
 
@@ -2195,14 +2191,15 @@
                                             </div>
                                             <p class="text-xs text-slate-700 leading-relaxed whitespace-pre-line">${formattedReplyText}</p>
                                             
+                                            <!-- Sub-comment action toolbar without 3 dots -->
                                             <div class="flex items-center gap-4 text-[10px] text-slate-500 pt-0.5">
-                                                <button onclick="likeReply('${post.id || post.firebaseId}', ${actualIndex}, ${repIdx})" class="flex items-center gap-1 hover:text-slate-800 transition-all">
+                                                <button onclick="likeReply(${post.id}, ${actualIndex}, ${repIdx})" class="flex items-center gap-1 hover:text-slate-800 transition-all">
                                                     <i class="fa-regular fa-thumbs-up"></i> <span>${repLikes}</span>
                                                 </button>
-                                                <button onclick="dislikeReply('${post.id || post.firebaseId}', ${actualIndex}, ${repIdx})" class="flex items-center gap-1 hover:text-slate-800 transition-all">
+                                                <button onclick="dislikeReply(${post.id}, ${actualIndex}, ${repIdx})" class="flex items-center gap-1 hover:text-slate-800 transition-all">
                                                     <i class="fa-regular fa-thumbs-down"></i> <span>${repDislikes}</span>
                                                 </button>
-                                                <button onclick="openUserReplyModal('${post.id || post.firebaseId}', ${actualIndex}, '${rep.commenter.replace(/'/g, "\\'")}')" class="font-bold hover:text-primary transition-all">Reply</button>
+                                                <button onclick="openUserReplyModal(${post.id}, ${actualIndex}, '${rep.commenter.replace(/'/g, "\\'")}')" class="font-bold hover:text-primary transition-all">Reply</button>
                                             </div>
                                         </div>
                                     </div>
@@ -2219,7 +2216,7 @@
                             `;
                         } else {
                             repliesHtml += `
-                                <button onclick="openUserReplyModal('${post.id || post.firebaseId}', ${actualIndex}, '${c.commenter.replace(/'/g, "\\'")}')" class="text-[10px] font-extrabold text-slate-500 hover:text-[#FF5A36] mt-1 ml-8 block">
+                                <button onclick="openUserReplyModal(${post.id}, ${actualIndex}, '${c.commenter.replace(/'/g, "\\'")}')" class="text-[10px] font-extrabold text-slate-500 hover:text-[#FF5A36] mt-1 ml-8 block">
                                     <i class="fa-solid fa-reply mr-1"></i> Reply
                                 </button>
                             `;
@@ -2243,14 +2240,15 @@
                                     </div>
                                     <p class="text-xs text-slate-700 leading-relaxed whitespace-pre-line">${formatReplyText(c.text)}</p>
                                     
+                                    <!-- Comment action toolbar without 3 dots icon -->
                                     <div class="flex items-center gap-4 text-xs text-slate-500 pt-0.5">
-                                        <button onclick="likeComment('${post.id || post.firebaseId}', ${actualIndex})" class="flex items-center gap-1 hover:text-slate-800 transition-all">
+                                        <button onclick="likeComment(${post.id}, ${actualIndex})" class="flex items-center gap-1 hover:text-slate-800 transition-all">
                                             <i class="fa-regular fa-thumbs-up"></i> <span>${likesCount}</span>
                                         </button>
-                                        <button onclick="dislikeComment('${post.id || post.firebaseId}', ${actualIndex})" class="flex items-center gap-1 hover:text-slate-800 transition-all">
+                                        <button onclick="dislikeComment(${post.id}, ${actualIndex})" class="flex items-center gap-1 hover:text-slate-800 transition-all">
                                             <i class="fa-regular fa-thumbs-down"></i> <span>${dislikesCount}</span>
                                         </button>
-                                        <button onclick="openUserReplyModal('${post.id || post.firebaseId}', ${actualIndex}, '${c.commenter.replace(/'/g, "\\'")}')" class="font-bold hover:text-primary transition-all">Reply</button>
+                                        <button onclick="openUserReplyModal(${post.id}, ${actualIndex}, '${c.commenter.replace(/'/g, "\\'")}')" class="font-bold hover:text-primary transition-all">Reply</button>
                                     </div>
                                 </div>
                             </div>
@@ -2260,39 +2258,39 @@
                 });
 
                 let toggleBtnHtml = '';
-                if (post.comments && post.comments.length > 2) {
+                if (post.comments.length > 2) {
                     const btnText = isExpanded ? 'Show Less Comments' : `Show More Comments (${post.comments.length - 2})`;
                     toggleBtnHtml = `
-                        <button onclick="toggleComments('${post.id || post.firebaseId}')" class="text-[10px] font-extrabold text-[#FF5A36] hover:underline mt-2 block">
+                        <button onclick="toggleComments(${post.id})" class="text-[10px] font-extrabold text-[#FF5A36] hover:underline mt-2 block">
                             ${btnText}
                         </button>
                     `;
                 }
 
                 let commentBoxHtml = '';
-                if (window.currentUser) {
+                if (currentUser) {
                     commentBoxHtml = `
                         <div class="pt-3">
                             <div class="text-[9px] text-slate-400 font-bold mb-1 flex items-center gap-1">
-                                <i class="fa-solid fa-user-check text-emerald-500"></i> Commenting as <span class="text-slate-800 font-extrabold">${window.currentUser.name}</span>
+                                <i class="fa-solid fa-user-check text-emerald-500"></i> Commenting as <span class="text-slate-800 font-extrabold">${currentUser.name}</span>
                             </div>
-                            <form onsubmit="event.preventDefault(); submitComment('${post.id || post.firebaseId}');" class="flex gap-2">
-                                <input type="text" id="comment-input-${post.id || post.firebaseId}" required placeholder="Add a sweet foodie comment..." class="flex-1 px-3 py-2 bg-white border border-slate-200 rounded-lg outline-none text-[11px] font-bold text-slate-800 placeholder-slate-400 focus:border-[#FF5A36]">
+                            <form onsubmit="event.preventDefault(); submitComment(${post.id});" class="flex gap-2">
+                                <input type="text" id="comment-input-${post.id}" required placeholder="Add a sweet foodie comment..." class="flex-1 px-3 py-2 bg-white border border-slate-200 rounded-lg outline-none text-[11px] font-bold text-slate-800 placeholder-slate-400 focus:border-[#FF5A36]">
                                 <button type="submit" class="bg-[#FF5A36] hover:bg-[#E04825] text-white px-3 rounded-lg text-xs font-black transition-all shadow-sm">
                                     Send
                                 </button>
                             </form>
                         </div>
                     `;
-                } else if (window.guestSessionName) {
+                } else if (guestSessionName) {
                     commentBoxHtml = `
                         <div class="pt-3">
                             <div class="text-[9px] text-slate-400 font-bold mb-1 flex items-center justify-between">
-                                <span><i class="fa-solid fa-user-pen text-[#FF5A36]"></i> Commenting as Guest: <span class="text-slate-800 font-extrabold">${window.guestSessionName}</span></span>
+                                <span><i class="fa-solid fa-user-pen text-[#FF5A36]"></i> Commenting as Guest: <span class="text-slate-800 font-extrabold">${guestSessionName}</span></span>
                                 <button type="button" onclick="resetGuestSessionName()" class="text-[9px] text-[#FF5A36] hover:underline">Change Name</button>
                             </div>
-                            <form onsubmit="event.preventDefault(); submitComment('${post.id || post.firebaseId}');" class="flex gap-2">
-                                <input type="text" id="comment-input-${post.id || post.firebaseId}" required placeholder="Write your comment..." class="flex-1 px-3 py-2 bg-white border border-slate-200 rounded-lg outline-none text-[11px] font-bold text-slate-800 placeholder-slate-400 focus:border-[#FF5A36]">
+                            <form onsubmit="event.preventDefault(); submitComment(${post.id});" class="flex gap-2">
+                                <input type="text" id="comment-input-${post.id}" required placeholder="Write your comment..." class="flex-1 px-3 py-2 bg-white border border-slate-200 rounded-lg outline-none text-[11px] font-bold text-slate-800 placeholder-slate-400 focus:border-[#FF5A36]">
                                 <button type="submit" class="bg-[#FF5A36] hover:bg-[#E04825] text-white px-3 rounded-lg text-xs font-black transition-all shadow-sm">
                                     Post
                                 </button>
@@ -2350,11 +2348,11 @@
                         </div>
 
                         <div class="px-4 py-3 border-t border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
-                            <button onclick="likePost('${post.id || post.firebaseId}')" class="flex items-center gap-1.5 text-xs font-extrabold text-slate-600 hover:text-rose-500 transition-all">
+                            <button onclick="likePost(${post.id})" class="flex items-center gap-1.5 text-xs font-extrabold text-slate-600 hover:text-rose-500 transition-all">
                                 <i class="${heartIcon} ${heartColor} text-sm"></i>
-                                <span id="post-likes-count-${post.id || post.firebaseId}">${post.likes || 0}</span>
+                                <span id="post-likes-count-${post.id}">${post.likes}</span>
                             </button>
-                            <button onclick="focusCommentInput('${post.id || post.firebaseId}')" class="flex items-center gap-1.5 text-xs font-extrabold text-slate-600 hover:text-sky-500 transition-all">
+                            <button onclick="focusCommentInput(${post.id})" class="flex items-center gap-1.5 text-xs font-extrabold text-slate-600 hover:text-sky-500 transition-all">
                                 <i class="fa-regular fa-comment text-sm"></i>
                                 <span>${totalCommentsCount}</span>
                             </button>
@@ -2364,7 +2362,7 @@
                                 <span>Download</span>
                             </button>
 
-                            <button onclick="sharePost('${post.title.replace(/'/g, "\\'")}', '${post.desc.replace(/\r?\n/g, " ").replace(/'/g, "\\'")}')" class="flex items-center gap-1.5 text-xs font-extrabold text-slate-600 hover:text-emerald-500 transition-all">
+                            <button onclick="sharePost(${post.id}, '${post.title.replace(/'/g, "\\'")}', '${post.desc.replace(/\r?\n/g, " ").replace(/'/g, "\\'")}')" class="flex items-center gap-1.5 text-xs font-extrabold text-slate-600 hover:text-emerald-500 transition-all">
                                 <i class="fa-solid fa-share text-sm"></i>
                                 <span>Share</span>
                             </button>
@@ -2376,16 +2374,17 @@
                                     <span>Comments</span> 
                                     <span class="bg-slate-200 text-slate-700 px-1.5 py-0.5 rounded-full text-[10px] font-bold">${totalCommentsCount}</span>
                                 </h5>
-                                <div onclick="toggleCommentSort('${post.id || post.firebaseId}')" class="text-[10px] text-slate-500 font-bold flex items-center gap-1 cursor-pointer hover:text-slate-800 transition-all" title="Click to switch sort order">
+                                <div onclick="toggleCommentSort(${post.id})" class="text-[10px] text-slate-500 font-bold flex items-center gap-1 cursor-pointer hover:text-slate-800 transition-all" title="Click to switch sort order">
                                     <span>${currentSortLabel}</span> <i class="fa-solid fa-chevron-down text-[8px]"></i>
                                 </div>
                             </div>
 
-                            <div class="space-y-3">
+                            <div class="space-y-3" id="comments-list-${post.id}">
                                 ${commentItemsHtml}
                             </div>
 
                             ${toggleBtnHtml}
+                            
                             ${commentBoxHtml}
                         </div>
                     </div>
@@ -2393,7 +2392,11 @@
             });
         }
 
-        window.openUserReplyModal = function(postId, commentIndex, commenterName) {
+        // Direct Reply to Comment from Write Your Comment box
+        function openUserReplyModal(postId, commentIndex, commenterName) {
+            const post = feedPosts.find(p => p.id === postId);
+            if (!post || !post.comments[commentIndex]) return;
+
             let commentInput = document.getElementById(`comment-input-${postId}`);
             if (commentInput) {
                 commentInput.value = `@${commenterName}: `;
@@ -2405,68 +2408,105 @@
             }
         }
 
-        window.sharePost = function(title, desc) {
-            window.sharedPostText = `${title}\n\n${desc}\n\nCheck out Alqadri Chaska Point: ${window.location.href}`;
+        // Functional Share Dialog supporting both desktop and native mobile environments
+        function sharePost(id, title, desc) {
+            sharedPostText = `${title}\n\n${desc}\n\nCheck out Alqadri Chaska Point: ${window.location.href}`;
+            
             if (navigator.share) {
-                navigator.share({ title, text: desc, url: window.location.href }).catch(() => {});
+                navigator.share({
+                    title: title,
+                    text: desc,
+                    url: window.location.href
+                }).then(() => {
+                    showNotification('Post shared successfully!');
+                }).catch((err) => {
+                    if (err.name !== 'AbortError') {
+                        openCustomShareModal(title, desc);
+                    }
+                });
             } else {
-                let encodedText = encodeURIComponent(`${title}\n\n${desc}`);
-                let currentUrl = encodeURIComponent(window.location.href);
-                document.getElementById('shareWA').href = `https://api.whatsapp.com/send?text=${encodedText}%20${currentUrl}`;
-                document.getElementById('shareFB').href = `https://www.facebook.com/sharer/sharer.php?u=${currentUrl}`;
-                document.getElementById('shareTW').href = `https://twitter.com/intent/tweet?text=${encodedText}`;
-                document.getElementById('shareModal').classList.remove('hidden');
+                openCustomShareModal(title, desc);
             }
         }
 
-        window.closeShareModal = function() {
+        function openCustomShareModal(title, desc) {
+            let shareText = `${title}\n\n${desc}`;
+            let encodedText = encodeURIComponent(shareText);
+            let currentUrl = encodeURIComponent(window.location.href);
+
+            document.getElementById('shareWA').href = `https://api.whatsapp.com/send?text=${encodedText}%20${currentUrl}`;
+            document.getElementById('shareFB').href = `https://www.facebook.com/sharer/sharer.php?u=${currentUrl}&quote=${encodedText}`;
+            document.getElementById('shareTW').href = `https://twitter.com/intent/tweet?text=${encodedText}&url=${currentUrl}`;
+
+            document.getElementById('shareModal').classList.remove('hidden');
+        }
+
+        function closeShareModal() {
             document.getElementById('shareModal').classList.add('hidden');
         }
 
-        window.copyShareLink = function() {
-            navigator.clipboard.writeText(window.sharedPostText).then(() => {
+        function copyShareLink() {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(sharedPostText).then(() => {
+                    showNotification('Post details copied to clipboard!');
+                    closeShareModal();
+                });
+            } else {
+                let textarea = document.createElement('textarea');
+                textarea.value = sharedPostText;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                textarea.remove();
                 showNotification('Post details copied to clipboard!');
                 closeShareModal();
-            });
+            }
         }
 
-        window.downloadPostMedia = async function(imageUrl, title) {
+        // Download Post Media Function
+        async function downloadPostMedia(imageUrl, title) {
             try {
                 showNotification('Downloading post image...');
                 const response = await fetch(imageUrl);
                 const blob = await response.blob();
                 const url = window.URL.createObjectURL(blob);
                 const a = document.createElement('a');
+                a.style.display = 'none';
                 a.href = url;
                 a.download = `ACP-${title.toLowerCase().replace(/[^a-z0-9]/g, '-')}.jpg`;
                 document.body.appendChild(a);
                 a.click();
+                window.URL.revokeObjectURL(url);
                 a.remove();
                 showNotification('Image downloaded successfully!');
             } catch (err) {
-                window.open(imageUrl, '_blank');
+                const link = document.createElement('a');
+                link.href = imageUrl;
+                link.target = '_blank';
+                link.download = 'ACP-Post.jpg';
+                document.body.appendChild(link);
+                link.click();
+                link.remove();
+                showNotification('Opened image in new tab for saving.');
             }
         }
 
-        window.likePost = async function(id) {
-            const post = window.feedPosts.find(p => p.id === id || p.firebaseId === id);
+        function likePost(id) {
+            const post = feedPosts.find(p => p.id === id);
             if (!post) return;
 
             post.isLiked = !post.isLiked;
-            post.likes = post.isLiked ? (post.likes || 0) + 1 : Math.max(0, (post.likes || 1) - 1);
-            
-            // Sync updated likes to Firestore
-            if (post.firebaseId) {
-                try {
-                    await updateDoc(doc(db, "feedPosts", post.firebaseId), {
-                        likes: post.likes
-                    });
-                } catch(e) { console.error(e); }
+            if (post.isLiked) {
+                post.likes += 1;
+                showNotification('Liked this post! ♥');
+            } else {
+                post.likes -= 1;
             }
             renderCustomerSocialFeeds();
+            renderAdminPostsList();
         }
 
-        window.focusCommentInput = function(id) {
+        function focusCommentInput(id) {
             const input = document.getElementById(`comment-input-${id}`);
             if (input) {
                 input.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -2476,34 +2516,40 @@
             }
         }
 
-        window.submitComment = async function(id) {
-            const post = window.feedPosts.find(p => p.id === id || p.firebaseId === id);
+        function submitComment(id) {
+            const post = feedPosts.find(p => p.id === id);
             const input = document.getElementById(`comment-input-${id}`);
+            
             if (!post || !input) return;
 
             const commentText = input.value.trim();
             if (!commentText) return;
 
-            let commenterName = window.currentUser ? window.currentUser.name : (window.guestSessionName || "");
-            if (!commenterName) {
+            let commenterName = "";
+            if (currentUser) {
+                commenterName = currentUser.name;
+            } else if (guestSessionName) {
+                commenterName = guestSessionName;
+            } else {
                 openGuestNameModal();
                 return;
             }
 
-            if (!post.comments) post.comments = [];
             const replyToIndex = input.dataset.replyToIndex;
-
             if (replyToIndex !== undefined && replyToIndex !== "") {
                 const idx = parseInt(replyToIndex);
                 if (post.comments[idx]) {
                     if (!post.comments[idx].replies) post.comments[idx].replies = [];
+                    
                     post.comments[idx].replies.push({
                         commenter: commenterName,
                         text: commentText,
                         isAdmin: false,
                         timestamp: Date.now(),
                         likes: 0,
-                        dislikes: 0
+                        dislikes: 0,
+                        likedUsers: [],
+                        dislikedUsers: []
                     });
                 }
                 delete input.dataset.replyToIndex;
@@ -2515,25 +2561,18 @@
                     timestamp: Date.now(), 
                     likes: 0, 
                     dislikes: 0, 
+                    likedUsers: [],
+                    dislikedUsers: [],
                     replies: [] 
                 });
             }
 
             input.value = '';
-            
-            // Sync comments to Firestore
-            if (post.firebaseId) {
-                try {
-                    await updateDoc(doc(db, "feedPosts", post.firebaseId), {
-                        comments: post.comments
-                    });
-                    showNotification('Comment posted successfully!');
-                } catch(e) { console.error(e); }
-            }
             renderCustomerSocialFeeds();
+            renderAdminPostsList();
         }
 
-        window.showNotification = function(message, type = 'success') {
+        function showNotification(message, type = 'success') {
             const container = document.getElementById('toastContainer');
             if (!container) return;
 
@@ -2559,18 +2598,19 @@
             }, 2500);
         }
 
-        window.openNotificationsModal = function() {
+        function openNotificationsModal() {
             document.getElementById('notificationsModal').classList.remove('hidden');
             document.getElementById('navBellBadge').classList.add('hidden');
         }
 
-        window.closeNotificationsModal = function() {
+        function closeNotificationsModal() {
             document.getElementById('notificationsModal').classList.add('hidden');
         }
 
         function addOrderNotification(title, message, isApproval = false) {
             const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-            window.notificationsHistory.unshift({ title, message, time: timeStr, isApproval });
+            notificationsHistory.unshift({ title, message, time: timeStr, isApproval });
+            
             document.getElementById('navBellBadge').classList.remove('hidden');
             renderNotificationsList();
         }
@@ -2579,7 +2619,7 @@
             const list = document.getElementById('notificationsList');
             if (!list) return;
 
-            if (window.notificationsHistory.length === 0) {
+            if (notificationsHistory.length === 0) {
                 list.innerHTML = `
                     <div class="text-center py-6 text-slate-400 text-xs">
                         <i class="fa-regular fa-bell-slash text-2xl text-slate-300 block mb-1"></i>
@@ -2590,7 +2630,7 @@
             }
 
             list.innerHTML = '';
-            window.notificationsHistory.forEach(item => {
+            notificationsHistory.forEach(item => {
                 const iconBg = item.isApproval ? 'bg-emerald-100 text-emerald-600' : 'bg-blue-100 text-blue-600';
                 const iconClass = item.isApproval ? 'fa-solid fa-circle-check' : 'fa-solid fa-bag-shopping';
                 
@@ -2609,8 +2649,9 @@
             });
         }
 
-        window.openCheckoutConfirmModal = function() {
-            const keys = Object.keys(window.cartItems);
+        // Open Checkout Order Confirmation Modal
+        function openCheckoutConfirmModal() {
+            const keys = Object.keys(cartItems);
             if (keys.length === 0) {
                 showNotification('Your basket is empty!', 'warning');
                 return;
@@ -2623,9 +2664,9 @@
             let totalAmount = 0;
 
             keys.forEach(id => {
-                const item = window.menuData.find(x => x.id == id || x.firebaseId == id);
+                const item = menuData.find(x => x.id == id);
                 if (item) {
-                    const qty = window.cartItems[id];
+                    const qty = cartItems[id];
                     const total = item.price * qty;
                     totalAmount += total;
 
@@ -2644,22 +2685,22 @@
             const phoneInput = document.getElementById('checkoutPhone');
             const locationInput = document.getElementById('checkoutLocation');
 
-            if (window.currentUser) {
-                if (nameInput) nameInput.value = window.currentUser.name;
-                if (phoneInput) phoneInput.value = window.currentUser.phone;
-                if (locationInput) locationInput.value = window.currentUser.location;
+            if (currentUser) {
+                if (nameInput) nameInput.value = currentUser.name;
+                if (phoneInput) phoneInput.value = currentUser.phone;
+                if (locationInput) locationInput.value = currentUser.location;
             }
 
             document.getElementById('checkoutConfirmModal').classList.remove('hidden');
         }
 
-        window.closeCheckoutConfirmModal = function() {
+        function closeCheckoutConfirmModal() {
             document.getElementById('checkoutConfirmModal').classList.add('hidden');
         }
 
-        // Finalize Order: Save order directly to Firestore & Open WhatsApp
-        window.finalizeOrderAndSendWhatsApp = async function() {
-            const keys = Object.keys(window.cartItems);
+        // Finalize Order: Add to Admin Panel & Redirect to WhatsApp
+        function finalizeOrderAndSendWhatsApp() {
+            const keys = Object.keys(cartItems);
             if (keys.length === 0) return;
 
             const name = document.getElementById('checkoutName').value.trim();
@@ -2676,9 +2717,9 @@
             let grandTotal = 0;
 
             keys.forEach(id => {
-                const item = window.menuData.find(x => x.id == id || x.firebaseId == id);
+                const item = menuData.find(x => x.id == id);
                 if (item) {
-                    const qty = window.cartItems[id];
+                    const qty = cartItems[id];
                     const total = item.price * qty;
                     grandTotal += total;
                     itemsDetail.push({ name: item.name, qty: qty, price: item.price, total: total });
@@ -2688,7 +2729,7 @@
             const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
             const dateStr = new Date().toLocaleDateString();
 
-            const newOrderObj = {
+            ordersList.unshift({
                 id: orderId,
                 customerName: name,
                 phone: phone,
@@ -2697,16 +2738,8 @@
                 time: timeStr,
                 items: itemsDetail,
                 total: grandTotal,
-                status: 'Pending',
-                createdAt: Date.now()
-            };
-
-            try {
-                // Save Order to Firestore collection 'orders'
-                await addDoc(collection(db, "orders"), newOrderObj);
-            } catch(e) {
-                console.error("Error saving order to Firestore:", e);
-            }
+                status: 'Pending'
+            });
 
             let waMsg = `*🛒 NEW ORDER - ALQADRI CHASKA POINT*\n`;
             waMsg += `*Order ID:* ${orderId}\n`;
@@ -2723,36 +2756,37 @@
             const whatsappUrl = `https://wa.me/923102434222?text=${encodeURIComponent(waMsg)}`;
 
             closeCheckoutConfirmModal();
-            showNotification(`Order ${orderId} saved & submitted to WhatsApp!`);
-            addOrderNotification(`Order Placed (${orderId})`, `Order stored in Firebase & sent to kitchen.`);
+            showNotification(`Order ${orderId} submitted! Opening WhatsApp...`);
+            addOrderNotification(`Order Placed (${orderId})`, `Order sent to WhatsApp & kitchen for approval.`);
 
-            window.cartItems = {};
+            cartItems = {};
             renderCustomerMenu();
             renderLocalMenu();
             renderDrinksMenu();
             renderCartSummary();
+            renderAdminOrdersList();
 
             window.open(whatsappUrl, '_blank');
         }
 
-        window.approveAdminOrder = async function(firebaseId) {
-            try {
-                await updateDoc(doc(db, "orders", firebaseId), { status: 'Approved' });
-                showNotification(`Order status updated to Approved!`);
-                addOrderNotification(`Order Approved`, `Kitchen approved order! Fresh food preparation started.`, true);
-            } catch(e) {
-                console.error("Error approving order:", e);
+        function approveAdminOrder(index) {
+            if (ordersList[index]) {
+                ordersList[index].status = 'Approved';
+                const ord = ordersList[index];
+                showNotification(`Order ${ord.id} approved!`);
+                addOrderNotification(`Order Approved (${ord.id})`, `Kitchen approved order ${ord.id}! Fresh food preparation started.`, true);
+                renderAdminOrdersList();
             }
         }
 
-        window.updateQty = function(id, change) {
-            const currentQty = window.cartItems[id] || 0;
+        function updateQty(id, change) {
+            const currentQty = cartItems[id] || 0;
             const newQty = Math.max(0, currentQty + change);
             
             if (newQty === 0) {
-                delete window.cartItems[id];
+                delete cartItems[id];
             } else {
-                window.cartItems[id] = newQty;
+                cartItems[id] = newQty;
             }
 
             renderCustomerMenu();
@@ -2769,13 +2803,17 @@
             const floatingCartCount = document.getElementById('floatingCartCount');
             const floatingCartTotal = document.getElementById('floatingCartTotal');
             
-            const keys = Object.keys(window.cartItems);
+            const keys = Object.keys(cartItems);
+            
             let totalItemsCount = 0;
-            keys.forEach(k => { totalItemsCount += window.cartItems[k]; });
+            keys.forEach(k => {
+                totalItemsCount += cartItems[k];
+            });
             
             if (keys.length === 0) {
                 if (emptyState) emptyState.style.display = 'block';
                 if (activeState) activeState.style.display = 'none';
+                
                 if (floatingCartBar) {
                     floatingCartBar.classList.add('translate-y-24', 'opacity-0', 'pointer-events-none');
                     floatingCartBar.classList.remove('translate-y-0', 'opacity-100', 'pointer-events-auto');
@@ -2790,10 +2828,10 @@
             let grandTotal = 0;
 
             keys.forEach(id => {
-                const item = window.menuData.find(x => x.id == id || x.firebaseId == id);
+                const item = menuData.find(x => x.id == id);
                 if (!item) return;
 
-                const qty = window.cartItems[id];
+                const qty = cartItems[id];
                 const total = item.price * qty;
                 grandTotal += total;
 
@@ -2825,8 +2863,8 @@
             }
         }
 
-        window.clearCart = function() {
-            window.cartItems = {};
+        function clearCart() {
+            cartItems = {};
             renderCustomerMenu();
             renderLocalMenu();
             renderDrinksMenu();
@@ -2834,7 +2872,8 @@
             showNotification('Basket cleared.', 'warning');
         }
 
-        window.switchAuthMode = function(mode) {
+        // Account Auth Switcher (Sign In vs Register)
+        function switchAuthMode(mode) {
             const btnSignIn = document.getElementById('btnAuthTabSignIn');
             const btnRegister = document.getElementById('btnAuthTabRegister');
             const viewSignIn = document.getElementById('userSignInView');
@@ -2856,18 +2895,18 @@
             }
         }
 
-        window.openUserModal = function() {
+        function openUserModal() {
             const modal = document.getElementById('userAuthModal');
             const authContainer = document.getElementById('userAuthContainer');
             const profileView = document.getElementById('userProfileView');
 
-            if (window.currentUser) {
+            if (currentUser) {
                 authContainer.classList.add('hidden');
                 profileView.classList.remove('hidden');
 
-                document.getElementById('profileName').innerText = window.currentUser.name;
-                document.getElementById('profilePhone').innerText = window.currentUser.phone;
-                document.getElementById('profileLocation').innerText = window.currentUser.location;
+                document.getElementById('profileName').innerText = currentUser.name;
+                document.getElementById('profilePhone').innerText = currentUser.phone;
+                document.getElementById('profileLocation').innerText = currentUser.location;
             } else {
                 authContainer.classList.remove('hidden');
                 profileView.classList.add('hidden');
@@ -2877,20 +2916,20 @@
             modal.classList.remove('hidden');
         }
 
-        window.closeUserModal = function() {
+        function closeUserModal() {
             document.getElementById('userAuthModal').classList.add('hidden');
         }
 
-        window.signInUser = function() {
+        function signInUser() {
             const phone = document.getElementById('signInPhone').value.trim();
             if (!phone) return;
 
-            const foundUser = window.registeredUsers.find(u => u.phone === phone);
+            const foundUser = registeredUsers.find(u => u.phone === phone);
             if (foundUser) {
-                window.currentUser = foundUser;
-                localStorage.setItem('acp_current_user', JSON.stringify(window.currentUser));
+                currentUser = foundUser;
+                localStorage.setItem('acp_current_user', JSON.stringify(currentUser));
                 updateUserAccountDisplay();
-                showNotification(`Welcome back, ${window.currentUser.name}!`);
+                showNotification(`Welcome back, ${currentUser.name}!`);
                 closeUserModal();
                 document.getElementById('signInPhone').value = '';
                 renderCustomerSocialFeeds();
@@ -2901,7 +2940,7 @@
             }
         }
 
-        window.registerUser = async function() {
+        function registerUser() {
             const name = document.getElementById('regName').value.trim();
             const phone = document.getElementById('regPhone').value.trim();
             const loc = document.getElementById('regLocation').value.trim();
@@ -2913,17 +2952,12 @@
             }
 
             const newUser = { name, phone, location: loc, email };
-
-            try {
-                await addDoc(collection(db, "registeredUsers"), newUser);
-            } catch(e) {
-                console.error("Error saving user to Firestore:", e);
-            }
-
-            window.currentUser = newUser; 
-            localStorage.setItem('acp_current_user', JSON.stringify(window.currentUser));
+            registeredUsers.push(newUser);
+            currentUser = newUser; 
+            localStorage.setItem('acp_current_user', JSON.stringify(currentUser));
 
             updateUserAccountDisplay();
+            
             showNotification(`Welcome, ${name}! Account registered.`);
             closeUserModal();
             
@@ -2932,11 +2966,12 @@
             document.getElementById('regLocation').value = '';
             document.getElementById('regEmail').value = '';
 
+            renderRegisteredUsers();
             renderCustomerSocialFeeds();
         }
 
-        window.logoutUser = function() {
-            window.currentUser = null;
+        function logoutUser() {
+            currentUser = null;
             localStorage.removeItem('acp_current_user');
             updateUserAccountDisplay();
             closeUserModal();
@@ -2944,23 +2979,27 @@
             showNotification('Signed out successfully.');
         }
 
-        window.openAdminPortal = function() {
+        function openAdminPortal() {
             document.getElementById('adminAuthModal').classList.remove('hidden');
             document.getElementById('adminPasscode').focus();
         }
 
-        window.closeAdminAuth = function() {
+        function closeAdminAuth() {
             document.getElementById('adminAuthModal').classList.add('hidden');
             document.getElementById('adminPasscode').value = '';
         }
 
-        window.verifyAdminPasscode = function() {
+        function verifyAdminPasscode() {
             const codeField = document.getElementById('adminPasscode');
             if (codeField.value === '7574') {
                 closeAdminAuth();
+                
                 document.getElementById('customer-page').classList.add('hidden');
                 document.getElementById('admin-page').classList.remove('hidden');
                 window.scrollTo(0, 0);
+                
+                workingMenuData = JSON.parse(JSON.stringify(menuData));
+                workingFeedPosts = JSON.parse(JSON.stringify(feedPosts));
 
                 renderAdminOrdersList();
                 renderAdminCatalog();
@@ -2975,7 +3014,7 @@
             }
         }
 
-        window.closeAdminPortal = function() {
+        function closeAdminPortal() {
             document.getElementById('admin-page').classList.add('hidden');
             document.getElementById('customer-page').classList.remove('hidden');
             window.scrollTo(0, 0);
@@ -2987,7 +3026,7 @@
             renderCustomerSocialFeeds();
         }
 
-        window.switchAdminTab = function(activeTab) {
+        function switchAdminTab(activeTab) {
             const btnOrders = document.getElementById('adminTabOrders');
             const btnCatalog = document.getElementById('adminTabCatalog');
             const btnFeed = document.getElementById('adminTabFeed');
@@ -3032,7 +3071,7 @@
             }
         }
 
-        window.switchCatalogSubTab = function(subTab) {
+        function switchCatalogSubTab(subTab) {
             const btnList = document.getElementById('btnSubCatList');
             const btnAdd = document.getElementById('btnSubCatAdd');
             const secList = document.getElementById('subSecCatalogList');
@@ -3054,7 +3093,7 @@
             }
         }
 
-        window.switchFeedSubTab = function(subTab) {
+        function switchFeedSubTab(subTab) {
             const btnCreate = document.getElementById('btnSubFeedCreate');
             const btnList = document.getElementById('btnSubFeedList');
             const secCreate = document.getElementById('subSecFeedCreate');
@@ -3082,12 +3121,12 @@
             const badge = document.getElementById('adminOrdersCountBadge');
 
             if (!container) return;
-            if (counter) counter.innerText = window.ordersList.length;
-            if (badge) badge.innerText = window.ordersList.length;
+            if (counter) counter.innerText = ordersList.length;
+            if (badge) badge.innerText = ordersList.length;
 
             container.innerHTML = '';
 
-            if (window.ordersList.length === 0) {
+            if (ordersList.length === 0) {
                 container.innerHTML = `
                     <div class="py-8 text-center text-slate-400 font-bold text-xs">
                         <i class="fa-solid fa-box-open text-2xl mb-1 text-slate-300 block"></i>
@@ -3097,18 +3136,16 @@
                 return;
             }
 
-            window.ordersList.forEach((ord) => {
+            ordersList.forEach((ord, index) => {
                 let itemsListHtml = '';
-                if (ord.items) {
-                    ord.items.forEach(it => {
-                        itemsListHtml += `
-                            <div class="flex justify-between items-center text-[11px] py-0.5 border-b border-slate-100 last:border-0">
-                                <span class="font-bold text-slate-800">${it.name} <span class="text-slate-400">x${it.qty}</span></span>
-                                <span class="font-black text-slate-700">Rs. ${it.total}</span>
-                            </div>
-                        `;
-                    });
-                }
+                ord.items.forEach(it => {
+                    itemsListHtml += `
+                        <div class="flex justify-between items-center text-[11px] py-0.5 border-b border-slate-100 last:border-0">
+                            <span class="font-bold text-slate-800">${it.name} <span class="text-slate-400">x${it.qty}</span></span>
+                            <span class="font-black text-slate-700">Rs. ${it.total}</span>
+                        </div>
+                    `;
+                });
 
                 const isPending = ord.status === 'Pending';
                 const statusBadge = isPending 
@@ -3116,7 +3153,7 @@
                     : '<span class="bg-emerald-100 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-full text-[9px] font-black uppercase">Approved</span>';
 
                 const approveBtnHtml = isPending ? `
-                    <button onclick="approveAdminOrder('${ord.firebaseId}')" class="px-2.5 py-1 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-xs font-bold transition-all flex items-center gap-1 shadow-sm">
+                    <button onclick="approveAdminOrder(${index})" class="px-2.5 py-1 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-xs font-bold transition-all flex items-center gap-1 shadow-sm">
                         <i class="fa-solid fa-circle-check"></i> Approve Order
                     </button>
                 ` : '';
@@ -3143,7 +3180,7 @@
 
                         <div class="flex justify-end gap-1.5 pt-1.5 border-t border-slate-200/60">
                             ${approveBtnHtml}
-                            <button onclick="deleteOrderRecord('${ord.firebaseId}')" class="px-2 py-1 bg-red-50 hover:bg-red-500 text-red-600 hover:text-white border border-red-200 rounded-lg text-xs font-bold transition-all flex items-center gap-1">
+                            <button onclick="removeAdminOrder(${index})" class="px-2 py-1 bg-red-50 hover:bg-red-500 text-red-600 hover:text-white border border-red-200 rounded-lg text-xs font-bold transition-all flex items-center gap-1">
                                 <i class="fa-solid fa-trash-can"></i> Clear
                             </button>
                         </div>
@@ -3152,34 +3189,33 @@
             });
         }
 
-        window.deleteOrderRecord = async function(firebaseId) {
-            try {
-                await deleteDoc(doc(db, "orders", firebaseId));
-                showNotification('Order record cleared.');
-            } catch(e) {
-                console.error(e);
-            }
+        function removeAdminOrder(index) {
+            ordersList.splice(index, 1);
+            renderAdminOrdersList();
+            showNotification('Order record cleared.');
         }
 
-        window.handleImageUpload = function(event) {
+        function handleImageUpload(event) {
             const file = event.target.files[0];
             if (file) {
                 const reader = new FileReader();
                 reader.onload = function(e) {
-                    document.getElementById('foodFormImage').value = e.target.result;
-                    showNotification('Device image loaded successfully.');
+                    const result = e.target.result;
+                    document.getElementById('foodFormImage').value = result;
+                    showNotification('Device image uploaded successfully.');
                 };
                 reader.readAsDataURL(file);
             }
         }
 
-        window.handlePostImageUpload = function(event) {
+        function handlePostImageUpload(event) {
             const file = event.target.files[0];
             if (file) {
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     const result = e.target.result;
                     document.getElementById('postFormImage').value = result;
+                    
                     const previewContainer = document.getElementById('postImagePreviewContainer');
                     const previewImg = document.getElementById('postImagePreview');
                     if (previewContainer && previewImg) {
@@ -3192,16 +3228,19 @@
             }
         }
 
-        window.removePostImage = function() {
+        function removePostImage() {
             document.getElementById('postFormFile').value = '';
             document.getElementById('postFormImage').value = '';
+            
             const previewContainer = document.getElementById('postImagePreviewContainer');
-            if (previewContainer) previewContainer.classList.add('hidden');
+            if (previewContainer) {
+                previewContainer.classList.add('hidden');
+            }
             showNotification('Image attachment removed.', 'warning');
         }
 
-        window.filterAdminCatalog = function(cat) {
-            window.activeAdminCatalogFilter = cat;
+        function filterAdminCatalog(cat) {
+            activeAdminCatalogFilter = cat;
 
             const btnAll = document.getElementById('catFilterAll');
             const btnFast = document.getElementById('catFilterFast');
@@ -3224,14 +3263,70 @@
             renderAdminCatalog();
         }
 
-        window.renderAdminCatalog = function() {
+        function moveCatalogItem(id, direction) {
+            const index = workingMenuData.findIndex(x => x.id === id);
+            if (index === -1) return;
+
+            const targetIndex = direction === 'up' ? index - 1 : index + 1;
+            if (targetIndex < 0 || targetIndex >= workingMenuData.length) return;
+
+            const temp = workingMenuData[index];
+            workingMenuData[index] = workingMenuData[targetIndex];
+            workingMenuData[targetIndex] = temp;
+
+            renderAdminCatalog();
+
+            const updateBar = document.getElementById('catalogUpdateBar');
+            if (updateBar) updateBar.classList.remove('hidden');
+        }
+
+        function saveCatalogOrderChanges() {
+            menuData = JSON.parse(JSON.stringify(workingMenuData));
+            renderAdminCatalog();
+            renderCustomerMenu();
+            renderLocalMenu();
+            renderDrinksMenu();
+
+            const updateBar = document.getElementById('catalogUpdateBar');
+            if (updateBar) updateBar.classList.add('hidden');
+            showNotification('Catalog order updated successfully!');
+        }
+
+        function movePostItem(id, direction) {
+            const index = workingFeedPosts.findIndex(p => p.id === id);
+            if (index === -1) return;
+
+            const targetIndex = direction === 'up' ? index - 1 : index + 1;
+            if (targetIndex < 0 || targetIndex >= workingFeedPosts.length) return;
+
+            const temp = workingFeedPosts[index];
+            workingFeedPosts[index] = workingFeedPosts[targetIndex];
+            workingFeedPosts[targetIndex] = temp;
+
+            renderAdminPostsList();
+
+            const updateBar = document.getElementById('postUpdateBar');
+            if (updateBar) updateBar.classList.remove('hidden');
+        }
+
+        function savePostOrderChanges() {
+            feedPosts = JSON.parse(JSON.stringify(workingFeedPosts));
+            renderAdminPostsList();
+            renderCustomerSocialFeeds();
+
+            const updateBar = document.getElementById('postUpdateBar');
+            if (updateBar) updateBar.classList.add('hidden');
+            showNotification('Feed post order updated successfully!');
+        }
+
+        function renderAdminCatalog() {
             const container = document.getElementById('adminCatalogRows');
             const counter = document.getElementById('adminCatalogCount');
             if (!container) return;
 
-            const filteredData = window.activeAdminCatalogFilter === 'all' 
-                ? window.menuData 
-                : window.menuData.filter(x => x.category === window.activeAdminCatalogFilter);
+            const filteredData = activeAdminCatalogFilter === 'all' 
+                ? workingMenuData 
+                : workingMenuData.filter(x => x.category === activeAdminCatalogFilter);
 
             container.innerHTML = '';
             if (counter) counter.innerText = filteredData.length;
@@ -3247,7 +3342,7 @@
                 return;
             }
 
-            filteredData.forEach((item) => {
+            filteredData.forEach((item, index) => {
                 let categoryBadge = '';
                 if (item.category === 'fast') {
                     categoryBadge = '<span class="text-[9px] bg-indigo-50 text-indigo-700 font-extrabold px-1.5 py-0.5 rounded border border-indigo-200 uppercase">Fast Food</span>';
@@ -3257,25 +3352,27 @@
                     categoryBadge = '<span class="text-[9px] bg-sky-50 text-sky-700 font-extrabold px-1.5 py-0.5 rounded border border-sky-200 uppercase">Cold Drink</span>';
                 }
 
-                const availabilityBadge = (item.available !== false)
-                    ? '<span class="text-[8px] bg-emerald-100 text-emerald-700 font-extrabold px-1 py-0.5 rounded ml-1">Available</span>'
-                    : '<span class="text-[8px] bg-rose-100 text-rose-700 font-extrabold px-1 py-0.5 rounded ml-1">Hidden</span>';
-
                 container.innerHTML += `
                     <tr class="hover:bg-slate-50 transition-all">
                         <td class="p-2.5 flex items-center gap-2">
                             <img src="${item.image}" class="w-9 h-9 rounded-lg object-cover border border-slate-200 shrink-0" onerror="this.src='https://placehold.co/100x100/FF5A36/ffffff?text=ACP'">
                             <div>
-                                <div class="font-bold text-slate-900 text-xs">${item.name} ${availabilityBadge}</div>
+                                <div class="font-bold text-slate-900 text-xs">${item.name}</div>
                                 <div>${categoryBadge}</div>
                             </div>
                         </td>
                         <td class="p-2.5 text-right font-black text-slate-800">Rs. ${item.price}</td>
                         <td class="p-2.5 text-right space-x-1 whitespace-nowrap">
-                            <button onclick="loadFoodToEdit('${item.firebaseId}')" class="w-7 h-7 inline-flex items-center justify-center bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg transition-all font-bold" title="Edit Item">
+                            <button onclick="moveCatalogItem(${item.id}, 'up')" class="w-7 h-7 inline-flex items-center justify-center bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg transition-all font-bold" title="Move Up">
+                                <i class="fa-solid fa-arrow-up text-[10px]"></i>
+                            </button>
+                            <button onclick="moveCatalogItem(${item.id}, 'down')" class="w-7 h-7 inline-flex items-center justify-center bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg transition-all font-bold" title="Move Down">
+                                <i class="fa-solid fa-arrow-down text-[10px]"></i>
+                            </button>
+                            <button onclick="loadFoodToEdit(${item.id})" class="w-7 h-7 inline-flex items-center justify-center bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg transition-all font-bold" title="Edit Item">
                                 <i class="fa-solid fa-pencil text-[10px]"></i>
                             </button>
-                            <button onclick="deleteFoodCatalog('${item.firebaseId}')" class="w-7 h-7 inline-flex items-center justify-center bg-red-50 text-red-500 hover:bg-red-500 hover:text-white rounded-lg transition-all font-bold" title="Delete Item">
+                            <button onclick="deleteFoodCatalog(${item.id})" class="w-7 h-7 inline-flex items-center justify-center bg-red-50 text-red-500 hover:bg-red-500 hover:text-white rounded-lg transition-all font-bold" title="Delete Item">
                                 <i class="fa-solid fa-trash text-[10px]"></i>
                             </button>
                         </td>
@@ -3289,10 +3386,10 @@
             const counter = document.getElementById('lblAdminPostsCount');
             if (!container) return;
 
-            if (counter) counter.innerText = window.feedPosts.length;
+            if (counter) counter.innerText = workingFeedPosts.length;
             container.innerHTML = '';
 
-            if (window.feedPosts.length === 0) {
+            if (workingFeedPosts.length === 0) {
                 container.innerHTML = `
                     <div class="py-8 text-center text-slate-400 font-bold text-xs">
                         <i class="fa-regular fa-newspaper text-2xl mb-1 text-slate-300 block"></i>
@@ -3302,7 +3399,7 @@
                 return;
             }
 
-            window.feedPosts.forEach((post) => {
+            workingFeedPosts.forEach((post, index) => {
                 const totalComments = getTotalCommentsCount(post);
 
                 container.innerHTML += `
@@ -3317,18 +3414,27 @@
 
                         <div class="flex items-center justify-between text-[10px] font-bold pt-1.5 border-t border-slate-200 text-slate-600">
                             <span class="text-rose-500 flex items-center gap-1">
-                                <i class="fa-solid fa-heart"></i> ${post.likes || 0} Likes
+                                <i class="fa-solid fa-heart"></i> ${post.likes} Likes
                             </span>
                             <span class="text-sky-600 flex items-center gap-1 font-extrabold">
                                 <i class="fa-regular fa-comment"></i> ${totalComments} Comments
                             </span>
-                            <button onclick="openAdminCommentsModal('${post.firebaseId}')" class="px-2.5 py-1 bg-orange-100 text-[#FF5A36] hover:bg-orange-200 rounded-md font-extrabold transition-all">
+                            <button onclick="openAdminCommentsModal(${post.id})" class="px-2.5 py-1 bg-orange-100 text-[#FF5A36] hover:bg-orange-200 rounded-md font-extrabold transition-all">
                                 <i class="fa-solid fa-comments mr-1"></i> Edit Comments
                             </button>
                         </div>
 
                         <div class="flex justify-end gap-1 pt-1.5 border-t border-slate-200">
-                            <button onclick="deleteFeedPost('${post.firebaseId}')" class="px-2 py-1 bg-red-50 hover:bg-red-500 text-red-600 hover:text-white border border-red-200 rounded-md text-[10px] font-bold transition-all flex items-center gap-1">
+                            <button onclick="movePostItem(${post.id}, 'up')" class="px-2 py-1 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-md text-[10px] font-bold transition-all flex items-center gap-1" title="Move Up">
+                                <i class="fa-solid fa-arrow-up"></i>
+                            </button>
+                            <button onclick="movePostItem(${post.id}, 'down')" class="px-2 py-1 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-md text-[10px] font-bold transition-all flex items-center gap-1" title="Move Down">
+                                <i class="fa-solid fa-arrow-down"></i>
+                            </button>
+                            <button onclick="loadPostToEdit(${post.id})" class="px-2 py-1 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-md text-[10px] font-bold transition-all flex items-center gap-1">
+                                <i class="fa-solid fa-pen-to-square"></i> Edit
+                            </button>
+                            <button onclick="deleteFeedPost(${post.id})" class="px-2 py-1 bg-red-50 hover:bg-red-500 text-red-600 hover:text-white border border-red-200 rounded-md text-[10px] font-bold transition-all flex items-center gap-1">
                                 <i class="fa-solid fa-trash-can"></i> Delete
                             </button>
                         </div>
@@ -3337,8 +3443,8 @@
             });
         }
 
-        window.openAdminCommentsModal = function(firebaseId) {
-            const post = window.feedPosts.find(p => p.firebaseId === firebaseId);
+        function openAdminCommentsModal(postId) {
+            const post = feedPosts.find(p => p.id === postId) || workingFeedPosts.find(p => p.id === postId);
             if (!post) return;
 
             document.getElementById('adminCommentsPostTitle').innerText = post.title;
@@ -3369,7 +3475,7 @@
                                         </div>
                                         <p class="text-xs text-slate-700 whitespace-pre-line">${rep.text}</p>
                                     </div>
-                                    <button onclick="deleteReply('${post.firebaseId}', ${cIdx}, ${rIdx})" class="p-1.5 bg-red-50 hover:bg-red-500 text-red-500 hover:text-white rounded-lg transition-all shrink-0 text-xs" title="Delete Reply">
+                                    <button onclick="deleteReply(${post.id}, ${cIdx}, ${rIdx})" class="p-1.5 bg-red-50 hover:bg-red-500 text-red-500 hover:text-white rounded-lg transition-all shrink-0 text-xs" title="Delete Reply">
                                         <i class="fa-solid fa-trash-can"></i>
                                     </button>
                                 </div>
@@ -3387,7 +3493,7 @@
                                     </div>
                                     <p class="text-xs text-slate-800 font-medium whitespace-pre-line">${c.text}</p>
                                 </div>
-                                <button onclick="deleteComment('${post.firebaseId}', ${cIdx})" class="p-2 bg-red-50 hover:bg-red-500 text-red-500 hover:text-white rounded-xl transition-all shrink-0 text-xs shadow-sm" title="Delete Comment">
+                                <button onclick="deleteComment(${post.id}, ${cIdx})" class="p-2 bg-red-50 hover:bg-red-500 text-red-500 hover:text-white rounded-xl transition-all shrink-0 text-xs shadow-sm" title="Delete Comment">
                                     <i class="fa-solid fa-trash-can"></i>
                                 </button>
                             </div>
@@ -3400,20 +3506,62 @@
             document.getElementById('adminCommentsModal').classList.remove('hidden');
         }
 
-        window.closeAdminCommentsModal = function() {
+        function closeAdminCommentsModal() {
             document.getElementById('adminCommentsModal').classList.add('hidden');
         }
 
-        window.deleteFeedPost = async function(firebaseId) {
-            try {
-                await deleteDoc(doc(db, "feedPosts", firebaseId));
-                showNotification('Post deleted successfully!', 'warning');
-            } catch(e) { console.error(e); }
+        function loadPostToEdit(postId) {
+            const post = feedPosts.find(p => p.id === postId);
+            if (!post) return;
+
+            document.getElementById('editPostId').value = post.id;
+            document.getElementById('postFormTitle').value = post.title;
+            document.getElementById('postFormImage').value = post.image;
+            document.getElementById('postFormDesc').value = post.desc;
+
+            document.getElementById('postFormHeading').innerText = 'Edit Feed Post Details';
+            document.getElementById('btnPostSubmit').innerHTML = '<i class="fa-solid fa-save mr-1"></i> Update Post';
+            document.getElementById('btnCancelPostEdit').classList.remove('hidden');
+
+            const previewContainer = document.getElementById('postImagePreviewContainer');
+            const previewImg = document.getElementById('postImagePreview');
+            if (previewContainer && previewImg) {
+                previewImg.src = post.image;
+                previewContainer.classList.remove('hidden');
+            }
+
+            switchFeedSubTab('create');
         }
 
-        window.handleFeedPostSubmit = async function(event) {
+        function resetPostForm() {
+            document.getElementById('editPostId').value = '';
+            document.getElementById('postFormTitle').value = '';
+            document.getElementById('postFormFile').value = '';
+            document.getElementById('postFormImage').value = '';
+            document.getElementById('postFormDesc').value = '';
+
+            document.getElementById('postFormHeading').innerText = 'Broadcast / Edit Post';
+            document.getElementById('btnPostSubmit').innerHTML = '<i class="fa-solid fa-bullhorn mr-1"></i> Broadcast Post';
+            document.getElementById('btnCancelPostEdit').classList.add('hidden');
+
+            const previewContainer = document.getElementById('postImagePreviewContainer');
+            if (previewContainer) {
+                previewContainer.classList.add('hidden');
+            }
+        }
+
+        function deleteFeedPost(postId) {
+            feedPosts = feedPosts.filter(p => p.id !== postId);
+            workingFeedPosts = JSON.parse(JSON.stringify(feedPosts));
+            renderAdminPostsList();
+            renderCustomerSocialFeeds();
+            showNotification('Post deleted successfully!', 'warning');
+        }
+
+        function handleFeedPostSubmit(event) {
             event.preventDefault();
 
+            const editId = document.getElementById('editPostId').value;
             const title = document.getElementById('postFormTitle').value.trim();
             const image = document.getElementById('postFormImage').value.trim();
             const desc = document.getElementById('postFormDesc').value.trim();
@@ -3423,44 +3571,45 @@
                 return;
             }
 
-            const newPostObj = {
-                title,
-                image,
-                desc,
-                authorName: "Alqadri Chaska Point",
-                timestamp: Date.now(),
-                likes: 0,
-                isLiked: false,
-                comments: []
-            };
+            const adminAuthorName = "Alqadri Chaska Point";
 
-            try {
-                await addDoc(collection(db, "feedPosts"), newPostObj);
-                showNotification('New post broadcasted live to Firebase!');
-            } catch(e) {
-                console.error(e);
+            if (editId) {
+                const postIdx = feedPosts.findIndex(p => p.id == editId);
+                if (postIdx !== -1) {
+                    feedPosts[postIdx].title = title;
+                    feedPosts[postIdx].image = image;
+                    feedPosts[postIdx].desc = desc;
+                    feedPosts[postIdx].authorName = adminAuthorName;
+                    showNotification('Post changes saved successfully!');
+                }
+            } else {
+                const newPostId = feedPosts.length > 0 ? Math.max(...feedPosts.map(p => p.id)) + 1 : 101;
+                feedPosts.unshift({
+                    id: newPostId,
+                    title,
+                    image,
+                    desc,
+                    authorName: adminAuthorName,
+                    timestamp: Date.now(),
+                    likes: 0,
+                    isLiked: false,
+                    comments: []
+                });
+                showNotification('New post broadcasted live!');
             }
 
+            workingFeedPosts = JSON.parse(JSON.stringify(feedPosts));
             resetPostForm();
-            switchFeedSubTab('list');
+            renderAdminPostsList();
+            renderCustomerSocialFeeds();
         }
 
-        window.resetPostForm = function() {
-            document.getElementById('editPostId').value = '';
-            document.getElementById('postFormTitle').value = '';
-            document.getElementById('postFormFile').value = '';
-            document.getElementById('postFormImage').value = '';
-            document.getElementById('postFormDesc').value = '';
-            const previewContainer = document.getElementById('postImagePreviewContainer');
-            if (previewContainer) previewContainer.classList.add('hidden');
-        }
-
-        function renderRegisteredUsers(usersToShow = window.registeredUsers) {
+        function renderRegisteredUsers(usersToShow = registeredUsers) {
             const tableBody = document.getElementById('registeredUsersRows');
             const badge = document.getElementById('adminUsersCountBadge');
             
             if (!tableBody) return;
-            if (badge) badge.innerText = window.registeredUsers.length;
+            if (badge) badge.innerText = registeredUsers.length;
 
             tableBody.innerHTML = '';
             
@@ -3475,7 +3624,7 @@
                 return;
             }
 
-            usersToShow.forEach((user) => {
+            usersToShow.forEach((user, idx) => {
                 tableBody.innerHTML += `
                     <tr class="hover:bg-slate-50 transition-colors">
                         <td class="p-2.5 align-middle">
@@ -3498,7 +3647,10 @@
                             ${user.email}
                         </td>
                         <td class="p-2.5 align-middle text-center space-x-1 whitespace-nowrap">
-                            <button onclick="removeCustomerRecord('${user.firebaseId}')" class="w-6 h-6 inline-flex items-center justify-center bg-red-50 hover:bg-red-500 hover:text-white text-red-500 rounded-lg transition-all" title="Delete Account">
+                            <button onclick="copyCustomerAddress('${user.location.replace(/'/g, "\\'")}')" class="w-6 h-6 inline-flex items-center justify-center bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg transition-all" title="Copy Address">
+                                <i class="fa-solid fa-copy text-[9px]"></i>
+                            </button>
+                            <button onclick="removeCustomerRecord(${idx})" class="w-6 h-6 inline-flex items-center justify-center bg-red-50 hover:bg-red-500 hover:text-white text-red-500 rounded-lg transition-all" title="Delete Account">
                                 <i class="fa-solid fa-trash-can text-[9px]"></i>
                             </button>
                         </td>
@@ -3507,15 +3659,20 @@
             });
         }
 
-        window.removeCustomerRecord = async function(firebaseId) {
-            try {
-                await deleteDoc(doc(db, "registeredUsers", firebaseId));
-                showNotification('Account removed from CRM database.', 'warning');
-            } catch(e) { console.error(e); }
+        function copyCustomerAddress(address) {
+            document.execCommand('copy');
+            showNotification('Address copied to clipboard!');
         }
 
-        window.searchUsers = function(keyword) {
-            const filtered = window.registeredUsers.filter(u => 
+        function removeCustomerRecord(idx) {
+            registeredUsers.splice(idx, 1);
+            updateUserAccountDisplay();
+            renderRegisteredUsers();
+            showNotification('Account removed from CRM database.', 'warning');
+        }
+
+        function searchUsers(keyword) {
+            const filtered = registeredUsers.filter(u => 
                 u.name.toLowerCase().includes(keyword.toLowerCase()) || 
                 u.phone.includes(keyword) || 
                 u.location.toLowerCase().includes(keyword.toLowerCase()) ||
@@ -3524,27 +3681,26 @@
             renderRegisteredUsers(filtered);
         }
 
-        // Delete item from Firebase Firestore menu catalog
-        window.deleteFoodCatalog = async function(firebaseId) {
-            try {
-                await deleteDoc(doc(db, "menuItems", firebaseId));
-                showNotification('Item removed from catalog.');
-            } catch(e) {
-                console.error("Error deleting item:", e);
+        function deleteFoodCatalog(id) {
+            if (cartItems[id]) {
+                delete cartItems[id];
             }
+            menuData = menuData.filter(x => x.id != id);
+            workingMenuData = JSON.parse(JSON.stringify(menuData));
+            renderAdminCatalog();
+            showNotification('Item removed from catalog.');
         }
 
-        window.loadFoodToEdit = function(firebaseId) {
-            const item = window.menuData.find(x => x.firebaseId === firebaseId);
+        function loadFoodToEdit(id) {
+            const item = menuData.find(x => x.id == id);
             if (!item) return;
 
-            document.getElementById('editFoodId').value = item.firebaseId;
+            document.getElementById('editFoodId').value = item.id;
             document.getElementById('foodFormName').value = item.name;
             document.getElementById('foodFormPrice').value = item.price;
             document.getElementById('foodFormImage').value = item.image;
             document.getElementById('foodFormDesc').value = item.desc || '';
             document.getElementById('foodFormCategory').value = item.category || 'fast';
-            document.getElementById('foodFormAvailable').checked = item.available !== false;
 
             document.getElementById('formPanelTitle').innerText = 'Edit Food Item Details';
             document.getElementById('foodFormSubmitBtn').innerHTML = '<i class="fa-solid fa-save mr-1"></i> Save Changes';
@@ -3552,8 +3708,7 @@
             switchCatalogSubTab('add');
         }
 
-        // Add or Update food item directly in Firebase Firestore collection 'menuItems'
-        window.handleFoodFormSubmit = async function(event) {
+        function handleFoodFormSubmit(event) {
             event.preventDefault();
 
             const editId = document.getElementById('editFoodId').value;
@@ -3562,7 +3717,6 @@
             let image = document.getElementById('foodFormImage').value.trim();
             const desc = document.getElementById('foodFormDesc').value.trim();
             const category = document.getElementById('foodFormCategory').value;
-            const available = document.getElementById('foodFormAvailable').checked;
 
             if (!name || isNaN(price)) {
                 showNotification('Please fill in required name and price fields.', 'warning');
@@ -3573,38 +3727,37 @@
                 image = 'https://placehold.co/400x300/FF5A36/ffffff?text=ACP';
             }
 
-            const foodData = { name, price, image, desc, category, available };
-
-            try {
-                if (editId) {
-                    await updateDoc(doc(db, "menuItems", editId), foodData);
-                    showNotification('Catalog item updated successfully in Firebase!');
-                } else {
-                    foodData.id = Date.now();
-                    await addDoc(collection(db, "menuItems"), foodData);
-                    showNotification('New product added to Firebase catalog!');
+            if (editId) {
+                const index = menuData.findIndex(x => x.id == editId);
+                if (index !== -1) {
+                    menuData[index] = { id: parseInt(editId), name, price, image, desc, category };
+                    showNotification('Changes saved successfully!');
                 }
-            } catch (e) {
-                console.error("Error saving food item to Firestore: ", e);
-                showNotification('Error saving product.', 'warning');
+            } else {
+                const newId = menuData.length > 0 ? Math.max(...menuData.map(x => x.id)) + 1 : 1;
+                menuData.push({ id: newId, name, price, image, desc, category });
+                showNotification('Product successfully added to the catalog!');
             }
 
+            workingMenuData = JSON.parse(JSON.stringify(menuData));
+            renderAdminCatalog();
+            renderCustomerMenu();
+            renderLocalMenu();
+            renderDrinksMenu();
             resetAdminForm();
-            switchCatalogSubTab('list');
         }
 
-        window.resetAdminForm = function() {
+        function resetAdminForm() {
             document.getElementById('editFoodId').value = '';
             document.getElementById('adminFoodForm').reset();
-            document.getElementById('foodFormAvailable').checked = true;
             document.getElementById('formPanelTitle').innerText = 'Add New Food Item';
             document.getElementById('foodFormSubmitBtn').innerHTML = '<i class="fa-solid fa-save mr-1"></i> Save Product';
         }
 
-        window.generateStoreInvoice = function() {
+        function generateStoreInvoice() {
             const modalOverlay = document.getElementById('invoiceModalOverlay');
             const invoiceTableBody = document.getElementById('invoiceTableRows');
-            const keys = Object.keys(window.cartItems);
+            const keys = Object.keys(cartItems);
 
             if (keys.length === 0) return;
 
@@ -3612,10 +3765,10 @@
             let totalAmount = 0;
 
             keys.forEach(id => {
-                const item = window.menuData.find(x => x.id == id || x.firebaseId == id);
+                const item = menuData.find(x => x.id == id);
                 if (!item) return;
 
-                const qty = window.cartItems[id];
+                const qty = cartItems[id];
                 const total = item.price * qty;
                 totalAmount += total;
 
@@ -3649,22 +3802,30 @@
             if (modalOverlay) modalOverlay.style.display = 'flex';
         }
 
-        window.closeReceiptAndScrollToMenu = function() {
+        function closeReceiptAndScrollToMenu() {
             const modalOverlay = document.getElementById('invoiceModalOverlay');
-            if (modalOverlay) modalOverlay.style.display = 'none';
+            if (modalOverlay) {
+                modalOverlay.style.display = 'none';
+            }
         }
 
-        window.downloadInvoiceJPG = function() {
+        function downloadInvoiceJPG() {
             const element = document.getElementById('receiptContainer');
+            
             const options = {
                 scale: 4,
                 useCORS: true,
                 allowTaint: true,
                 backgroundColor: '#ffffff',
+                scrollX: 0,
+                scrollY: -window.scrollY,
+                windowWidth: document.documentElement.offsetWidth,
+                windowHeight: document.documentElement.offsetHeight,
                 ignoreElements: (el) => el.classList.contains('no-print')
             };
 
             showNotification('Generating ultra-high-res receipt image...');
+            
             html2canvas(element, options).then(canvas => {
                 const link = document.createElement('a');
                 link.download = 'Alqadri-HighRes-Receipt.jpg';
