@@ -3895,6 +3895,7 @@
             'registeredUsers': { get() { return registeredUsers; }, set(v) { registeredUsers = v; } }
         });
     </script>
+<script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
     import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-analytics.js";
     import { 
@@ -3904,7 +3905,6 @@
         getStorage, ref, uploadBytes, getDownloadURL, deleteObject 
     } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
 
-    // Your verified web app's Firebase configuration
     const firebaseConfig = {
         apiKey: "AIzaSyAU3wBPK_iKzH-F0qfRp9KFG4Keq8tmm2U",
         authDomain: "alfa-corex-1-c9856.firebaseapp.com",
@@ -3915,28 +3915,20 @@
         measurementId: "G-ZKPVH2RPW5"
     };
 
-    // Initialize Firebase Services
     const app = initializeApp(firebaseConfig);
     const analytics = getAnalytics(app);
     const db = getFirestore(app);
     const storage = getStorage(app);
 
-    // ==========================================
-    // 1. FILE UPLOAD & DELETE STORAGE UTILITIES
-    // ==========================================
-
-    // Upload files directly to Storage bucket and return public URL
     async function uploadFile(file, path) {
         const fileRef = ref(storage, path);
         const uploadResult = await uploadBytes(fileRef, file);
         return await getDownloadURL(uploadResult.ref);
     }
 
-    // Safely delete unused or removed media assets from Storage
     async function deleteFileFromStorage(url) {
         if (!url || !url.includes("firebasestorage.app")) return;
         try {
-            // Extracts storage reference directly from standard download URLs
             const fileRef = ref(storage, url);
             await deleteObject(fileRef);
         } catch (error) {
@@ -3944,22 +3936,14 @@
         }
     }
 
-
-    // ==========================================
-    // 2. REAL-TIME DATABASE SYNC (FIRESTORE -> UI)
-    // ==========================================
-
-    // Real-Time Food Catalog Listener
     onSnapshot(collection(db, "menuItems"), (snapshot) => {
         const items = [];
         snapshot.forEach(doc => items.push(doc.data()));
-        // Maintain user's custom sort order
         items.sort((a, b) => (a.order || 0) - (b.order || 0));
         
         window.menuData = items;
         window.workingMenuData = JSON.parse(JSON.stringify(items));
         
-        // Dynamic re-rendering of dependent catalog elements
         if (typeof window.renderCustomerMenu === "function") window.renderCustomerMenu();
         if (typeof window.renderLocalMenu === "function") window.renderLocalMenu();
         if (typeof window.renderDrinksMenu === "function") window.renderDrinksMenu();
@@ -3967,11 +3951,9 @@
         if (typeof window.renderCartSummary === "function") window.renderCartSummary();
     });
 
-    // Real-Time Social Board Listener (Handles nested comments, replies, and reactions)
     onSnapshot(collection(db, "posts"), (snapshot) => {
         const posts = [];
         snapshot.forEach(doc => posts.push(doc.data()));
-        // Maintain custom board ordering
         posts.sort((a, b) => (a.order || 0) - (b.order || 0));
         
         window.feedPosts = posts;
@@ -3981,7 +3963,6 @@
         if (typeof window.renderAdminPostsList === "function") window.renderAdminPostsList();
     });
 
-    // Real-Time Orders Tracker (Shows incoming kitchen orders chronologically)
     onSnapshot(collection(db, "orders"), (snapshot) => {
         const orders = [];
         snapshot.forEach(doc => orders.push(doc.data()));
@@ -3992,7 +3973,6 @@
         if (typeof window.renderAdminOrdersList === "function") window.renderAdminOrdersList();
     });
 
-    // Real-Time Registered Users Directory
     onSnapshot(collection(db, "users"), (snapshot) => {
         const users = [];
         snapshot.forEach(doc => users.push(doc.data()));
@@ -4000,7 +3980,6 @@
 
         if (typeof window.renderRegisteredUsers === "function") window.renderRegisteredUsers();
         
-        // Dynamically update profile variables if the customer is logged in
         if (window.currentUser) {
             const updatedMe = users.find(u => u.phone === window.currentUser.phone);
             if (updatedMe) {
@@ -4011,12 +3990,6 @@
         }
     });
 
-
-    // ==========================================
-    // 3. CATALOG CRUD OPERATIONS (ADMIN INTERFACE)
-    // ==========================================
-
-    // Save or Edit catalog products with support for direct file uploads
     window.handleFoodFormSubmit = async function(event) {
         event.preventDefault();
         const editId = document.getElementById('editFoodId').value;
@@ -4067,7 +4040,6 @@
         }
     };
 
-    // Remove catalog item & trigger background asset deletion
     window.deleteFoodCatalog = async function(id) {
         const item = window.menuData.find(x => x.id == id);
         if (!item) return;
@@ -4083,7 +4055,6 @@
         }
     };
 
-    // Save custom manual reordering within the admin catalog
     window.saveCatalogOrderChanges = async function() {
         try {
             window.showNotification('Saving catalog sequence...', 'success');
@@ -4102,11 +4073,6 @@
             window.showNotification('Failed to save arrangement.', 'warning');
         }
     };
-
-
-    // ==========================================
-    // 4. CUSTOMER ACCOUNT SIGN-UP / SIGN-IN
-    // ==========================================
 
     window.registerUser = async function() {
         const name = document.getElementById('regName').value.trim();
@@ -4179,11 +4145,6 @@
         }
     };
 
-
-    // ==========================================
-    // 5. BASKET & CHECKOUT LOGIC (ORDERS)
-    // ==========================================
-
     window.finalizeOrderAndSendWhatsApp = async function() {
         const keys = Object.keys(window.cartItems || {});
         if (keys.length === 0) return;
@@ -4230,7 +4191,6 @@
         try {
             await setDoc(doc(db, "orders", orderId), newOrder);
 
-            // Structure professional WhatsApp transmission
             let waMsg = `*🛒 NEW ORDER - ALQADRI CHASKA POINT*\n`;
             waMsg += `*Order ID:* ${orderId}\n`;
             waMsg += `*Customer:* ${name}\n`;
@@ -4292,11 +4252,6 @@
             window.showNotification('Failed to clear order.', 'warning');
         }
     };
-
-
-    // ==========================================
-    // 6. SOCIAL DISCOVER BOARD (POSTS)
-    // ==========================================
 
     window.handleFeedPostSubmit = async function(event) {
         event.preventDefault();
@@ -4386,11 +4341,6 @@
             window.showNotification('Failed to update arrangement.', 'warning');
         }
     };
-
-
-    // ==========================================
-    // 7. SOCIAL INTERACTIONS (LIKES, COMMENTS, REPLIES)
-    // ==========================================
 
     window.likePost = async function(id) {
         const post = window.feedPosts.find(p => p.id === id);
@@ -4519,10 +4469,6 @@
             window.showNotification('Error removing reply.', 'warning');
         }
     };
-
-    // ==========================================
-    // 8. COMMENT & REPLY REACTION ENGINE
-    // ==========================================
 
     window.likeComment = async function(postId, commentIndex) {
         const post = window.feedPosts.find(p => p.id === postId);
