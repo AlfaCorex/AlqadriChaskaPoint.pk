@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en" class="scroll-smooth">
 <head>
@@ -3874,18 +3875,19 @@
             });
         }
     </script>
-</body>
-</html>
+<script type="module">
+    // ==========================================
+    // 1. DATA BRIDGE INITIALIZATION (IMMEDIATE LINK)
+    // ==========================================
+    // Setting up global bindings immediately on startup to prevent timing pauses or lag
+    window.menuData = window.menuData || [];
+    window.workingMenuData = window.workingMenuData || [];
+    window.feedPosts = window.feedPosts || [];
+    window.workingFeedPosts = window.workingFeedPosts || [];
+    window.ordersList = window.ordersList || [];
+    window.registeredUsers = window.registeredUsers || [];
 
-   <!-- 💡 DATA BRIDGE SCRIPT: Connects your original script to global window variables -->
-    <script>
-        window.menuData = [];
-        window.workingMenuData = [];
-        window.feedPosts = [];
-        window.workingFeedPosts = [];
-        window.ordersList = [];
-        window.registeredUsers = [];
-
+    try {
         Object.defineProperties(window, {
             'menuData': { get() { return menuData; }, set(v) { menuData = v; } },
             'workingMenuData': { get() { return workingMenuData; }, set(v) { workingMenuData = v; } },
@@ -3894,9 +3896,13 @@
             'ordersList': { get() { return ordersList; }, set(v) { ordersList = v; } },
             'registeredUsers': { get() { return registeredUsers; }, set(v) { registeredUsers = v; } }
         });
-    </script>
+    } catch (error) {
+        console.warn("Data Bridge properties already defined or linked:", error.message);
+    }
 
-<script type="module">
+    // ==========================================
+    // 2. FIREBASE MODULE IMPORTS (FAST CDN)
+    // ==========================================
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
     import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-analytics.js";
     import { 
@@ -3906,6 +3912,9 @@
         getStorage, ref, uploadBytes, getDownloadURL, deleteObject 
     } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
 
+    // ==========================================
+    // 3. FIREBASE CONFIGURATION & INSTANCE
+    // ==========================================
     const firebaseConfig = {
         apiKey: "AIzaSyAU3wBPK_iKzH-F0qfRp9KFG4Keq8tmm2U",
         authDomain: "alfa-corex-1-c9856.firebaseapp.com",
@@ -3921,6 +3930,9 @@
     const db = getFirestore(app);
     const storage = getStorage(app);
 
+    // ==========================================
+    // 4. FILE UPLOAD & STORAGE UTILITIES
+    // ==========================================
     async function uploadFile(file, path) {
         const fileRef = ref(storage, path);
         const uploadResult = await uploadBytes(fileRef, file);
@@ -3937,6 +3949,11 @@
         }
     }
 
+    // ==========================================
+    // 5. HIGH-SPEED REAL-TIME DATABASE LISTENERS
+    // ==========================================
+    // Using requestAnimationFrame to schedule non-blocking, stutter-free UI updates
+
     onSnapshot(collection(db, "menuItems"), (snapshot) => {
         const items = [];
         snapshot.forEach(doc => items.push(doc.data()));
@@ -3945,11 +3962,13 @@
         window.menuData = items;
         window.workingMenuData = JSON.parse(JSON.stringify(items));
         
-        if (typeof window.renderCustomerMenu === "function") window.renderCustomerMenu();
-        if (typeof window.renderLocalMenu === "function") window.renderLocalMenu();
-        if (typeof window.renderDrinksMenu === "function") window.renderDrinksMenu();
-        if (typeof window.renderAdminCatalog === "function") window.renderAdminCatalog();
-        if (typeof window.renderCartSummary === "function") window.renderCartSummary();
+        requestAnimationFrame(() => {
+            if (typeof window.renderCustomerMenu === "function") window.renderCustomerMenu();
+            if (typeof window.renderLocalMenu === "function") window.renderLocalMenu();
+            if (typeof window.renderDrinksMenu === "function") window.renderDrinksMenu();
+            if (typeof window.renderAdminCatalog === "function") window.renderAdminCatalog();
+            if (typeof window.renderCartSummary === "function") window.renderCartSummary();
+        });
     });
 
     onSnapshot(collection(db, "posts"), (snapshot) => {
@@ -3960,8 +3979,10 @@
         window.feedPosts = posts;
         window.workingFeedPosts = JSON.parse(JSON.stringify(posts));
 
-        if (typeof window.renderCustomerSocialFeeds === "function") window.renderCustomerSocialFeeds();
-        if (typeof window.renderAdminPostsList === "function") window.renderAdminPostsList();
+        requestAnimationFrame(() => {
+            if (typeof window.renderCustomerSocialFeeds === "function") window.renderCustomerSocialFeeds();
+            if (typeof window.renderAdminPostsList === "function") window.renderAdminPostsList();
+        });
     });
 
     onSnapshot(collection(db, "orders"), (snapshot) => {
@@ -3971,7 +3992,9 @@
         
         window.ordersList = orders;
 
-        if (typeof window.renderAdminOrdersList === "function") window.renderAdminOrdersList();
+        requestAnimationFrame(() => {
+            if (typeof window.renderAdminOrdersList === "function") window.renderAdminOrdersList();
+        });
     });
 
     onSnapshot(collection(db, "users"), (snapshot) => {
@@ -3979,18 +4002,23 @@
         snapshot.forEach(doc => users.push(doc.data()));
         window.registeredUsers = users;
 
-        if (typeof window.renderRegisteredUsers === "function") window.renderRegisteredUsers();
-        
-        if (window.currentUser) {
-            const updatedMe = users.find(u => u.phone === window.currentUser.phone);
-            if (updatedMe) {
-                window.currentUser = updatedMe;
-                localStorage.setItem('acp_current_user', JSON.stringify(updatedMe));
-                if (typeof window.updateUserAccountDisplay === "function") window.updateUserAccountDisplay();
+        requestAnimationFrame(() => {
+            if (typeof window.renderRegisteredUsers === "function") window.renderRegisteredUsers();
+            
+            if (window.currentUser) {
+                const updatedMe = users.find(u => u.phone === window.currentUser.phone);
+                if (updatedMe) {
+                    window.currentUser = updatedMe;
+                    localStorage.setItem('acp_current_user', JSON.stringify(updatedMe));
+                    if (typeof window.updateUserAccountDisplay === "function") window.updateUserAccountDisplay();
+                }
             }
-        }
+        });
     });
 
+    // ==========================================
+    // 6. INTERCEPTED FUNCTION OVERRIDES (WRITES)
+    // ==========================================
     window.handleFoodFormSubmit = async function(event) {
         event.preventDefault();
         const editId = document.getElementById('editFoodId').value;
