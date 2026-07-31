@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en" class="scroll-smooth">
 <head>
@@ -3877,6 +3876,26 @@
     </script>
 </body>
 </html>
+
+   <!-- 💡 DATA BRIDGE SCRIPT: Connects your original script to global window variables -->
+    <script>
+        window.menuData = [];
+        window.workingMenuData = [];
+        window.feedPosts = [];
+        window.workingFeedPosts = [];
+        window.ordersList = [];
+        window.registeredUsers = [];
+
+        Object.defineProperties(window, {
+            'menuData': { get() { return menuData; }, set(v) { menuData = v; } },
+            'workingMenuData': { get() { return workingMenuData; }, set(v) { workingMenuData = v; } },
+            'feedPosts': { get() { return feedPosts; }, set(v) { feedPosts = v; } },
+            'workingFeedPosts': { get() { return workingFeedPosts; }, set(v) { workingFeedPosts = v; } },
+            'ordersList': { get() { return ordersList; }, set(v) { ordersList = v; } },
+            'registeredUsers': { get() { return registeredUsers; }, set(v) { registeredUsers = v; } }
+        });
+    </script>
+</body>
     <!-- FIREBASE REALTIME BACKEND SCRIPT -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.3.0/firebase-app.js";
@@ -6397,3 +6416,4 @@
         window.handlePostImageUpload = handlePostImageUpload;
         window.removePostImage = removePostImage;
     </script>
+</html>
