@@ -3875,747 +3875,114 @@
         }
     </script>
 <script type="module">
-    // ==========================================
-    // 1. DATA BRIDGE INITIALIZATION (IMMEDIATE LINK)
-    // ==========================================
-    window.menuData = window.menuData || [];
-    window.workingMenuData = window.workingMenuData || [];
-    window.feedPosts = window.feedPosts || [];
-    window.workingFeedPosts = window.workingFeedPosts || [];
-    window.ordersList = window.ordersList || [];
-    window.registeredUsers = window.registeredUsers || [];
+  // 1. Fast CDN Modules Import
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-analytics.js";
+  import { 
+    initializeFirestore, 
+    persistentLocalCache, 
+    persistentMultipleTabManager,
+    collection, 
+    addDoc, 
+    onSnapshot,
+    query,
+    orderBy,
+    serverTimestamp 
+  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
+  // 2. Aap ki Firebase Configuration
+  const firebaseConfig = {
+    apiKey: "AIzaSyAU3wBPK_iKzH-F0qfRp9KFG4Keq8tmm2U",
+    authDomain: "alfa-corex-1-c9856.firebaseapp.com",
+    projectId: "alfa-corex-1-c9856",
+    storageBucket: "alfa-corex-1-c9856.firebasestorage.app",
+    messagingSenderId: "685367477889",
+    appId: "1:685367477889:web:f83b7028683df4fdc96f80",
+    measurementId: "G-ZKPVH2RPW5"
+  };
+
+  // 3. Initialize Firebase & Analytics
+  const app = initializeApp(firebaseConfig);
+  const analytics = getAnalytics(app);
+
+  // 4. Ultra-Fast Offline Cache Setup (Zero Pause / Local Speed)
+  const db = initializeFirestore(app, {
+    localCache: persistentLocalCache({
+      tabManager: persistentMultipleTabManager()
+    })
+  });
+
+  console.log("⚡ Firebase connected with zero-lag setup!");
+
+  // =========================================
+  // GLOBAL FUNCTIONS (Aap ke HTML button/form ke liye)
+  // =========================================
+
+  /**
+   * Data Firebase par bhejne ke liye function
+   * @param {string} colName - Collection ka naam (e.g. 'messages')
+   * @param {object} data - Jo data aap ne save karna hai
+   */
+  window.sendData = async function(colName, data) {
     try {
-        Object.defineProperties(window, {
-            'menuData': { get() { return menuData; }, set(v) { menuData = v; } },
-            'workingMenuData': { get() { return workingMenuData; }, set(v) { workingMenuData = v; } },
-            'feedPosts': { get() { return feedPosts; }, set(v) { feedPosts = v; } },
-            'workingFeedPosts': { get() { return workingFeedPosts; }, set(v) { workingFeedPosts = v; } },
-            'ordersList': { get() { return ordersList; }, set(v) { ordersList = v; } },
-            'registeredUsers': { get() { return registeredUsers; }, set(v) { registeredUsers = v; } }
-        });
+      await addDoc(collection(db, colName), {
+        ...data,
+        createdAt: serverTimestamp() // Auto time stamp
+      });
+      console.log("Data Firebase mein save ho gaya!");
     } catch (error) {
-        console.warn("Data Bridge properties already defined or linked:", error.message);
+      console.error("Data send karne mein error:", error);
     }
+  };
 
-    // ==========================================
-    // 2. FIREBASE INTEGRATED CDN IMPORTS
-    // ==========================================
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-analytics.js";
-    import { 
-        getFirestore, collection, doc, setDoc, updateDoc, deleteDoc, onSnapshot, getDoc, writeBatch 
-    } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-    import { 
-        getStorage, ref, uploadBytes, getDownloadURL, deleteObject 
-    } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
+  /**
+   * Realtime Data Live lene ke liye function (No Refresh Needed)
+   * @param {string} colName - Collection ka naam
+   * @param {function} updateUI - Function jo page par data dikhayega
+   */
+  window.getRealtimeData = function(colName, updateUI) {
+    const colRef = collection(db, colName);
 
-    // ==========================================
-    // 3. FIREBASE INITIALIZATION & CONFIGURATION
-    // ==========================================
-    const firebaseConfig = {
-        apiKey: "AIzaSyAU3wBPK_iKzH-F0qfRp9KFG4Keq8tmm2U",
-        authDomain: "alfa-corex-1-c9856.firebaseapp.com",
-        projectId: "alfa-corex-1-c9856",
-        storageBucket: "alfa-corex-1-c9856.firebasestorage.app",
-        messagingSenderId: "685367477889",
-        appId: "1:685367477889:web:f83b7028683df4fdc96f80",
-        measurementId: "G-ZKPVH2RPW5"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const analytics = getAnalytics(app);
-    const db = getFirestore(app);
-    const storage = getStorage(app);
-
-    // ==========================================
-    // 4. STORAGE FILE MANAGEMENT
-    // ==========================================
-    async function uploadFile(file, path) {
-        const fileRef = ref(storage, path);
-        const uploadResult = await uploadBytes(fileRef, file);
-        return await getDownloadURL(uploadResult.ref);
-    }
-
-    async function deleteFileFromStorage(url) {
-        if (!url || !url.includes("firebasestorage.app")) return;
-        try {
-            const fileRef = ref(storage, url);
-            await deleteObject(fileRef);
-        } catch (error) {
-            console.warn("Storage deletion error ignored:", error.message);
-        }
-    }
-
-    // ==========================================
-    // 5. HIGH-SPEED PERSISTENT READ-LISTENERS
-    // ==========================================
-    onSnapshot(collection(db, "menuItems"), (snapshot) => {
-        const items = [];
-        snapshot.forEach(doc => items.push(doc.data()));
-        items.sort((a, b) => (a.order || 0) - (b.order || 0));
-        
-        window.menuData = items;
-        window.workingMenuData = JSON.parse(JSON.stringify(items));
-        
-        requestAnimationFrame(() => {
-            if (typeof window.renderCustomerMenu === "function") window.renderCustomerMenu();
-            if (typeof window.renderLocalMenu === "function") window.renderLocalMenu();
-            if (typeof window.renderDrinksMenu === "function") window.renderDrinksMenu();
-            if (typeof window.renderAdminCatalog === "function") window.renderAdminCatalog();
-            if (typeof window.renderCartSummary === "function") window.renderCartSummary();
-        });
+    // Live Snapshot Listener
+    onSnapshot(colRef, (snapshot) => {
+      const items = [];
+      snapshot.forEach((doc) => {
+        items.push({ id: doc.id, ...doc.data() });
+      });
+      
+      // Screen update karne ke liye callback
+      updateUI(items);
+    }, (error) => {
+      console.error("Realtime fetch error:", error);
     });
+  };
 
-    onSnapshot(collection(db, "posts"), (snapshot) => {
-        const posts = [];
-        snapshot.forEach(doc => posts.push(doc.data()));
-        posts.sort((a, b) => (a.order || 0) - (b.order || 0));
-        
-        window.feedPosts = posts;
-        window.workingFeedPosts = JSON.parse(JSON.stringify(posts));
-
-        requestAnimationFrame(() => {
-            if (typeof window.renderCustomerSocialFeeds === "function") window.renderCustomerSocialFeeds();
-            if (typeof window.renderAdminPostsList === "function") window.renderAdminPostsList();
-        });
-    });
-
-    onSnapshot(collection(db, "orders"), (snapshot) => {
-        const orders = [];
-        snapshot.forEach(doc => orders.push(doc.data()));
-        orders.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
-        
-        window.ordersList = orders;
-
-        requestAnimationFrame(() => {
-            if (typeof window.renderAdminOrdersList === "function") window.renderAdminOrdersList();
-        });
-    });
-
-    onSnapshot(collection(db, "users"), (snapshot) => {
-        const users = [];
-        snapshot.forEach(doc => users.push(doc.data()));
-        window.registeredUsers = users;
-
-        requestAnimationFrame(() => {
-            if (typeof window.renderRegisteredUsers === "function") window.renderRegisteredUsers();
-            
-            if (window.currentUser) {
-                const updatedMe = users.find(u => u.phone === window.currentUser.phone);
-                if (updatedMe) {
-                    window.currentUser = updatedMe;
-                    localStorage.setItem('acp_current_user', JSON.stringify(updatedMe));
-                    if (typeof window.updateUserAccountDisplay === "function") window.updateUserAccountDisplay();
-                }
-            }
-        });
-    });
-
-    // ==========================================
-    // 6. FUNCTION OVERRIDES FOR REAL-TIME WRITES
-    // ==========================================
-    window.handleFoodFormSubmit = async function(event) {
-        event.preventDefault();
-        const editId = document.getElementById('editFoodId').value;
-        const name = document.getElementById('foodFormName').value.trim();
-        const price = parseInt(document.getElementById('foodFormPrice').value);
-        let image = document.getElementById('foodFormImage').value.trim();
-        const desc = document.getElementById('foodFormDesc').value.trim();
-        const category = document.getElementById('foodFormCategory').value;
-
-        if (!name || isNaN(price)) {
-            window.showNotification('Please fill in required name and price fields.', 'warning');
-            return;
-        }
-
-        try {
-            const fileInput = document.getElementById('foodFormFile');
-            if (fileInput && fileInput.files[0]) {
-                window.showNotification('Uploading image asset...', 'success');
-                image = await uploadFile(fileInput.files[0], `catalog/${Date.now()}_${fileInput.files[0].name}`);
-            }
-
-            if (!image) {
-                image = 'https://placehold.co/400x300/FF5A36/ffffff?text=ACP';
-            }
-
-            if (editId) {
-                const docRef = doc(db, "menuItems", editId.toString());
-                await updateDoc(docRef, { name, price, image, desc, category });
-                window.showNotification('Changes saved successfully!');
-            } else {
-                const newId = Date.now();
-                const docRef = doc(db, "menuItems", newId.toString());
-                await setDoc(docRef, { 
-                    id: newId, 
-                    name, 
-                    price, 
-                    image, 
-                    desc, 
-                    category,
-                    order: window.menuData.length
-                });
-                window.showNotification('Product successfully added to the catalog!');
-            }
-            window.resetAdminForm();
-        } catch (error) {
-            console.error(error);
-            window.showNotification('Failed to save product details.', 'warning');
-        }
-    };
-
-    window.deleteFoodCatalog = async function(id) {
-        const item = window.menuData.find(x => x.id == id);
-        if (!item) return;
-        try {
-            await deleteDoc(doc(db, "menuItems", id.toString()));
-            if (item.image) {
-                await deleteFileFromStorage(item.image);
-            }
-            window.showNotification('Item removed from catalog.');
-        } catch (error) {
-            console.error(error);
-            window.showNotification('Failed to delete item.', 'warning');
-        }
-    };
-
-    window.saveCatalogOrderChanges = async function() {
-        try {
-            window.showNotification('Saving catalog sequence...', 'success');
-            const batch = writeBatch(db);
-            window.workingMenuData.forEach((item, index) => {
-                const docRef = doc(db, "menuItems", item.id.toString());
-                batch.update(docRef, { order: index });
-            });
-            await batch.commit();
-            
-            const updateBar = document.getElementById('catalogUpdateBar');
-            if (updateBar) updateBar.classList.add('hidden');
-            window.showNotification('Catalog order updated successfully!');
-        } catch (error) {
-            console.error(error);
-            window.showNotification('Failed to save arrangement.', 'warning');
-        }
-    };
-
-    window.registerUser = async function() {
-        const name = document.getElementById('regName').value.trim();
-        const phone = document.getElementById('regPhone').value.trim();
-        const loc = document.getElementById('regLocation').value.trim();
-        const email = document.getElementById('regEmail').value.trim() || 'No Email';
-        
-        if (!name || !phone || !loc) {
-            window.showNotification('Please fill in Name, Phone, and Location fields.', 'warning');
-            return;
-        }
-
-        try {
-            const docRef = doc(db, "users", phone);
-            const newUser = { name, phone, location: loc, email };
-            await setDoc(docRef, newUser);
-            
-            window.currentUser = newUser;
-            localStorage.setItem('acp_current_user', JSON.stringify(newUser));
-
-            if (typeof window.updateUserAccountDisplay === "function") window.updateUserAccountDisplay();
-            window.showNotification(`Welcome, ${name}! Account registered.`);
-            window.closeUserModal();
-            
-            document.getElementById('regName').value = '';
-            document.getElementById('regPhone').value = '';
-            document.getElementById('regLocation').value = '';
-            document.getElementById('regEmail').value = '';
-        } catch (error) {
-            console.error(error);
-            window.showNotification('Failed to register account.', 'warning');
-        }
-    };
-
-    window.signInUser = async function() {
-        const phone = document.getElementById('signInPhone').value.trim();
-        if (!phone) return;
-
-        try {
-            const docRef = doc(db, "users", phone);
-            const docSnap = await getDoc(docRef);
-            if (docSnap.exists()) {
-                const foundUser = docSnap.data();
-                window.currentUser = foundUser;
-                localStorage.setItem('acp_current_user', JSON.stringify(foundUser));
-                if (typeof window.updateUserAccountDisplay === "function") window.updateUserAccountDisplay();
-                window.showNotification(`Welcome back, ${foundUser.name}!`);
-                window.closeUserModal();
-                document.getElementById('signInPhone').value = '';
-            } else {
-                window.showNotification('No registered account found. Please register.', 'warning');
-                if (typeof window.switchAuthMode === "function") window.switchAuthMode('register');
-                document.getElementById('regPhone').value = phone;
-            }
-        } catch (error) {
-            console.error(error);
-            window.showNotification('Error logging in.', 'warning');
-        }
-    };
-
-    window.removeCustomerRecord = async function(idx) {
-        const user = window.registeredUsers[idx];
-        if (!user) return;
-        try {
-            await deleteDoc(doc(db, "users", user.phone));
-            window.showNotification('Account removed from CRM database.', 'warning');
-        } catch (error) {
-            console.error(error);
-            window.showNotification('Error deleting account.', 'warning');
-        }
-    };
-
-    window.finalizeOrderAndSendWhatsApp = async function() {
-        const keys = Object.keys(window.cartItems || {});
-        if (keys.length === 0) return;
-
-        const name = document.getElementById('checkoutName').value.trim();
-        const phone = document.getElementById('checkoutPhone').value.trim();
-        const location = document.getElementById('checkoutLocation').value.trim();
-
-        if (!name || !phone || !location) {
-            window.showNotification('Please fill in Name, Phone and Location.', 'warning');
-            return;
-        }
-
-        const orderId = '#ACP-' + Math.floor(1000 + Math.random() * 9000);
-        let itemsDetail = [];
-        let grandTotal = 0;
-
-        keys.forEach(id => {
-            const item = window.menuData.find(x => x.id == id);
-            if (item) {
-                const qty = window.cartItems[id];
-                const total = item.price * qty;
-                grandTotal += total;
-                itemsDetail.push({ name: item.name, qty: qty, price: item.price, total: total });
-            }
-        });
-
-        const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-        const dateStr = new Date().toLocaleDateString();
-
-        const newOrder = {
-            id: orderId,
-            customerName: name,
-            phone: phone,
-            location: location,
-            date: dateStr,
-            time: timeStr,
-            items: itemsDetail,
-            total: grandTotal,
-            status: 'Pending',
-            timestamp: Date.now()
-        };
-
-        try {
-            await setDoc(doc(db, "orders", orderId), newOrder);
-
-            let waMsg = `*🛒 NEW ORDER - ALQADRI CHASKA POINT*\n`;
-            waMsg += `*Order ID:* ${orderId}\n`;
-            waMsg += `*Customer:* ${name}\n`;
-            waMsg += `*Phone:* ${phone}\n`;
-            waMsg += `*Location:* ${location}\n\n`;
-            waMsg += `*Items Ordered:*\n`;
-            itemsDetail.forEach(it => {
-                waMsg += `• ${it.name} x${it.qty} = Rs. ${it.total}\n`;
-            });
-            waMsg += `\n*Grand Total:* Rs. ${grandTotal}\n`;
-            waMsg += `Thank you! Please prepare my order.`;
-
-            const whatsappUrl = `https://wa.me/923102434222?text=${encodeURIComponent(waMsg)}`;
-
-            window.closeCheckoutConfirmModal();
-            window.showNotification(`Order ${orderId} submitted! Opening WhatsApp...`);
-            if (typeof window.addOrderNotification === "function") {
-                window.addOrderNotification(`Order Placed (${orderId})`, `Order sent to WhatsApp & kitchen for approval.`);
-            }
-
-            window.cartItems = {};
-            if (typeof window.renderCustomerMenu === "function") window.renderCustomerMenu();
-            if (typeof window.renderLocalMenu === "function") window.renderLocalMenu();
-            if (typeof window.renderDrinksMenu === "function") window.renderDrinksMenu();
-            if (typeof window.renderCartSummary === "function") window.renderCartSummary();
-
-            window.open(whatsappUrl, '_blank');
-        } catch (error) {
-            console.error(error);
-            window.showNotification('Failed to process checkout.', 'warning');
-        }
-    };
-
-    window.approveAdminOrder = async function(index) {
-        const ord = window.ordersList[index];
-        if (!ord) return;
-
-        try {
-            await updateDoc(doc(db, "orders", ord.id), { status: 'Approved' });
-            window.showNotification(`Order ${ord.id} approved!`);
-            if (typeof window.addOrderNotification === "function") {
-                window.addOrderNotification(`Order Approved (${ord.id})`, `Kitchen approved order ${ord.id}! Fresh food preparation started.`, true);
-            }
-        } catch (error) {
-            console.error(error);
-            window.showNotification('Error processing approval.', 'warning');
-        }
-    };
-
-    window.removeAdminOrder = async function(index) {
-        const ord = window.ordersList[index];
-        if (!ord) return;
-
-        try {
-            await deleteDoc(doc(db, "orders", ord.id));
-            window.showNotification('Order record cleared.');
-        } catch (error) {
-            console.error(error);
-            window.showNotification('Failed to clear order.', 'warning');
-        }
-    };
-
-    window.handleFeedPostSubmit = async function(event) {
-        event.preventDefault();
-
-        const editId = document.getElementById('editPostId').value;
-        const title = document.getElementById('postFormTitle').value.trim();
-        let image = document.getElementById('postFormImage').value.trim();
-        const desc = document.getElementById('postFormDesc').value.trim();
-
-        if (!title || !desc) {
-            window.showNotification('Please fill in required post details.', 'warning');
-            return;
-        }
-
-        try {
-            const fileInput = document.getElementById('postFormFile');
-            if (fileInput && fileInput.files[0]) {
-                window.showNotification('Uploading board image...', 'success');
-                image = await uploadFile(fileInput.files[0], `posts/${Date.now()}_${fileInput.files[0].name}`);
-                // Update the input field directly so form submission has the newly generated URL
-                document.getElementById('postFormImage').value = image;
-            }
-
-            if (!image) {
-                image = 'https://placehold.co/600x400/FF5A36/ffffff?text=Offer';
-            }
-
-            const adminAuthorName = "Alqadri Chaska Point";
-
-            if (editId) {
-                const docRef = doc(db, "posts", editId.toString());
-                await updateDoc(docRef, { title, image, desc, authorName: adminAuthorName });
-                window.showNotification('Post changes saved successfully!');
-            } else {
-                const newPostId = Date.now();
-                const docRef = doc(db, "posts", newPostId.toString());
-                await setDoc(docRef, {
-                    id: newPostId,
-                    title,
-                    image,
-                    desc,
-                    authorName: adminAuthorName,
-                    timestamp: Date.now(),
-                    likes: 0,
-                    isLiked: false,
-                    likedUsers: [],
-                    comments: [],
-                    order: window.feedPosts.length
-                });
-                window.showNotification('New post broadcasted live!');
-            }
-            window.resetPostForm();
-        } catch (error) {
-            console.error(error);
-            window.showNotification('Error processing publish action.', 'warning');
-        }
-    };
-
-    window.deleteFeedPost = async function(postId) {
-        const post = window.feedPosts.find(p => p.id === postId);
-        if (!post) return;
-        try {
-            await deleteDoc(doc(db, "posts", postId.toString()));
-            if (post.image) {
-                await deleteFileFromStorage(post.image);
-            }
-            window.showNotification('Post deleted successfully!', 'warning');
-        } catch (error) {
-            console.error(error);
-            window.showNotification('Failed to remove post.', 'warning');
-        }
-    };
-
-    window.savePostOrderChanges = async function() {
-        try {
-            window.showNotification('Saving board positions...', 'success');
-            const batch = writeBatch(db);
-            window.workingFeedPosts.forEach((post, index) => {
-                const docRef = doc(db, "posts", post.id.toString());
-                batch.update(docRef, { order: index });
-            });
-            await batch.commit();
-
-            const updateBar = document.getElementById('postUpdateBar');
-            if (updateBar) updateBar.classList.add('hidden');
-            window.showNotification('Feed post order updated successfully!');
-        } catch (error) {
-            console.error(error);
-            window.showNotification('Failed to update arrangement.', 'warning');
-        }
-    };
-
-    window.likePost = async function(id) {
-        const post = window.feedPosts.find(p => p.id === id);
-        if (!post) return;
-
-        let identifier = window.currentUser ? window.currentUser.phone : (window.guestSessionName || "guest_session");
-        let likedUsers = post.likedUsers || [];
-        let likes = post.likes || 0;
-
-        if (likedUsers.includes(identifier)) {
-            likedUsers = likedUsers.filter(u => u !== identifier);
-            likes = Math.max(0, likes - 1);
-            window.showNotification('Like removed from post.', 'warning');
-        } else {
-            likedUsers.push(identifier);
-            likes += 1;
-            window.showNotification('Liked this post! ♥');
-        }
-
-        try {
-            await updateDoc(doc(db, "posts", id.toString()), { likedUsers, likes });
-        } catch (error) {
-            console.error(error);
-        }
-    };
-
-    window.submitComment = async function(id) {
-        const post = window.feedPosts.find(p => p.id === id);
-        const input = document.getElementById(`comment-input-${id}`);
-        
-        if (!post || !input) return;
-
-        const commentText = input.value.trim();
-        if (!commentText) return;
-
-        let commenterName = "";
-        if (window.currentUser) {
-            commenterName = window.currentUser.name;
-        } else if (window.guestSessionName) {
-            commenterName = window.guestSessionName;
-        } else {
-            if (typeof window.openGuestNameModal === "function") window.openGuestNameModal();
-            return;
-        }
-
-        const comments = [...(post.comments || [])];
-        const replyToIndex = input.dataset.replyToIndex;
-
-        if (replyToIndex !== undefined && replyToIndex !== "") {
-            const idx = parseInt(replyToIndex);
-            if (comments[idx]) {
-                if (!comments[idx].replies) comments[idx].replies = [];
-                comments[idx].replies.push({
-                    commenter: commenterName,
-                    text: commentText,
-                    isAdmin: false,
-                    timestamp: Date.now(),
-                    likes: 0,
-                    dislikes: 0,
-                    likedUsers: [],
-                    dislikedUsers: []
-                });
-            }
-            delete input.dataset.replyToIndex;
-        } else {
-            comments.push({ 
-                commenter: commenterName, 
-                text: commentText, 
-                isAdmin: false, 
-                timestamp: Date.now(), 
-                likes: 0, 
-                dislikes: 0, 
-                likedUsers: [],
-                dislikedUsers: [],
-                replies: [] 
-            });
-        }
-
-        try {
-            await updateDoc(doc(db, "posts", id.toString()), { comments });
-            input.value = '';
-        } catch (error) {
-            console.error(error);
-            window.showNotification('Failed to post comment.', 'warning');
-        }
-    };
-
-    window.deleteComment = async function(postId, commentIndex) {
-        const post = window.feedPosts.find(p => p.id === postId);
-        if (!post || !post.comments[commentIndex]) return;
-
-        const comments = [...post.comments];
-        comments.splice(commentIndex, 1);
-
-        try {
-            await updateDoc(doc(db, "posts", postId.toString()), { comments });
-            window.showNotification('Comment was deleted successfully!', 'warning');
-            
-            const modal = document.getElementById('adminCommentsModal');
-            if (modal && !modal.classList.contains('hidden') && typeof window.openAdminCommentsModal === "function") {
-                window.openAdminCommentsModal(postId);
-            }
-        } catch (error) {
-            console.error(error);
-            window.showNotification('Error removing comment.', 'warning');
-        }
-    };
-
-    window.deleteReply = async function(postId, commentIndex, replyIndex) {
-        const post = window.feedPosts.find(p => p.id === postId);
-        if (!post || !post.comments[commentIndex] || !post.comments[commentIndex].replies[replyIndex]) return;
-
-        const comments = JSON.parse(JSON.stringify(post.comments));
-        comments[commentIndex].replies.splice(replyIndex, 1);
-
-        try {
-            await updateDoc(doc(db, "posts", postId.toString()), { comments });
-            window.showNotification('Reply was deleted successfully!', 'warning');
-
-            const modal = document.getElementById('adminCommentsModal');
-            if (modal && !modal.classList.contains('hidden') && typeof window.openAdminCommentsModal === "function") {
-                window.openAdminCommentsModal(postId);
-            }
-        } catch (error) {
-            console.error(error);
-            window.showNotification('Error removing reply.', 'warning');
-        }
-    };
-
-    window.likeComment = async function(postId, commentIndex) {
-        const post = window.feedPosts.find(p => p.id === postId);
-        if (!post || !post.comments[commentIndex]) return;
-
-        const comments = JSON.parse(JSON.stringify(post.comments));
-        const comment = comments[commentIndex];
-        let identifier = window.currentUser ? window.currentUser.phone : (window.guestSessionName || "guest_session");
-
-        if (!comment.likedUsers) comment.likedUsers = [];
-        if (!comment.dislikedUsers) comment.dislikedUsers = [];
-
-        if (comment.likedUsers.includes(identifier)) {
-            comment.likedUsers = comment.likedUsers.filter(u => u !== identifier);
-            comment.likes = Math.max(0, (comment.likes || 1) - 1);
-            window.showNotification('Like removed from comment.', 'warning');
-        } else {
-            comment.dislikedUsers = comment.dislikedUsers.filter(u => u !== identifier);
-            comment.dislikes = Math.max(0, comment.dislikes - 1);
-            comment.likedUsers.push(identifier);
-            comment.likes = (comment.likes || 0) + 1;
-            window.showNotification('Liked comment!');
-        }
-
-        try {
-            await updateDoc(doc(db, "posts", postId.toString()), { comments });
-        } catch (error) {
-            console.error(error);
-        }
-    };
-
-    window.dislikeComment = async function(postId, commentIndex) {
-        const post = window.feedPosts.find(p => p.id === postId);
-        if (!post || !post.comments[commentIndex]) return;
-
-        const comments = JSON.parse(JSON.stringify(post.comments));
-        const comment = comments[commentIndex];
-        let identifier = window.currentUser ? window.currentUser.phone : (window.guestSessionName || "guest_session");
-
-        if (!comment.likedUsers) comment.likedUsers = [];
-        if (!comment.dislikedUsers) comment.dislikedUsers = [];
-
-        if (comment.dislikedUsers.includes(identifier)) {
-            comment.dislikedUsers = comment.dislikedUsers.filter(u => u !== identifier);
-            comment.dislikes = Math.max(0, (comment.dislikes || 1) - 1);
-            window.showNotification('Dislike removed from comment.', 'warning');
-        } else {
-            comment.likedUsers = comment.likedUsers.filter(u => u !== identifier);
-            comment.likes = Math.max(0, comment.likes - 1);
-            comment.dislikedUsers.push(identifier);
-            comment.dislikes = (comment.dislikes || 0) + 1;
-            window.showNotification('Disliked comment.');
-        }
-
-        try {
-            await updateDoc(doc(db, "posts", postId.toString()), { comments });
-        } catch (error) {
-            console.error(error);
-        }
-    };
-
-    window.likeReply = async function(postId, commentIndex, replyIndex) {
-        const post = window.feedPosts.find(p => p.id === postId);
-        if (!post || !post.comments[commentIndex] || !post.comments[commentIndex].replies[replyIndex]) return;
-
-        const comments = JSON.parse(JSON.stringify(post.comments));
-        const reply = comments[commentIndex].replies[replyIndex];
-        let identifier = window.currentUser ? window.currentUser.phone : (window.guestSessionName || "guest_session");
-
-        if (!reply.likedUsers) reply.likedUsers = [];
-        if (!reply.dislikedUsers) reply.dislikedUsers = [];
-
-        if (reply.likedUsers.includes(identifier)) {
-            reply.likedUsers = reply.likedUsers.filter(u => u !== identifier);
-            reply.likes = Math.max(0, (reply.likes || 1) - 1);
-            window.showNotification('Like removed from reply.', 'warning');
-        } else {
-            reply.dislikedUsers = reply.dislikedUsers.filter(u => u !== identifier);
-            reply.dislikes = Math.max(0, reply.dislikes - 1);
-            reply.likedUsers.push(identifier);
-            reply.likes = (reply.likes || 0) + 1;
-            window.showNotification('Liked reply!');
-        }
-
-        try {
-            await updateDoc(doc(db, "posts", postId.toString()), { comments });
-        } catch (error) {
-            console.error(error);
-        }
-    };
-
-    window.dislikeReply = async function(postId, commentIndex, replyIndex) {
-        const post = window.feedPosts.find(p => p.id === postId);
-        if (!post || !post.comments[commentIndex] || !post.comments[commentIndex].replies[replyIndex]) return;
-
-        const comments = JSON.parse(JSON.stringify(post.comments));
-        const reply = comments[commentIndex].replies[replyIndex];
-        let identifier = window.currentUser ? window.currentUser.phone : (window.guestSessionName || "guest_session");
-
-        if (!reply.likedUsers) reply.likedUsers = [];
-        if (!reply.dislikedUsers) reply.dislikedUsers = [];
-
-        if (reply.dislikedUsers.includes(identifier)) {
-            reply.dislikedUsers = reply.dislikedUsers.filter(u => u !== identifier);
-            reply.dislikes = Math.max(0, (reply.dislikes || 1) - 1);
-            window.showNotification('Dislike removed from reply.', 'warning');
-        } else {
-            reply.likedUsers = reply.likedUsers.filter(u => u !== identifier);
-            reply.likes = Math.max(0, reply.likes - 1);
-            reply.dislikedUsers.push(identifier);
-            reply.dislikes = (reply.dislikes || 0) + 1;
-            window.showNotification('Disliked reply.');
-        }
-
-        try {
-            await updateDoc(doc(db, "posts", postId.toString()), { comments });
-        } catch (error) {
-            console.error(error);
-        }
-    };
 </script>
+
+Is ko use karne ka aasan tareeqa:
+
+1.  Data Send karne ke liye (HTML mein):
+
+    <button onclick="sendData('users', { name: 'Ali', email: 'ali@gmail.com' })">
+      Save User
+    </button>
+
+2.  Realtime Feed Screen par dikhane ke liye:
+
+    <div id="user-list">Data load ho raha hai...</div>
+
+    <script>
+      // Jaise hi page open ho, Live listening shuru ho jaye gi
+      window.addEventListener('DOMContentLoaded', () => {
+        getRealtimeData('users', (data) => {
+          const list = document.getElementById('user-list');
+          list.innerHTML = ''; // Purana list clear karein
+
+          data.forEach(user => {
+            list.innerHTML += `<p>👤 ${user.name} - ${user.email}</p>`;
+          });
+        });
+      });
+    </script>
 </body>
 </html>
