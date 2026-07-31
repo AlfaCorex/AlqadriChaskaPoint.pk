@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en" class="scroll-smooth">
 <head>
@@ -909,17 +910,17 @@
                 <div class="space-y-2.5 pb-2">
                     <div>
                         <label class="block text-slate-500 mb-1 uppercase text-[9px] font-bold tracking-wider">Your Full Name *</label>
-                        <input type="text" id="checkoutName" required placeholder="Enter Your Name *" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none text-xs font-bold text-slate-800 focus:border-[#FF5A36]">
+                        <input type="text" id="checkoutName" required placeholder="Enter Your Name *" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none text-xs font-bold text-slate-850 focus:border-[#FF5A36]">
                     </div>
 
                     <div>
                         <label class="block text-slate-500 mb-1 uppercase text-[9px] font-bold tracking-wider">Phone Number *</label>
-                        <input type="tel" id="checkoutPhone" required placeholder="03XXXXXXXXX *" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none text-xs font-bold text-slate-800 focus:border-[#FF5A36]">
+                        <input type="tel" id="checkoutPhone" required placeholder="03XXXXXXXXX *" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none text-xs font-bold text-slate-850 focus:border-[#FF5A36]">
                     </div>
 
                     <div>
                         <label class="block text-slate-500 mb-1 uppercase text-[9px] tracking-wider">Location / Address *</label>
-                        <input type="text" id="checkoutLocation" required placeholder="Street / Colony / Area in Gujranwala *" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none text-xs font-bold text-slate-800 focus:border-[#FF5A36]">
+                        <input type="text" id="checkoutLocation" required placeholder="Street / Colony / Area in Gujranwala *" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none text-xs font-bold text-slate-850 focus:border-[#FF5A36]">
                     </div>
                 </div>
 
@@ -1570,6 +1571,14 @@
         function openGuestNameModal() {
             const modal = document.getElementById('guestNameModal');
             if (modal) modal.classList.remove('hidden');
+            const input = document.getElementById('popupGuestNameInput');
+            if (input) {
+                input.value = guestSessionName;
+                setTimeout(() => {
+                    input.focus();
+                    input.select();
+                }, 50);
+            }
         }
 
         // Close Guest Name Pop-up Modal
@@ -1591,8 +1600,7 @@
         }
 
         function resetGuestSessionName() {
-            guestSessionName = "";
-            renderCustomerSocialFeeds();
+            openGuestNameModal();
         }
 
         // Display only the first spelling of the user's name on the header icon
@@ -1764,6 +1772,7 @@
         }
 
         // Render Fast Food catalog
+        // Food Menu Data (Emptied per user request)
         function renderCustomerMenu() {
             const container = document.getElementById('menuGridContainer');
             if (!container) return;
@@ -2108,6 +2117,10 @@
             }
 
             feedPosts.forEach(post => {
+                let identifier = currentUser ? currentUser.phone : (guestSessionName || "guest_session");
+                if (!post.likedUsers) post.likedUsers = [];
+                post.isLiked = post.likedUsers.includes(identifier);
+
                 const heartColor = post.isLiked ? 'text-rose-500 scale-125' : 'text-slate-400';
                 const heartIcon = post.isLiked ? 'fa-solid fa-heart' : 'fa-regular fa-heart';
                 
@@ -2215,13 +2228,13 @@
                                 <div class="flex-1 space-y-1">
                                     <div class="flex items-center justify-between text-xs">
                                         <div class="flex items-center gap-1.5">
-                                            <span class="font-extrabold text-slate-900">${c.commenter}</span>
+                                            <span class="font-black text-slate-900">${c.commenter}</span>
                                             ${adminBadge}
-                                            <span class="text-slate-400 text-[10px]">${timeAgo}</span>
+                                            <span class="text-slate-400 text-[10px] font-medium">${timeAgo}</span>
                                         </div>
                                         ${deleteBtnHtml}
                                     </div>
-                                    <p class="text-xs text-slate-700 leading-relaxed whitespace-pre-line">${formatReplyText(c.text)}</p>
+                                    <p class="text-xs text-slate-850 leading-relaxed whitespace-pre-line">${formatReplyText(c.text)}</p>
                                     
                                     <!-- Comment action toolbar without 3 dots icon -->
                                     <div class="flex items-center gap-4 text-xs text-slate-500 pt-0.5">
@@ -2327,7 +2340,7 @@
 
                         <div class="p-4 space-y-2.5">
                             <h3 class="text-xs font-black text-slate-900 line-clamp-2">${post.title}</h3>
-                            <p class="text-xs font-medium text-slate-600 leading-relaxed whitespace-pre-line">${post.desc}</p>
+                            <p class="text-xs font-medium text-slate-650 leading-relaxed whitespace-pre-line">${post.desc}</p>
                         </div>
 
                         <div class="px-4 py-3 border-t border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
@@ -2353,7 +2366,7 @@
 
                         <div class="p-4 bg-slate-50/50 space-y-3">
                             <div class="flex items-center justify-between border-b border-slate-200 pb-2">
-                                <h5 class="text-xs font-extrabold text-slate-900 flex items-center gap-1.5">
+                                <h5 class="text-xs font-extrabold text-slate-905 flex items-center gap-1.5">
                                     <span>Comments</span> 
                                     <span class="bg-slate-200 text-slate-700 px-1.5 py-0.5 rounded-full text-[10px] font-bold">${totalCommentsCount}</span>
                                 </h5>
@@ -2478,12 +2491,21 @@
             const post = feedPosts.find(p => p.id === id);
             if (!post) return;
 
-            post.isLiked = !post.isLiked;
-            if (post.isLiked) {
-                post.likes += 1;
-                showNotification('Liked this post! ♥');
+            let identifier = currentUser ? currentUser.phone : (guestSessionName || "guest_session");
+            
+            if (!post.likedUsers) {
+                post.likedUsers = [];
+            }
+
+            if (post.likedUsers.includes(identifier)) {
+                const idx = post.likedUsers.indexOf(identifier);
+                post.likedUsers.splice(idx, 1);
+                post.likes = Math.max(0, (post.likes || 1) - 1);
+                showNotification('Like removed from post.', 'warning');
             } else {
-                post.likes -= 1;
+                post.likedUsers.push(identifier);
+                post.likes = (post.likes || 0) + 1;
+                showNotification('Liked this post! ♥');
             }
             renderCustomerSocialFeeds();
             renderAdminPostsList();
@@ -3576,6 +3598,7 @@
                     timestamp: Date.now(),
                     likes: 0,
                     isLiked: false,
+                    likedUsers: [],
                     comments: []
                 });
                 showNotification('New post broadcasted live!');
@@ -3615,22 +3638,22 @@
                                 <div class="w-6 h-6 rounded-full bg-orange-500/10 text-orange-600 font-black text-[10px] flex items-center justify-center uppercase shrink-0">
                                     ${user.name.charAt(0)}
                                 </div>
-                                <span class="font-extrabold text-slate-900 text-[11px] truncate max-w-[90px]">${user.name}</span>
+                                <span onclick="copyTextToClipboard('${user.name.replace(/'/g, "\\'")}', 'Name')" class="font-extrabold text-slate-900 text-[11px] truncate max-w-[90px] cursor-pointer hover:text-[#FF5A36] transition-colors">${user.name}</span>
                             </div>
                         </td>
                         <td class="p-2.5 align-middle text-[11px]">
-                            <a href="tel:${user.phone}" class="text-sky-600 font-bold hover:underline">
+                            <a href="tel:${user.phone}" onclick="event.preventDefault(); copyTextToClipboard('${user.phone.replace(/'/g, "\\'")}', 'Phone')" class="text-sky-600 font-bold hover:underline cursor-pointer">
                                 ${user.phone}
                             </a>
                         </td>
-                        <td class="p-2.5 align-middle text-[10px] text-slate-500 max-w-[100px] truncate" title="${user.location}">
+                        <td onclick="copyTextToClipboard('${user.location.replace(/'/g, "\\'")}', 'Location')" class="p-2.5 align-middle text-[10px] text-slate-500 max-w-[100px] truncate cursor-pointer hover:text-[#FF5A36] transition-colors" title="${user.location}">
                             ${user.location}
                         </td>
-                        <td class="p-2.5 align-middle text-[10px] text-slate-500 max-w-[90px] truncate" title="${user.email}">
+                        <td onclick="copyTextToClipboard('${user.email.replace(/'/g, "\\'")}', 'Email')" class="p-2.5 align-middle text-[10px] text-slate-500 max-w-[90px] truncate cursor-pointer hover:text-[#FF5A36] transition-colors" title="${user.email}">
                             ${user.email}
                         </td>
                         <td class="p-2.5 align-middle text-center space-x-1 whitespace-nowrap">
-                            <button onclick="copyCustomerAddress('${user.location.replace(/'/g, "\\'")}')" class="w-6 h-6 inline-flex items-center justify-center bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg transition-all" title="Copy Address">
+                            <button onclick="copyCustomerCompleteData('${user.name.replace(/'/g, "\\'")}', '${user.phone.replace(/'/g, "\\'")}', '${user.location.replace(/'/g, "\\'")}', '${user.email.replace(/'/g, "\\'")}')" class="w-6 h-6 inline-flex items-center justify-center bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg transition-all" title="Copy Complete Data">
                                 <i class="fa-solid fa-copy text-[9px]"></i>
                             </button>
                             <button onclick="removeCustomerRecord(${idx})" class="w-6 h-6 inline-flex items-center justify-center bg-red-50 hover:bg-red-500 hover:text-white text-red-500 rounded-lg transition-all" title="Delete Account">
@@ -3642,9 +3665,38 @@
             });
         }
 
-        function copyCustomerAddress(address) {
-            document.execCommand('copy');
-            showNotification('Address copied to clipboard!');
+        function copyTextToClipboard(text, fieldName) {
+            if (!text) return;
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text).then(() => {
+                    showNotification(`${fieldName} copied to clipboard!`);
+                });
+            } else {
+                let textarea = document.createElement('textarea');
+                textarea.value = text;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                textarea.remove();
+                showNotification(`${fieldName} copied to clipboard!`);
+            }
+        }
+
+        function copyCustomerCompleteData(name, phone, location, email) {
+            const textToCopy = `Name: ${name}\nPhone: ${phone}\nLocation: ${location}\nEmail: ${email}`;
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(textToCopy).then(() => {
+                    showNotification('Complete customer data copied!');
+                });
+            } else {
+                let textarea = document.createElement('textarea');
+                textarea.value = textToCopy;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                textarea.remove();
+                showNotification('Complete customer data copied!');
+            }
         }
 
         function removeCustomerRecord(idx) {
@@ -3731,8 +3783,10 @@
         }
 
         function resetAdminForm() {
+            const currentCategory = document.getElementById('foodFormCategory').value;
             document.getElementById('editFoodId').value = '';
             document.getElementById('adminFoodForm').reset();
+            document.getElementById('foodFormCategory').value = currentCategory;
             document.getElementById('formPanelTitle').innerText = 'Add New Food Item';
             document.getElementById('foodFormSubmitBtn').innerHTML = '<i class="fa-solid fa-save mr-1"></i> Save Product';
         }
