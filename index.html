@@ -3901,29 +3901,24 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.3.0/firebase-app.js";
         import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.3.0/firebase-analytics.js";
         import { 
-            initializeFirestore, persistentLocalCache, persistentMultipleTabManager, 
-            collection, doc, setDoc, addDoc, updateDoc, deleteDoc, onSnapshot 
+            getFirestore, collection, doc, setDoc, addDoc, updateDoc, deleteDoc, onSnapshot 
         } from "https://www.gstatic.com/firebasejs/11.3.0/firebase-firestore.js";
 
-        // Your web app's Firebase configuration (Delhi Server)
+        // Your web app's Firebase configuration 
         const firebaseConfig = { 
-            apiKey: "AIzaSyAU3wBPK_iKzH-F0qfRp9KFG4Keq8tmm2U", 
-            authDomain: "alfa-corex-1-c9856.firebaseapp.com", 
-            projectId: "alfa-corex-1-c9856", 
-            storageBucket: "alfa-corex-1-c9856.firebasestorage.app", 
-            messagingSenderId: "685367477889", 
-            appId: "1:685367477889:web:f83b7028683df4fdc96f80", 
-            measurementId: "G-ZKPVH2RPW5" 
+            apiKey: "AIzaSyCnTvjumYj8qXN8rsQtmkGOAmNuJDummBI", 
+            authDomain: "alfa-corex.firebaseapp.com", 
+            projectId: "alfa-corex", 
+            storageBucket: "alfa-corex.firebasestorage.app", 
+            messagingSenderId: "137972735130", 
+            appId: "1:137972735130:web:8edac3d79ebea4046b1323", 
+            measurementId: "G-FERT7LM1W6" 
         }; 
 
-        // Initialize Firebase & Firestore with Persistent Caching for instant speeds
+        // Initialize Firebase & Firestore
         const app = initializeApp(firebaseConfig); 
         const analytics = getAnalytics(app);
-        const db = initializeFirestore(app, {
-            localCache: persistentLocalCache({
-                tabManager: persistentMultipleTabManager()
-            })
-        });
+        const db = getFirestore(app);
 
         // Core App State
         let cartItems = {};
@@ -3945,26 +3940,10 @@
         let registeredUsers = [];
 
         // -----------------------------------------------------------------
-        // FIRESTORE HELPER FUNCTION
-        // -----------------------------------------------------------------
-        async function addNewItem(collectionName = "items", dataObject = {}) {
-            try {
-                const docRef = await addDoc(collection(db, collectionName), {
-                    ...dataObject,
-                    createdAt: new Date()
-                });
-                console.log("Document written with ID: ", docRef.id);
-                return docRef.id;
-            } catch (error) {
-                console.error("Error adding document: ", error);
-                throw error;
-            }
-        }
-
-        // -----------------------------------------------------------------
         // REALTIME FIREBASE FIRESTORE LISTENERS
         // -----------------------------------------------------------------
 
+        // 1. Listen for Food Catalog Updates
         onSnapshot(collection(db, "menu"), (snapshot) => {
             menuData = snapshot.docs.map(d => ({ _docId: d.id, ...d.data() }));
             menuData.sort((a, b) => (a.sortOrder !== undefined ? a.sortOrder : 0) - (b.sortOrder !== undefined ? b.sortOrder : 0));
@@ -3977,6 +3956,7 @@
             renderAdminCatalog();
         }, (err) => console.error("Firestore Menu error:", err));
 
+        // 2. Listen for Social Posts Updates
         onSnapshot(collection(db, "posts"), (snapshot) => {
             feedPosts = snapshot.docs.map(d => ({ _docId: d.id, ...d.data() }));
             feedPosts.sort((a, b) => (a.sortOrder !== undefined ? a.sortOrder : 0) - (b.sortOrder !== undefined ? b.sortOrder : 0));
@@ -3986,6 +3966,7 @@
             renderAdminPostsList();
         }, (err) => console.error("Firestore Posts error:", err));
 
+        // 3. Listen for Orders Log Updates
         onSnapshot(collection(db, "orders"), (snapshot) => {
             ordersList = snapshot.docs.map(d => ({ _docId: d.id, ...d.data() }));
             ordersList.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
@@ -3993,6 +3974,7 @@
             renderAdminOrdersList();
         }, (err) => console.error("Firestore Orders error:", err));
 
+        // 4. Listen for Registered Customers Base Updates
         onSnapshot(collection(db, "users"), (snapshot) => {
             registeredUsers = snapshot.docs.map(d => ({ _docId: d.id, ...d.data() }));
             registeredUsers.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
@@ -5123,7 +5105,6 @@
             document.getElementById('checkoutConfirmModal').classList.add('hidden');
         }
 
-        // --- OPTIMIZED WITH INSTANT LOCAL UI UPDATE ---
         async function finalizeOrderAndSendWhatsApp() {
             const keys = Object.keys(cartItems);
             if (keys.length === 0) return;
@@ -5167,9 +5148,7 @@
                 createdAt: Date.now()
             };
 
-            // 1. INSTANT LOCAL UI UPDATE (Optimistic Response)
-            ordersList.unshift(newOrderData);
-            renderAdminOrdersList();
+            await addDoc(collection(db, "orders"), newOrderData);
 
             let waMsg = `*🛒 NEW ORDER - ALQADRI CHASKA POINT*\n`;
             waMsg += `*Order ID:* ${orderId}\n`;
@@ -5196,35 +5175,22 @@
             renderCartSummary();
 
             window.open(whatsappUrl, '_blank');
-
-            // 2. BACKGROUND SYNC WITH FIRESTORE
-            await addDoc(collection(db, "orders"), newOrderData);
         }
 
         async function approveAdminOrder(index) {
             const ord = ordersList[index];
             if (ord && ord._docId) {
-                // INSTANT LOCAL UPDATE
-                ord.status = 'Approved';
-                renderAdminOrdersList();
+                await updateDoc(doc(db, "orders", ord._docId), { status: 'Approved' });
                 showNotification(`Order ${ord.id} approved!`);
                 addOrderNotification(`Order Approved (${ord.id})`, `Kitchen approved order ${ord.id}! Fresh food preparation started.`, true);
-
-                // BACKGROUND SYNC
-                await updateDoc(doc(db, "orders", ord._docId), { status: 'Approved' });
             }
         }
 
         async function removeAdminOrder(index) {
             const ord = ordersList[index];
             if (ord && ord._docId) {
-                // INSTANT LOCAL UPDATE
-                ordersList.splice(index, 1);
-                renderAdminOrdersList();
-                showNotification('Order record cleared.');
-
-                // BACKGROUND SYNC
                 await deleteDoc(doc(db, "orders", ord._docId));
+                showNotification('Order record cleared.');
             }
         }
 
@@ -5400,8 +5366,11 @@
             }
 
             const newUser = { name, phone, location: loc, email, createdAt: Date.now() };
+            await addDoc(collection(db, "users"), newUser);
+
             currentUser = newUser; 
             localStorage.setItem('acp_current_user', JSON.stringify(currentUser));
+
             updateUserAccountDisplay();
             
             showNotification(`Welcome, ${name}! Account registered.`);
@@ -5413,8 +5382,6 @@
             document.getElementById('regEmail').value = '';
 
             renderCustomerSocialFeeds();
-
-            await addDoc(collection(db, "users"), newUser);
         }
 
         function logoutUser() {
@@ -5998,15 +5965,8 @@
         async function deleteFeedPost(postId) {
             const post = feedPosts.find(p => p.id === postId || p._docId === postId);
             if (post && post._docId) {
-                // INSTANT LOCAL UPDATE
-                feedPosts = feedPosts.filter(p => p._docId !== post._docId);
-                workingFeedPosts = workingFeedPosts.filter(p => p._docId !== post._docId);
-                renderCustomerSocialFeeds();
-                renderAdminPostsList();
-                showNotification('Post deleted successfully!', 'warning');
-
-                // BACKGROUND SYNC
                 await deleteDoc(doc(db, "posts", post._docId));
+                showNotification('Post deleted successfully!', 'warning');
             }
         }
 
@@ -6028,20 +5988,14 @@
             if (editId) {
                 const post = feedPosts.find(p => p._docId === editId || p.id == editId);
                 if (post && post._docId) {
-                    post.title = title;
-                    post.image = image;
-                    post.desc = desc;
-                    renderCustomerSocialFeeds();
-                    renderAdminPostsList();
-                    showNotification('Post changes saved successfully!');
-
                     await updateDoc(doc(db, "posts", post._docId), {
                         title, image, desc, authorName: adminAuthorName
                     });
+                    showNotification('Post changes saved successfully!');
                 }
             } else {
                 const newPostId = feedPosts.length > 0 ? Math.max(...feedPosts.map(p => p.id || 0)) + 1 : 101;
-                const newPostObj = {
+                await addDoc(collection(db, "posts"), {
                     id: newPostId,
                     title,
                     image,
@@ -6052,15 +6006,8 @@
                     isLiked: false,
                     comments: [],
                     sortOrder: 0
-                };
-                
-                feedPosts.unshift(newPostObj);
-                workingFeedPosts.unshift(newPostObj);
-                renderCustomerSocialFeeds();
-                renderAdminPostsList();
+                });
                 showNotification('New post broadcasted live!');
-
-                await addDoc(collection(db, "posts"), newPostObj);
             }
 
             resetPostForm();
@@ -6131,12 +6078,9 @@
         async function removeCustomerRecord(idx) {
             const user = registeredUsers[idx];
             if (user && user._docId) {
-                registeredUsers.splice(idx, 1);
-                renderRegisteredUsers();
+                await deleteDoc(doc(db, "users", user._docId));
                 updateUserAccountDisplay();
                 showNotification('Account removed from CRM database.', 'warning');
-
-                await deleteDoc(doc(db, "users", user._docId));
             }
         }
 
@@ -6154,20 +6098,10 @@
             const item = menuData.find(x => x.id == id || x._docId == id);
             if (item) {
                 if (cartItems[item.id]) delete cartItems[item.id];
-                
-                // INSTANT LOCAL UPDATE
-                menuData = menuData.filter(x => x.id !== id && x._docId !== item._docId);
-                workingMenuData = workingMenuData.filter(x => x.id !== id && x._docId !== item._docId);
-                renderCustomerMenu();
-                renderLocalMenu();
-                renderDrinksMenu();
-                renderCartSummary();
-                renderAdminCatalog();
-                showNotification('Item removed from catalog.');
-
                 if (item._docId) {
                     await deleteDoc(doc(db, "menu", item._docId));
                 }
+                showNotification('Item removed from catalog.');
             }
         }
 
@@ -6210,26 +6144,14 @@
             if (editId) {
                 const item = menuData.find(x => x._docId === editId || x.id == editId);
                 if (item && item._docId) {
-                    item.name = name;
-                    item.price = price;
-                    item.image = image;
-                    item.desc = desc;
-                    item.category = category;
-
-                    renderCustomerMenu();
-                    renderLocalMenu();
-                    renderDrinksMenu();
-                    renderCartSummary();
-                    renderAdminCatalog();
-                    showNotification('Changes saved successfully!');
-
                     await updateDoc(doc(db, "menu", item._docId), {
                         name, price, image, desc, category
                     });
+                    showNotification('Changes saved successfully!');
                 }
             } else {
                 const newId = menuData.length > 0 ? Math.max(...menuData.map(x => x.id || 0)) + 1 : 1;
-                const newItemObj = {
+                await addDoc(collection(db, "menu"), {
                     id: newId,
                     name,
                     price,
@@ -6237,17 +6159,8 @@
                     desc,
                     category,
                     sortOrder: menuData.length
-                };
-
-                menuData.push(newItemObj);
-                workingMenuData.push(newItemObj);
-                renderCustomerMenu();
-                renderLocalMenu();
-                renderDrinksMenu();
-                renderAdminCatalog();
+                });
                 showNotification('Product successfully added to the catalog!');
-
-                await addDoc(collection(db, "menu"), newItemObj);
             }
 
             resetAdminForm();
@@ -6345,7 +6258,6 @@
         }
 
         // Attach Functions to Global Window Scope for Inline Events
-        window.addNewItem = addNewItem;
         window.openGuestNameModal = openGuestNameModal;
         window.closeGuestNameModal = closeGuestNameModal;
         window.saveGuestNameFromPopup = saveGuestNameFromPopup;
