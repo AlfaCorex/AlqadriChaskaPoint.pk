@@ -1,17 +1,20 @@
+
 <!DOCTYPE html>
 <html lang="en" class="scroll-smooth">
-<!-- PWA Manifest & Colors -->
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#FF5A36">
-
-<!-- Mobile & iPhone Support -->
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="ACP Food">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ACP Premium Fast Food & Traditional Twist</title>
+
+    <!-- PWA Manifest & Colors -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#FF5A36">
+
+    <!-- Mobile & iPhone Support -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="ACP Food">
+
     <!-- Import elegant fonts from Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,500&display=swap" rel="stylesheet">
     <!-- FontAwesome Icons for stunning social media and action icons -->
@@ -223,15 +226,7 @@
             margin: 0;
             padding: 0;
         }
-<script>
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('service-worker.js')
-        .then((reg) => console.log('PWA App Ready!', reg.scope))
-        .catch((err) => console.error('PWA Registration Error:', err));
-    });
-  }
-</script>
+
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
             background-color: var(--background);
@@ -1535,6 +1530,17 @@
             </div>
         </div>
     </div>
+
+    <!-- PWA Service Worker Registration Script -->
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('service-worker.js')
+            .then((reg) => console.log('PWA App Ready!', reg.scope))
+            .catch((err) => console.error('PWA Registration Error:', err));
+        });
+      }
+    </script>
 
     <script>
         let cartItems = {};
