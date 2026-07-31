@@ -3874,7 +3874,27 @@
             });
         }
     </script>
+</body>
+</html>
 
+   <!-- 💡 DATA BRIDGE SCRIPT: Connects your original script to global window variables -->
+    <script>
+        window.menuData = [];
+        window.workingMenuData = [];
+        window.feedPosts = [];
+        window.workingFeedPosts = [];
+        window.ordersList = [];
+        window.registeredUsers = [];
+
+        Object.defineProperties(window, {
+            'menuData': { get() { return menuData; }, set(v) { menuData = v; } },
+            'workingMenuData': { get() { return workingMenuData; }, set(v) { workingMenuData = v; } },
+            'feedPosts': { get() { return feedPosts; }, set(v) { feedPosts = v; } },
+            'workingFeedPosts': { get() { return workingFeedPosts; }, set(v) { workingFeedPosts = v; } },
+            'ordersList': { get() { return ordersList; }, set(v) { ordersList = v; } },
+            'registeredUsers': { get() { return registeredUsers; }, set(v) { registeredUsers = v; } }
+        });
+    </script>
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
     import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-analytics.js";
