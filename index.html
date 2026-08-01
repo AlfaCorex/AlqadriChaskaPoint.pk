@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en" class="scroll-smooth">
 <head>
@@ -4356,7 +4357,7 @@
             if (post && post._docId) {
                 await updateDoc(doc(db, "posts", post._docId), {
                     likes: post.likes || 0,
-                    isLiked: post.isLiked || false,
+                    likedUsers: post.likedUsers || [],
                     comments: post.comments || []
                 });
             }
@@ -4542,8 +4543,12 @@
             }
 
             feedPosts.forEach(post => {
-                const heartColor = post.isLiked ? 'text-rose-500 scale-125' : 'text-slate-400';
-                const heartIcon = post.isLiked ? 'fa-solid fa-heart' : 'fa-regular fa-heart';
+                let identifier = currentUser ? currentUser.phone : (guestSessionName || "guest_session");
+                if (!post.likedUsers) post.likedUsers = [];
+                const isLiked = post.likedUsers.includes(identifier);
+
+                const heartColor = isLiked ? 'text-rose-500 scale-125' : 'text-slate-400';
+                const heartIcon = isLiked ? 'fa-solid fa-heart' : 'fa-regular fa-heart';
                 
                 const isExpanded = !!expandedComments[post.id];
                 const sortMode = commentSortModes[post.id] || 'recent';
@@ -4907,13 +4912,22 @@
             const post = feedPosts.find(p => p.id === id || p._docId === id);
             if (!post) return;
 
-            post.isLiked = !post.isLiked;
-            if (post.isLiked) {
+            let identifier = currentUser ? currentUser.phone : (guestSessionName || "guest_session");
+            if (!post.likedUsers) post.likedUsers = [];
+
+            if (post.likedUsers.includes(identifier)) {
+                const idx = post.likedUsers.indexOf(identifier);
+                post.likedUsers.splice(idx, 1);
+                post.likes = Math.max(0, (post.likes || 1) - 1);
+                showNotification('Like removed from post.', 'warning');
+            } else {
+                post.likedUsers.push(identifier);
                 post.likes = (post.likes || 0) + 1;
                 showNotification('Liked this post! ♥');
-            } else {
-                post.likes = Math.max(0, (post.likes || 1) - 1);
             }
+
+            renderCustomerSocialFeeds();
+            renderAdminPostsList();
 
             await syncPostToFirestore(post);
         }
@@ -6027,7 +6041,7 @@
                     authorName: adminAuthorName,
                     timestamp: Date.now(),
                     likes: 0,
-                    isLiked: false,
+                    likedUsers: [],
                     comments: [],
                     sortOrder: 0
                 };
