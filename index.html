@@ -4072,202 +4072,382 @@
             });
         }
     </script>
-<!-- ========================================== -->
-<!-- 1. BACKEND DATA BRIDGE (OPTIMISTIC UI)     -->
-<!-- ========================================== -->
+<!-- Firebase App & Firestore Compat SDKs (Direct Global Scope Support) -->
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
 <script>
-    window.syncFirebaseData = {
-        updateMenu: function(items) {
-            if (typeof menuData !== 'undefined') {
-                menuData.length = 0;
-                menuData.push(...items);
-            }
-            if (typeof workingMenuData !== 'undefined') {
-                workingMenuData.length = 0;
-                workingMenuData.push(...JSON.parse(JSON.stringify(items)));
-            }
-        },
-        updatePosts: function(posts) {
-            if (typeof feedPosts !== 'undefined') {
-                feedPosts.length = 0;
-                feedPosts.push(...posts);
-            }
-            if (typeof workingFeedPosts !== 'undefined') {
-                workingFeedPosts.length = 0;
-                workingFeedPosts.push(...JSON.parse(JSON.stringify(posts)));
-            }
-        },
-        updateOrders: function(orders) {
-            if (typeof ordersList !== 'undefined') {
-                ordersList.length = 0;
-                ordersList.push(...orders);
-            }
-        },
-        updateUsers: function(users) {
-            if (typeof registeredUsers !== 'undefined') {
-                registeredUsers.length = 0;
-                registeredUsers.push(...users);
-            }
-        },
-        getMenu: function() { return (typeof menuData !== 'undefined') ? menuData : []; },
-        getPosts: function() { return (typeof feedPosts !== 'undefined') ? feedPosts : []; },
-        getOrders: function() { return (typeof ordersList !== 'undefined') ? ordersList : []; },
-        getUsers: function() { return (typeof registeredUsers !== 'undefined') ? registeredUsers : []; }
-    };
-</script>
+    // 1. Firebase Configuration
+    const firebaseConfig = { 
+        apiKey: "AIzaSyAU3wBPK_iKzH-F0qfRp9KFG4Keq8tmm2U", 
+        authDomain: "alfa-corex-1-c9856.firebaseapp.com", 
+        projectId: "alfa-corex-1-c9856", 
+        storageBucket: "alfa-corex-1-c9856.firebasestorage.app", 
+        messagingSenderId: "685367477889", 
+        appId: "1:685367477889:web:f83b7028683df4fdc96f80", 
+        measurementId: "G-ZKPVH2RPW5" 
+    }; 
 
-<!-- ========================================== -->
-<!-- 2. HIGH-PERFORMANCE REALTIME FIREBASE      -->
-<!-- ========================================== -->
-<script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { 
-        getFirestore, 
-        collection, 
-        doc, 
-        setDoc, 
-        addDoc, 
-        updateDoc, 
-        deleteDoc, 
-        onSnapshot, 
-        query, 
-        orderBy, 
-        enableIndexedDbPersistence 
-    } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    // Initialize Firebase Compat
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
 
-    // Firebase Config
-    const firebaseConfig = {
-        apiKey: "AIzaSyAU3wBPK_iKzH-F0qfRp9KFG4Keq8tmm2U",
-        authDomain: "alfa-corex-1-c9856.firebaseapp.com",
-        projectId: "alfa-corex-1-c9856",
-        storageBucket: "alfa-corex-1-c9856.firebasestorage.app",
-        messagingSenderId: "685367477889",
-        appId: "1:685367477889:web:f83b7028683df4fdc96f80",
-        measurementId: "G-ZKPVH2RPW5"
-    };
+    // 2. Global State Variables
+    let cartItems = {};
+    let notificationsHistory = [];
+    let expandedComments = {}; 
+    let commentSortModes = {}; 
+    let expandedReplies = {}; 
+    let currentUser = null; 
+    let guestSessionName = ""; 
+    let activeAdminCatalogFilter = 'all';
+    let sharedPostText = ""; 
 
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
+    let menuData = [];
+    let feedPosts = [];
+    let ordersList = [];
+    let registeredUsers = [];
 
-    // Fast Cache
-    enableIndexedDbPersistence(db).catch(() => {});
+    let workingMenuData = [];
+    let workingFeedPosts = [];
 
-    const menuCol = collection(db, "menu");
-    const ordersCol = collection(db, "orders");
-    const postsCol = collection(db, "posts");
-    const usersCol = collection(db, "users");
-
-    // ------------------------------------------
-    // 1. FAST REALTIME MENU SYNC
-    // ------------------------------------------
-    onSnapshot(query(menuCol, orderBy("orderIndex", "asc")), (snapshot) => {
-        // Ignore local pending write echoes to prevent UI lag/flicker
-        if (snapshot.metadata.hasPendingWrites) return;
-
-        let items = [];
-        snapshot.forEach((docSnap) => {
-            items.push({ firebaseDocId: docSnap.id, ...docSnap.data() });
-        });
-        
-        window.syncFirebaseData.updateMenu(items);
-
-        if (typeof renderCustomerMenu === "function") renderCustomerMenu();
-        if (typeof renderLocalMenu === "function") renderLocalMenu();
-        if (typeof renderDrinksMenu === "function") renderDrinksMenu();
-        if (typeof renderAdminCatalog === "function") renderAdminCatalog();
-    });
-
-    window.handleFoodFormSubmit = function(event) {
-        event.preventDefault();
-        const editId = document.getElementById('editFoodId').value;
-        const name = document.getElementById('foodFormName').value.trim();
-        const price = parseInt(document.getElementById('foodFormPrice').value);
-        let image = document.getElementById('foodFormImage').value.trim() || 'https://placehold.co/400x300/FF5A36/ffffff?text=ACP';
-        const desc = document.getElementById('foodFormDesc').value.trim();
-        const category = document.getElementById('foodFormCategory').value;
-
-        if (!name || isNaN(price)) {
-            showNotification('Please fill in required fields.', 'warning');
-            return;
-        }
-
-        const currentMenu = window.syncFirebaseData.getMenu();
-
-        if (editId) {
-            const target = currentMenu.find(x => x.id == editId);
-            if (target) {
-                target.name = name; target.price = price; target.image = image; target.desc = desc; target.category = category;
-                if (target.firebaseDocId) {
-                    updateDoc(doc(db, "menu", target.firebaseDocId), { name, price, image, desc, category }).catch(console.error);
-                }
-                showNotification('Food item updated!');
-            }
-        } else {
-            const newId = Date.now();
-            const newItem = { id: newId, name, price, image, desc, category, orderIndex: currentMenu.length };
-            currentMenu.push(newItem);
-            addDoc(menuCol, newItem).then(docRef => { newItem.firebaseDocId = docRef.id; }).catch(console.error);
-            showNotification('New product added!');
-        }
-
-        // Instant UI Render (0ms Lag)
+    // 3. Realtime Firestore Sync (Zero Delay)
+    db.collection("menu").onSnapshot((snapshot) => {
+        menuData = snapshot.docs.map(d => ({ _docId: d.id, ...d.data() }));
+        workingMenuData = JSON.parse(JSON.stringify(menuData));
         renderCustomerMenu();
         renderLocalMenu();
         renderDrinksMenu();
-        renderAdminCatalog();
-        resetAdminForm();
-    };
-
-    window.deleteFoodCatalog = function(id) {
-        const currentMenu = window.syncFirebaseData.getMenu();
-        const index = currentMenu.findIndex(x => x.id == id);
-        if (index !== -1) {
-            const target = currentMenu[index];
-            currentMenu.splice(index, 1);
-            if (window.cartItems && window.cartItems[id]) delete window.cartItems[id];
-            
-            // Instant UI Render
-            renderAdminCatalog();
-            renderCustomerMenu();
-            renderLocalMenu();
-            renderDrinksMenu();
-            showNotification('Item removed.');
-
-            if (target.firebaseDocId) {
-                deleteDoc(doc(db, "menu", target.firebaseDocId)).catch(console.error);
-            }
-        }
-    };
-
-    window.saveCatalogOrderChanges = function() {
-        const working = (typeof workingMenuData !== 'undefined') ? workingMenuData : [];
-        for (let i = 0; i < working.length; i++) {
-            if (working[i].firebaseDocId) {
-                updateDoc(doc(db, "menu", working[i].firebaseDocId), { orderIndex: i }).catch(console.error);
-            }
-        }
-        showNotification('Catalog order saved!');
-        const updateBar = document.getElementById('catalogUpdateBar');
-        if (updateBar) updateBar.classList.add('hidden');
-    };
-
-    // ------------------------------------------
-    // 2. FAST REALTIME ORDERS SYNC
-    // ------------------------------------------
-    onSnapshot(query(ordersCol, orderBy("timestamp", "desc")), (snapshot) => {
-        if (snapshot.metadata.hasPendingWrites) return;
-
-        let orders = [];
-        snapshot.forEach((docSnap) => {
-            orders.push({ firebaseDocId: docSnap.id, ...docSnap.data() });
-        });
-        
-        window.syncFirebaseData.updateOrders(orders);
-        if (typeof renderAdminOrdersList === "function") renderAdminOrdersList();
+        renderCartSummary();
+        if (typeof renderAdminCatalog === 'function') renderAdminCatalog();
     });
 
-    window.finalizeOrderAndSendWhatsApp = function() {
-        const keys = Object.keys(window.cartItems || {});
+    db.collection("posts").onSnapshot((snapshot) => {
+        feedPosts = snapshot.docs.map(d => ({ _docId: d.id, ...d.data() }));
+        workingFeedPosts = JSON.parse(JSON.stringify(feedPosts));
+        renderCustomerSocialFeeds();
+        if (typeof renderAdminPostsList === 'function') renderAdminPostsList();
+    });
+
+    db.collection("orders").onSnapshot((snapshot) => {
+        ordersList = snapshot.docs.map(d => ({ _docId: d.id, ...d.data() }));
+        if (typeof renderAdminOrdersList === 'function') renderAdminOrdersList();
+    });
+
+    db.collection("users").onSnapshot((snapshot) => {
+        registeredUsers = snapshot.docs.map(d => ({ _docId: d.id, ...d.data() }));
+        if (typeof renderRegisteredUsers === 'function') renderRegisteredUsers();
+    });
+
+    // 4. App Initialization
+    window.addEventListener('DOMContentLoaded', () => {
+        const savedUser = localStorage.getItem('acp_current_user');
+        if (savedUser) {
+            try { currentUser = JSON.parse(savedUser); } catch(e) { currentUser = null; }
+        }
+        updateUserAccountDisplay();
+        renderCustomerSocialFeeds();
+        renderDynamicFooter();
+    });
+
+    // 5. Core Frontend & UI Functions
+    function switchCustomerTab(tabName) {
+        const storeBtn = document.getElementById('tabBtnStore');
+        const feedsBtn = document.getElementById('tabBtnFeeds');
+        const viewStore = document.getElementById('view-store');
+        const viewFeeds = document.getElementById('view-feeds');
+        const heroSec = document.getElementById('customer-hero');
+        const floatingCartBar = document.getElementById('floatingCartBar');
+
+        if (tabName === 'store') {
+            viewStore.classList.remove('hidden');
+            viewFeeds.classList.add('hidden');
+            heroSec.classList.remove('hidden');
+            storeBtn.className = "btn-tab-effect btn-tab-active flex-1 max-w-[180px] flex items-center justify-center gap-2 py-2 px-4 text-xs font-black rounded-xl border border-[#FF5A36] bg-[#FF5A36] text-white shadow-md active:scale-95";
+            feedsBtn.className = "btn-tab-effect btn-tab-inactive flex-1 max-w-[180px] flex items-center justify-center gap-2 py-2 px-4 text-xs font-black rounded-xl border border-slate-200 bg-white text-slate-700 shadow-sm relative active:scale-95";
+            storeBtn.innerHTML = `<i class="fa-solid fa-utensils text-white"></i> Order Menu`;
+            feedsBtn.innerHTML = `<i class="fa-solid fa-rss text-orange-500"></i> Social Feed`;
+            renderCartSummary();
+        } else {
+            viewStore.classList.add('hidden');
+            viewFeeds.classList.remove('hidden');
+            heroSec.classList.add('hidden');
+            feedsBtn.className = "btn-tab-effect btn-tab-active flex-1 max-w-[180px] flex items-center justify-center gap-2 py-2 px-4 text-xs font-black rounded-xl border border-[#FF5A36] bg-[#FF5A36] text-white shadow-md relative active:scale-95";
+            storeBtn.className = "btn-tab-effect btn-tab-inactive flex-1 max-w-[180px] flex items-center justify-center gap-2 py-2 px-4 text-xs font-black rounded-xl border border-slate-200 bg-white text-slate-700 shadow-sm active:scale-95";
+            feedsBtn.innerHTML = `<i class="fa-solid fa-rss text-white"></i> Social Feed`;
+            storeBtn.innerHTML = `<i class="fa-solid fa-utensils text-[#FF5A36]"></i> Order Menu`;
+
+            if (floatingCartBar) {
+                floatingCartBar.classList.add('translate-y-24', 'opacity-0', 'pointer-events-none');
+                floatingCartBar.classList.remove('translate-y-0', 'opacity-100', 'pointer-events-auto');
+            }
+        }
+        renderDynamicFooter();
+        window.scrollTo(0,0);
+    }
+
+    function renderDynamicFooter() {
+        const footerEl = document.getElementById('mainFooterSection');
+        if (!footerEl) return;
+        const viewStore = document.getElementById('view-store');
+        const isStoreActive = viewStore && !viewStore.classList.contains('hidden');
+
+        let socialIconsHtml = `
+            <div class="flex justify-center items-center gap-3">
+                <a href="https://wa.me/923102434222" target="_blank" class="w-8 h-8 bg-[#25D366] text-white rounded-full flex items-center justify-center shadow-sm"><i class="fa-brands fa-whatsapp text-sm"></i></a>
+                <a href="https://facebook.com/alqadrichaskapoint" target="_blank" class="w-8 h-8 bg-[#1877F2] text-white rounded-full flex items-center justify-center shadow-sm"><i class="fa-brands fa-facebook-f text-xs"></i></a>
+            </div>
+        `;
+        let hotlineHtml = `<div class="flex justify-center items-center gap-2 bg-slate-800/50 py-2 px-5 rounded-full w-fit mx-auto border border-slate-700/50 shadow-lg"><i class="fa-solid fa-phone text-primary animate-ring text-[11px]"></i> <span class="text-slate-300 text-xs">Hotline:</span> <a href="tel:03102434222" class="hotline-highlight text-sm">0310-2434222</a></div>`;
+        let locationHtml = `<div class="flex justify-center items-center gap-2 text-xs font-semibold text-slate-300 pt-1"><i class="fa-solid fa-location-dot text-rose-500"></i> Main Road Jalal Balagan , Gujranwala</div>`;
+        let adminPortalBtnHtml = `<div class="pt-3 mt-1 border-t border-slate-800/80 flex justify-center"><button onclick="openAdminPortal()" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-slate-800 border border-slate-700 text-slate-300 hover:text-white transition-all text-[9px] font-extrabold uppercase shadow"><i class="fa-solid fa-shield-halved text-primary text-[10px]"></i> Admin Portal</button></div>`;
+        let copyrightHtml = `<div class="pt-2 text-[10px] text-slate-500 text-center"><span>&copy; 2026 ACP Premium Fast Food. All rights reserved.</span></div>`;
+
+        if (isStoreActive) {
+            footerEl.innerHTML = `
+                <div class="flex flex-wrap justify-center items-center gap-3 text-xs text-white py-1">
+                    <div class="glow-on-hover"><i class="fa-solid fa-user-tie text-primary text-[12px] mb-0.5 shrink-0"></i><span class="font-normal text-white text-[11.5px]">Mohsin Ali Raza</span><span class="text-[8px] text-orange-400 font-extrabold uppercase">Co-Founder</span></div>
+                    <div class="glow-on-hover"><i class="fa-solid fa-user-gear text-primary text-[12px] mb-0.5 shrink-0"></i><span class="font-normal text-white text-[11.5px]">Wasif Ali</span><span class="text-[8px] text-orange-400 font-extrabold uppercase">Admin</span></div>
+                </div>
+                <div class="space-y-3 pt-2">${socialIconsHtml}${hotlineHtml}${locationHtml}</div>
+                ${adminPortalBtnHtml}${copyrightHtml}
+            `;
+        } else {
+            footerEl.innerHTML = `
+                <div class="font-serif text-white font-extrabold text-base leading-snug tracking-wide max-w-[340px] mx-auto">Thank you for visiting our website</div>
+                <div class="font-serif font-black text-xl tracking-wide max-w-[340px] mx-auto" style="color: #FF5A36;">Al-Qadri Chaska Point</div>
+                <hr class="border-t border-slate-800 w-32 mx-auto my-2.5">
+                <p class="text-sm text-slate-100 font-bold leading-relaxed max-w-[360px] mx-auto pt-1">Stay connected with our latest food deals and special announcements. 🍔🍟</p>
+                ${adminPortalBtnHtml}${copyrightHtml}
+            `;
+        }
+    }
+
+    function renderCustomerMenu() {
+        const container = document.getElementById('menuGridContainer');
+        if (!container) return;
+        container.innerHTML = '';
+        const fastFoodItems = menuData.filter(x => x.category === 'fast');
+
+        if(fastFoodItems.length === 0) {
+            container.innerHTML = `<div class="col-span-3 py-6 text-center text-xs text-slate-400 italic bg-white rounded-xl border border-slate-200">No fast food items added yet.</div>`;
+            return;
+        }
+
+        fastFoodItems.forEach(item => {
+            const currentQty = cartItems[item.id] || 0;
+            const isSelected = currentQty > 0;
+            const cardOutline = isSelected ? 'border-2 border-[#FF5A36] ring-2 ring-[#FF5A36]/20 bg-orange-50/20' : 'border border-slate-200 bg-white';
+            const checkBadge = isSelected ? `<div class="absolute top-1.5 right-1.5 bg-[#FF5A36] text-white w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-black shadow-md z-10"><i class="fa-solid fa-check"></i></div>` : '';
+
+            container.innerHTML += `
+                <div class="portrait-card relative ${cardOutline}">
+                    ${checkBadge}
+                    <div class="card-image-box" style="background-image: url('${item.image}');"></div>
+                    <div class="card-info-box">
+                        <div class="text-center space-y-0">
+                            <h3 class="card-title-compact !mb-0" title="${item.name}">${item.name}</h3>
+                            <div class="card-price-compact !mb-0 !mt-0">Rs. ${item.price}</div>
+                        </div>
+                        <div class="selector-box-compact mt-1">
+                            <button class="btn-qty-mini" onclick="updateQty(${item.id}, -1)">-</button>
+                            <span class="qty-val-mini" id="qty-${item.id}">${currentQty}</span>
+                            <button class="btn-qty-mini" onclick="updateQty(${item.id}, 1)">+</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+    }
+
+    function renderLocalMenu() {
+        const container = document.getElementById('localMenuGridContainer');
+        if (!container) return;
+        container.innerHTML = '';
+        const localItems = menuData.filter(x => x.category === 'local');
+
+        if(localItems.length === 0) {
+            container.innerHTML = `<div class="col-span-4 py-6 text-center text-xs text-slate-400 italic bg-white rounded-xl border border-slate-200">No local items added yet.</div>`;
+            return;
+        }
+
+        localItems.forEach(item => {
+            const currentQty = cartItems[item.id] || 0;
+            const isSelected = currentQty > 0;
+            const cardOutline = isSelected ? 'border-2 border-[#FF5A36] ring-2 ring-[#FF5A36]/20 bg-orange-50/20' : 'border border-slate-200 bg-white';
+            const checkBadge = isSelected ? `<div class="absolute top-1 right-1 bg-[#FF5A36] text-white w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-black shadow-md z-10"><i class="fa-solid fa-check"></i></div>` : '';
+
+            container.innerHTML += `
+                <div class="local-mini-card relative ${cardOutline}">
+                    ${checkBadge}
+                    <img src="${item.image}" alt="${item.name}" onerror="this.src='https://placehold.co/100x60/FF5A36/ffffff?text=ACP'">
+                    <div class="text-center space-y-0 w-full">
+                        <h3 class="local-title-compact !mb-0">${item.name}</h3>
+                        <div class="local-price-compact !mb-0 !mt-0">Rs. ${item.price}</div>
+                    </div>
+                    <div class="selector-box-compact w-full text-center mt-1 px-1 pb-1">
+                        <button class="btn-qty-mini !w-5 !h-5" onclick="updateQty(${item.id}, -1)">-</button>
+                        <span class="qty-val-mini !w-4 !text-[10px]" id="qty-local-${item.id}">${currentQty}</span>
+                        <button class="btn-qty-mini !w-5 !h-5" onclick="updateQty(${item.id}, 1)">+</button>
+                    </div>
+                </div>
+            `;
+        });
+    }
+
+    function renderDrinksMenu() {
+        const container = document.getElementById('drinksMenuGridContainer');
+        if (!container) return;
+        container.innerHTML = '';
+        const drinkItems = menuData.filter(x => x.category === 'drinks');
+
+        if(drinkItems.length === 0) {
+            container.innerHTML = `<div class="col-span-4 py-6 text-center text-xs text-slate-400 italic bg-white rounded-xl border border-slate-200">No drinks added yet.</div>`;
+            return;
+        }
+
+        drinkItems.forEach(item => {
+            const currentQty = cartItems[item.id] || 0;
+            const isSelected = currentQty > 0;
+            const cardOutline = isSelected ? 'border-2 border-[#FF5A36] ring-2 ring-[#FF5A36]/20 bg-orange-50/20' : 'border border-slate-200 bg-white';
+            const checkBadge = isSelected ? `<div class="absolute top-1 right-1 bg-[#FF5A36] text-white w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-black shadow-md z-10"><i class="fa-solid fa-check"></i></div>` : '';
+
+            container.innerHTML += `
+                <div class="local-mini-card relative ${cardOutline}">
+                    ${checkBadge}
+                    <img src="${item.image}" alt="${item.name}" onerror="this.src='https://placehold.co/100x60/FF5A36/ffffff?text=ACP'">
+                    <div class="text-center space-y-0 w-full">
+                        <h3 class="local-title-compact !mb-0">${item.name}</h3>
+                        <div class="local-price-compact !mb-0 !mt-0">Rs. ${item.price}</div>
+                    </div>
+                    <div class="selector-box-compact w-full text-center mt-1 px-1 pb-1">
+                        <button class="btn-qty-mini !w-5 !h-5" onclick="updateQty(${item.id}, -1)">-</button>
+                        <span class="qty-val-mini !w-4 !text-[10px]" id="qty-drink-${item.id}">${currentQty}</span>
+                        <button class="btn-qty-mini !w-5 !h-5" onclick="updateQty(${item.id}, 1)">+</button>
+                    </div>
+                </div>
+            `;
+        });
+    }
+
+    function updateQty(id, change) {
+        const currentQty = cartItems[id] || 0;
+        const newQty = Math.max(0, currentQty + change);
+        if (newQty === 0) delete cartItems[id];
+        else cartItems[id] = newQty;
+
+        renderCustomerMenu();
+        renderLocalMenu();
+        renderDrinksMenu();
+        renderCartSummary();
+    }
+
+    function renderCartSummary() {
+        const emptyState = document.getElementById('emptyCart');
+        const activeState = document.getElementById('activeCart');
+        const cartTableBody = document.getElementById('cartTableRows');
+        const floatingCartBar = document.getElementById('floatingCartBar');
+        const floatingCartCount = document.getElementById('floatingCartCount');
+        const floatingCartTotal = document.getElementById('floatingCartTotal');
+        
+        const keys = Object.keys(cartItems);
+        let totalItemsCount = 0;
+        keys.forEach(k => totalItemsCount += cartItems[k]);
+        
+        if (keys.length === 0) {
+            if (emptyState) emptyState.style.display = 'block';
+            if (activeState) activeState.style.display = 'none';
+            if (floatingCartBar) {
+                floatingCartBar.classList.add('translate-y-24', 'opacity-0', 'pointer-events-none');
+                floatingCartBar.classList.remove('translate-y-0', 'opacity-100', 'pointer-events-auto');
+            }
+            return;
+        }
+
+        if (emptyState) emptyState.style.display = 'none';
+        if (activeState) activeState.style.display = 'block';
+        if (cartTableBody) cartTableBody.innerHTML = '';
+
+        let grandTotal = 0;
+        keys.forEach(id => {
+            const item = menuData.find(x => x.id == id || x._docId == id);
+            if (!item) return;
+            const qty = cartItems[id];
+            const total = item.price * qty;
+            grandTotal += total;
+
+            if (cartTableBody) {
+                cartTableBody.innerHTML += `
+                    <tr>
+                        <td class="font-bold py-2 text-slate-800">${item.name}</td>
+                        <td class="text-center font-extrabold py-2">${qty}</td>
+                        <td class="text-right font-black">Rs. ${total}</td>
+                    </tr>
+                `;
+            }
+        });
+
+        if (document.getElementById('txtSubtotal')) document.getElementById('txtSubtotal').innerText = 'Rs. ' + grandTotal;
+        if (document.getElementById('txtGrandTotal')) document.getElementById('txtGrandTotal').innerText = 'Rs. ' + grandTotal;
+
+        if (floatingCartBar) {
+            if (floatingCartCount) floatingCartCount.innerText = totalItemsCount;
+            if (floatingCartTotal) floatingCartTotal.innerText = 'Rs. ' + grandTotal;
+            const viewStore = document.getElementById('view-store');
+            if (viewStore && !viewStore.classList.contains('hidden')) {
+                floatingCartBar.classList.remove('translate-y-24', 'opacity-0', 'pointer-events-none');
+                floatingCartBar.classList.add('translate-y-0', 'opacity-100', 'pointer-events-auto');
+            }
+        }
+    }
+
+    function clearCart() {
+        cartItems = {};
+        renderCustomerMenu();
+        renderLocalMenu();
+        renderDrinksMenu();
+        renderCartSummary();
+        showNotification('Basket cleared.', 'warning');
+    }
+
+    function openCheckoutConfirmModal() {
+        const keys = Object.keys(cartItems);
+        if (keys.length === 0) {
+            showNotification('Your basket is empty!', 'warning');
+            return;
+        }
+        const itemsContainer = document.getElementById('checkoutModalItemsList');
+        const grandTotalEl = document.getElementById('checkoutModalGrandTotal');
+        if (itemsContainer) itemsContainer.innerHTML = '';
+        let totalAmount = 0;
+
+        keys.forEach(id => {
+            const item = menuData.find(x => x.id == id || x._docId == id);
+            if (item) {
+                const qty = cartItems[id];
+                const total = item.price * qty;
+                totalAmount += total;
+                itemsContainer.innerHTML += `
+                    <div class="flex justify-between items-center text-xs py-1 border-b border-slate-100">
+                        <span class="font-extrabold text-slate-800">${item.name} <span class="text-slate-400">x${qty}</span></span>
+                        <span class="font-black text-slate-800">Rs. ${total}</span>
+                    </div>
+                `;
+            }
+        });
+        if (grandTotalEl) grandTotalEl.innerText = 'Rs. ' + totalAmount;
+        if (currentUser) {
+            if (document.getElementById('checkoutName')) document.getElementById('checkoutName').value = currentUser.name;
+            if (document.getElementById('checkoutPhone')) document.getElementById('checkoutPhone').value = currentUser.phone;
+            if (document.getElementById('checkoutLocation')) document.getElementById('checkoutLocation').value = currentUser.location;
+        }
+        document.getElementById('checkoutConfirmModal').classList.remove('hidden');
+    }
+
+    function closeCheckoutConfirmModal() { document.getElementById('checkoutConfirmModal').classList.add('hidden'); }
+
+    function finalizeOrderAndSendWhatsApp() {
+        const keys = Object.keys(cartItems);
         if (keys.length === 0) return;
 
         const name = document.getElementById('checkoutName').value.trim();
@@ -4282,268 +4462,531 @@
         const orderId = '#ACP-' + Math.floor(1000 + Math.random() * 9000);
         let itemsDetail = [];
         let grandTotal = 0;
-        const currentMenu = window.syncFirebaseData.getMenu();
 
         keys.forEach(id => {
-            const item = currentMenu.find(x => x.id == id);
+            const item = menuData.find(x => x.id == id || x._docId == id);
             if (item) {
-                const qty = window.cartItems[id];
+                const qty = cartItems[id];
                 const total = item.price * qty;
                 grandTotal += total;
                 itemsDetail.push({ name: item.name, qty: qty, price: item.price, total: total });
             }
         });
 
-        const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-        const dateStr = new Date().toLocaleDateString();
-
-        const newOrder = {
-            id: orderId,
-            customerName: name,
-            phone: phone,
-            location: location,
-            date: dateStr,
-            time: timeStr,
-            items: itemsDetail,
-            total: grandTotal,
-            status: 'Pending',
-            timestamp: Date.now()
+        const newOrderData = {
+            id: orderId, customerName: name, phone: phone, location: location,
+            date: new Date().toLocaleDateString(),
+            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            items: itemsDetail, total: grandTotal, status: 'Pending', createdAt: Date.now()
         };
 
-        // Instant Local Update & WhatsApp Launch (0ms Lag)
-        const currentOrders = window.syncFirebaseData.getOrders();
-        currentOrders.unshift(newOrder);
-
-        let waMsg = `*🛒 NEW ORDER - ALQADRI CHASKA POINT*\n`;
-        waMsg += `*Order ID:* ${orderId}\n*Customer:* ${name}\n*Phone:* ${phone}\n*Location:* ${location}\n\n*Items Ordered:*\n`;
-        itemsDetail.forEach(it => { waMsg += `• ${it.name} x${it.qty} = Rs. ${it.total}\n`; });
-        waMsg += `\n*Grand Total:* Rs. ${grandTotal}\n`;
+        let waMsg = `*🛒 NEW ORDER - ALQADRI CHASKA POINT*\n*Order ID:* ${orderId}\n*Customer:* ${name}\n*Phone:* ${phone}\n*Location:* ${location}\n\n*Items:*\n`;
+        itemsDetail.forEach(it => waMsg += `• ${it.name} x${it.qty} = Rs. ${it.total}\n`);
+        waMsg += `\n*Grand Total:* Rs. ${grandTotal}`;
 
         closeCheckoutConfirmModal();
-        showNotification(`Order ${orderId} placed!`);
-        addOrderNotification(`Order Placed (${orderId})`, `Order sent to WhatsApp & kitchen.`);
+        showNotification(`Order ${orderId} submitted! Opening WhatsApp...`);
 
-        window.cartItems = {};
-        renderCustomerMenu();
-        renderLocalMenu();
-        renderDrinksMenu();
-        renderCartSummary();
-        renderAdminOrdersList();
-
+        cartItems = {};
+        renderCustomerMenu(); renderLocalMenu(); renderDrinksMenu(); renderCartSummary();
         window.open(`https://wa.me/923102434222?text=${encodeURIComponent(waMsg)}`, '_blank');
 
-        // Non-blocking background save to Firestore
-        addDoc(ordersCol, newOrder).then(docRef => { newOrder.firebaseDocId = docRef.id; }).catch(console.error);
-    };
+        db.collection("orders").add(newOrderData);
+    }
 
-    window.approveAdminOrder = function(index) {
-        const currentOrders = window.syncFirebaseData.getOrders();
-        const ord = currentOrders[index];
-        if (ord) {
-            ord.status = 'Approved';
-            renderAdminOrdersList();
+    function approveAdminOrder(index) {
+        const ord = ordersList[index];
+        if (ord && ord._docId) {
+            db.collection("orders").doc(ord._docId).update({ status: 'Approved' });
             showNotification(`Order ${ord.id} approved!`);
-            addOrderNotification(`Order Approved (${ord.id})`, `Kitchen approved order ${ord.id}!`, true);
-
-            if (ord.firebaseDocId) {
-                updateDoc(doc(db, "orders", ord.firebaseDocId), { status: 'Approved' }).catch(console.error);
-            }
         }
-    };
+    }
 
-    window.removeAdminOrder = function(index) {
-        const currentOrders = window.syncFirebaseData.getOrders();
-        const ord = currentOrders[index];
-        if (ord) {
-            currentOrders.splice(index, 1);
-            renderAdminOrdersList();
-            showNotification('Order cleared.');
-
-            if (ord.firebaseDocId) {
-                deleteDoc(doc(db, "orders", ord.firebaseDocId)).catch(console.error);
-            }
+    function removeAdminOrder(index) {
+        const ord = ordersList[index];
+        if (ord && ord._docId) {
+            db.collection("orders").doc(ord._docId).delete();
+            showNotification('Order record cleared.');
         }
-    };
+    }
 
-    // ------------------------------------------
-    // 3. FAST REALTIME SOCIAL FEED SYNC
-    // ------------------------------------------
-    onSnapshot(query(postsCol, orderBy("orderIndex", "asc")), (snapshot) => {
-        if (snapshot.metadata.hasPendingWrites) return;
-
-        let posts = [];
-        snapshot.forEach((docSnap) => {
-            posts.push({ firebaseDocId: docSnap.id, ...docSnap.data() });
-        });
+    // Social Feeds Render
+    function renderCustomerSocialFeeds() {
+        const container = document.getElementById('feedPostsContainer');
+        if (!container) return;
+        container.innerHTML = '';
         
-        window.syncFirebaseData.updatePosts(posts);
+        if(feedPosts.length === 0) {
+            container.innerHTML = `<div class="bg-white rounded-3xl p-8 text-center border border-slate-200"><p class="text-xs text-slate-500 font-bold">No active social posts currently.</p></div>`;
+            return;
+        }
 
-        if (typeof renderCustomerSocialFeeds === "function") renderCustomerSocialFeeds();
-        if (typeof renderAdminPostsList === "function") renderAdminPostsList();
-    });
+        feedPosts.forEach(post => {
+            let identifier = currentUser ? currentUser.phone : (guestSessionName || "guest_session");
+            if (!post.likedUsers) post.likedUsers = [];
+            const isLiked = post.likedUsers.includes(identifier);
+            const heartColor = isLiked ? 'text-rose-500 scale-125' : 'text-slate-400';
+            const heartIcon = isLiked ? 'fa-solid fa-heart' : 'fa-regular fa-heart';
+            const totalCommentsCount = post.comments ? post.comments.length : 0;
 
-    window.handleFeedPostSubmit = function(event) {
+            let commentItemsHtml = '';
+            if (post.comments) {
+                post.comments.forEach((c, cIdx) => {
+                    commentItemsHtml += `
+                        <div class="space-y-1 pt-2 text-left border-b border-slate-100 pb-2">
+                            <div class="flex items-start justify-between">
+                                <div><span class="font-black text-xs text-slate-900">${c.commenter}</span></div>
+                                <button onclick="deleteComment('${post._docId}', ${cIdx})" class="text-red-400 hover:text-red-600 text-xs"><i class="fa-solid fa-trash-can"></i></button>
+                            </div>
+                            <p class="text-xs text-slate-700">${c.text}</p>
+                        </div>
+                    `;
+                });
+            }
+
+            container.innerHTML += `
+                <div class="bg-white rounded-[24px] border border-slate-200 overflow-hidden shadow-sm">
+                    <div class="p-4 flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-orange-500 to-amber-500 flex items-center justify-center text-white font-bold"><i class="fa-solid fa-utensils"></i></div>
+                            <div>
+                                <h4 class="text-xs font-black text-slate-900">${post.authorName || 'Alqadri Chaska Point'}</h4>
+                                <p class="text-[9px] text-slate-400 font-bold">@alqadri.chaska</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="relative w-full bg-slate-50 flex justify-center items-center overflow-hidden border-b border-slate-100">
+                        <img src="${post.image}" class="w-full h-auto max-h-[500px] object-contain block" onerror="this.src='https://placehold.co/600x400/FF5A36/ffffff?text=ACP'">
+                    </div>
+                    <div class="p-4 space-y-2">
+                        <h3 class="text-xs font-black text-slate-900">${post.title}</h3>
+                        <p class="text-xs font-medium text-slate-600 leading-relaxed">${post.desc}</p>
+                    </div>
+                    <div class="px-4 py-3 border-t border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
+                        <button onclick="likePost('${post._docId}')" class="flex items-center gap-1.5 text-xs font-extrabold text-slate-600 hover:text-rose-500">
+                            <i class="${heartIcon} ${heartColor} text-sm"></i> <span>${post.likes || 0}</span>
+                        </button>
+                        <span class="text-xs font-extrabold text-slate-600"><i class="fa-regular fa-comment text-sm"></i> ${totalCommentsCount} Comments</span>
+                    </div>
+                    <div class="p-4 bg-slate-50/50 space-y-3">
+                        <div class="space-y-2">${commentItemsHtml}</div>
+                        <form onsubmit="event.preventDefault(); submitComment('${post._docId}');" class="flex gap-2 pt-2">
+                            <input type="text" id="comment-input-${post._docId}" required placeholder="Write a comment..." class="flex-1 px-3 py-2 bg-white border border-slate-200 rounded-lg outline-none text-xs">
+                            <button type="submit" class="bg-[#FF5A36] text-white px-3 rounded-lg text-xs font-black">Post</button>
+                        </form>
+                    </div>
+                </div>
+            `;
+        });
+    }
+
+    function likePost(docId) {
+        const post = feedPosts.find(p => p._docId === docId);
+        if (!post) return;
+        let identifier = currentUser ? currentUser.phone : (guestSessionName || "guest_session");
+        if (!post.likedUsers) post.likedUsers = [];
+
+        if (post.likedUsers.includes(identifier)) {
+            post.likedUsers = post.likedUsers.filter(u => u !== identifier);
+            post.likes = Math.max(0, (post.likes || 1) - 1);
+        } else {
+            post.likedUsers.push(identifier);
+            post.likes = (post.likes || 0) + 1;
+        }
+        db.collection("posts").doc(docId).update({ likes: post.likes, likedUsers: post.likedUsers });
+    }
+
+    function submitComment(docId) {
+        const post = feedPosts.find(p => p._docId === docId);
+        const input = document.getElementById(`comment-input-${docId}`);
+        if (!post || !input) return;
+        const text = input.value.trim();
+        if (!text) return;
+
+        let commenterName = currentUser ? currentUser.name : (guestSessionName || "");
+        if (!commenterName) {
+            openGuestNameModal();
+            return;
+        }
+
+        if (!post.comments) post.comments = [];
+        post.comments.push({ commenter: commenterName, text, timestamp: Date.now(), replies: [] });
+        input.value = '';
+        db.collection("posts").doc(docId).update({ comments: post.comments });
+    }
+
+    function deleteComment(docId, cIdx) {
+        const post = feedPosts.find(p => p._docId === docId);
+        if (post && post.comments && post.comments[cIdx]) {
+            post.comments.splice(cIdx, 1);
+            db.collection("posts").doc(docId).update({ comments: post.comments });
+            showNotification('Comment deleted successfully!', 'warning');
+        }
+    }
+
+    // Auth Helpers
+    function switchAuthMode(mode) {
+        const btnSignIn = document.getElementById('btnAuthTabSignIn');
+        const btnRegister = document.getElementById('btnAuthTabRegister');
+        const viewSignIn = document.getElementById('userSignInView');
+        const viewReg = document.getElementById('userRegView');
+        const activeStyle = "flex-1 py-1.5 rounded-lg text-center bg-white text-[#FF5A36] shadow-sm font-bold";
+        const inactiveStyle = "flex-1 py-1.5 rounded-lg text-center text-slate-600 font-bold";
+
+        if (mode === 'signin') {
+            viewSignIn.classList.remove('hidden'); viewReg.classList.add('hidden');
+            btnSignIn.className = activeStyle; btnRegister.className = inactiveStyle;
+        } else {
+            viewSignIn.classList.add('hidden'); viewReg.classList.remove('hidden');
+            btnSignIn.className = inactiveStyle; btnRegister.className = activeStyle;
+        }
+    }
+
+    function openUserModal() {
+        const modal = document.getElementById('userAuthModal');
+        if (currentUser) {
+            document.getElementById('userAuthContainer').classList.add('hidden');
+            document.getElementById('userProfileView').classList.remove('hidden');
+            document.getElementById('profileName').innerText = currentUser.name;
+            document.getElementById('profilePhone').innerText = currentUser.phone;
+            document.getElementById('profileLocation').innerText = currentUser.location;
+        } else {
+            document.getElementById('userAuthContainer').classList.remove('hidden');
+            document.getElementById('userProfileView').classList.add('hidden');
+            switchAuthMode('signin');
+        }
+        modal.classList.remove('hidden');
+    }
+
+    function closeUserModal() { document.getElementById('userAuthModal').classList.add('hidden'); }
+
+    function signInUser() {
+        const phone = document.getElementById('signInPhone').value.trim();
+        const foundUser = registeredUsers.find(u => u.phone === phone);
+        if (foundUser) {
+            currentUser = foundUser;
+            localStorage.setItem('acp_current_user', JSON.stringify(currentUser));
+            updateUserAccountDisplay();
+            showNotification(`Welcome back, ${currentUser.name}!`);
+            closeUserModal();
+        } else {
+            showNotification('Account not found. Please Register.', 'warning');
+            switchAuthMode('register');
+            document.getElementById('regPhone').value = phone;
+        }
+    }
+
+    function registerUser() {
+        const name = document.getElementById('regName').value.trim();
+        const phone = document.getElementById('regPhone').value.trim();
+        const location = document.getElementById('regLocation').value.trim();
+        const email = document.getElementById('regEmail').value.trim() || 'No Email';
+        if (!name || !phone || !location) {
+            showNotification('Fill in required fields.', 'warning');
+            return;
+        }
+        const newUser = { name, phone, location, email, createdAt: Date.now() };
+        currentUser = newUser;
+        localStorage.setItem('acp_current_user', JSON.stringify(currentUser));
+        updateUserAccountDisplay();
+        closeUserModal();
+        showNotification('Account registered successfully!');
+        db.collection("users").add(newUser);
+    }
+
+    function logoutUser() {
+        currentUser = null;
+        localStorage.removeItem('acp_current_user');
+        updateUserAccountDisplay();
+        closeUserModal();
+        showNotification('Signed out successfully.');
+    }
+
+    // Admin Controls
+    function openAdminPortal() { document.getElementById('adminAuthModal').classList.remove('hidden'); }
+    function closeAdminAuth() { document.getElementById('adminAuthModal').classList.add('hidden'); }
+
+    function verifyAdminPasscode() {
+        if (document.getElementById('adminPasscode').value === '7574') {
+            closeAdminAuth();
+            document.getElementById('customer-page').classList.add('hidden');
+            document.getElementById('admin-page').classList.remove('hidden');
+            window.scrollTo(0,0);
+            switchAdminTab('orders');
+        } else {
+            showNotification('Incorrect passcode!', 'warning');
+        }
+    }
+
+    function closeAdminPortal() {
+        document.getElementById('admin-page').classList.add('hidden');
+        document.getElementById('customer-page').classList.remove('hidden');
+    }
+
+    function switchAdminTab(tab) {
+        ['admin-sec-orders', 'admin-sec-catalog', 'admin-sec-feed', 'admin-sec-users'].forEach(id => document.getElementById(id).classList.add('hidden'));
+        if (tab === 'orders') document.getElementById('admin-sec-orders').classList.remove('hidden');
+        if (tab === 'catalog') { document.getElementById('admin-sec-catalog').classList.remove('hidden'); switchCatalogSubTab('list'); }
+        if (tab === 'feed') { document.getElementById('admin-sec-feed').classList.remove('hidden'); switchFeedSubTab('list'); }
+        if (tab === 'users') document.getElementById('admin-sec-users').classList.remove('hidden');
+    }
+
+    function switchCatalogSubTab(sub) {
+        if (sub === 'list') {
+            document.getElementById('subSecCatalogList').classList.remove('hidden');
+            document.getElementById('subSecAddFoodForm').classList.add('hidden');
+        } else {
+            document.getElementById('subSecCatalogList').classList.add('hidden');
+            document.getElementById('subSecAddFoodForm').classList.remove('hidden');
+        }
+    }
+
+    function switchFeedSubTab(sub) {
+        if (sub === 'list') {
+            document.getElementById('subSecFeedList').classList.remove('hidden');
+            document.getElementById('subSecFeedCreate').classList.add('hidden');
+        } else {
+            document.getElementById('subSecFeedList').classList.add('hidden');
+            document.getElementById('subSecFeedCreate').classList.remove('hidden');
+        }
+    }
+
+    function handleFoodFormSubmit(event) {
         event.preventDefault();
-        const editId = document.getElementById('editPostId').value;
+        const editId = document.getElementById('editFoodId').value;
+        const name = document.getElementById('foodFormName').value.trim();
+        const price = parseInt(document.getElementById('foodFormPrice').value);
+        let image = document.getElementById('foodFormImage').value.trim() || 'https://placehold.co/400x300/FF5A36/ffffff?text=ACP';
+        const desc = document.getElementById('foodFormDesc').value.trim();
+        const category = document.getElementById('foodFormCategory').value;
+
+        if (editId) {
+            const item = menuData.find(x => x._docId === editId || x.id == editId);
+            if (item && item._docId) {
+                db.collection("menu").doc(item._docId).update({ name, price, image, desc, category });
+                showNotification('Product updated!');
+            }
+        } else {
+            const newItem = { id: Date.now(), name, price, image, desc, category, sortOrder: menuData.length };
+            db.collection("menu").add(newItem);
+            showNotification('Product added successfully!');
+        }
+        resetAdminForm();
+        switchCatalogSubTab('list');
+    }
+
+    function deleteFoodCatalog(docId) {
+        db.collection("menu").doc(docId).delete();
+        showNotification('Product deleted.', 'warning');
+    }
+
+    function handleFeedPostSubmit(event) {
+        event.preventDefault();
         const title = document.getElementById('postFormTitle').value.trim();
         const image = document.getElementById('postFormImage').value.trim();
         const desc = document.getElementById('postFormDesc').value.trim();
 
-        if (!title || !image || !desc) {
-            showNotification('Please fill in required post details.', 'warning');
+        if (!title || !image || !desc) return;
+
+        const newPost = {
+            id: Date.now(), title, image, desc,
+            authorName: "Alqadri Chaska Point",
+            timestamp: Date.now(), likes: 0, likedUsers: [], comments: [], sortOrder: 0
+        };
+
+        db.collection("posts").add(newPost);
+        showNotification('Post broadcasted live!');
+        resetPostForm();
+        switchFeedSubTab('list');
+    }
+
+    function deleteFeedPost(docId) {
+        db.collection("posts").doc(docId).delete();
+        showNotification('Post deleted.', 'warning');
+    }
+
+    // Admin Lists Render
+    function renderAdminOrdersList() {
+        const container = document.getElementById('adminOrdersContainer');
+        const counter = document.getElementById('lblAdminOrdersCount');
+        const badge = document.getElementById('adminOrdersCountBadge');
+        if (!container) return;
+        if (counter) counter.innerText = ordersList.length;
+        if (badge) badge.innerText = ordersList.length;
+        container.innerHTML = '';
+
+        if (ordersList.length === 0) {
+            container.innerHTML = `<div class="py-8 text-center text-slate-400 font-bold text-xs"><i class="fa-solid fa-box-open text-2xl mb-1 text-slate-300 block"></i>No customer orders received yet.</div>`;
             return;
         }
 
-        const currentPosts = window.syncFirebaseData.getPosts();
-
-        if (editId) {
-            const target = currentPosts.find(p => p.id == editId);
-            if (target) {
-                target.title = title; target.image = image; target.desc = desc;
-                if (target.firebaseDocId) {
-                    updateDoc(doc(db, "posts", target.firebaseDocId), { title, image, desc }).catch(console.error);
-                }
-                showNotification('Post updated!');
+        ordersList.forEach((ord, index) => {
+            let itemsListHtml = '';
+            if(ord.items) {
+                ord.items.forEach(it => {
+                    itemsListHtml += `<div class="flex justify-between items-center text-[11px] py-0.5 border-b border-slate-100"><span class="font-bold text-slate-800">${it.name} <span class="text-slate-400">x${it.qty}</span></span><span class="font-black text-slate-700">Rs. ${it.total}</span></div>`;
+                });
             }
-        } else {
-            const newPostId = Date.now();
-            const newPost = {
-                id: newPostId,
-                title,
-                image,
-                desc,
-                authorName: "Alqadri Chaska Point",
-                timestamp: Date.now(),
-                likes: 0,
-                likedUsers: [],
-                comments: [],
-                orderIndex: currentPosts.length
-            };
-            currentPosts.unshift(newPost);
-            addDoc(postsCol, newPost).then(docRef => { newPost.firebaseDocId = docRef.id; }).catch(console.error);
-            showNotification('Post broadcasted live!');
-        }
+            const isPending = ord.status === 'Pending';
+            const statusBadge = isPending ? '<span class="bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full text-[9px] font-black uppercase">Pending</span>' : '<span class="bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full text-[9px] font-black uppercase">Approved</span>';
+            const approveBtn = isPending ? `<button onclick="approveAdminOrder(${index})" class="px-2.5 py-1 bg-emerald-500 text-white rounded-lg text-xs font-bold"><i class="fa-solid fa-circle-check"></i> Approve</button>` : '';
 
-        renderCustomerSocialFeeds();
-        renderAdminPostsList();
-        resetPostForm();
-    };
+            container.innerHTML += `
+                <div class="bg-slate-50 border border-slate-200 rounded-xl p-3 shadow-sm space-y-2">
+                    <div class="flex justify-between items-center pb-1.5 border-b border-slate-200">
+                        <div><span class="font-black text-slate-900 text-xs">${ord.id}</span><span class="text-[10px] text-[#FF5A36] font-black block">${ord.customerName} (${ord.phone})</span></div>
+                        ${statusBadge}
+                    </div>
+                    <div class="bg-white p-2.5 rounded-lg border border-slate-100 space-y-0.5">${itemsListHtml}</div>
+                    <div class="flex justify-between items-center"><span class="text-[11px] font-bold text-slate-500">Total:</span><span class="text-xs font-black text-[#FF5A36]">Rs. ${ord.total}</span></div>
+                    <div class="flex justify-end gap-1.5 pt-1.5 border-t border-slate-200">${approveBtn}<button onclick="removeAdminOrder(${index})" class="px-2 py-1 bg-red-50 text-red-600 border border-red-200 rounded-lg text-xs font-bold"><i class="fa-solid fa-trash-can"></i> Clear</button></div>
+                </div>
+            `;
+        });
+    }
 
-    window.deleteFeedPost = function(postId) {
-        const currentPosts = window.syncFirebaseData.getPosts();
-        const index = currentPosts.findIndex(p => p.id === postId);
-        if (index !== -1) {
-            const target = currentPosts[index];
-            currentPosts.splice(index, 1);
-            renderCustomerSocialFeeds();
-            renderAdminPostsList();
-            showNotification('Post deleted.', 'warning');
+    function renderAdminCatalog() {
+        const container = document.getElementById('adminCatalogRows');
+        const counter = document.getElementById('adminCatalogCount');
+        if (!container) return;
+        container.innerHTML = '';
+        if (counter) counter.innerText = menuData.length;
 
-            if (target.firebaseDocId) {
-                deleteDoc(doc(db, "posts", target.firebaseDocId)).catch(console.error);
-            }
-        }
-    };
+        menuData.forEach((item) => {
+            container.innerHTML += `
+                <tr class="hover:bg-slate-50">
+                    <td class="p-2.5 flex items-center gap-2"><img src="${item.image}" class="w-9 h-9 rounded-lg object-cover border"><span class="font-bold text-xs">${item.name}</span></td>
+                    <td class="p-2.5 text-right font-black text-xs">Rs. ${item.price}</td>
+                    <td class="p-2.5 text-right"><button onclick="deleteFoodCatalog('${item._docId}')" class="w-7 h-7 bg-red-50 text-red-500 rounded-lg"><i class="fa-solid fa-trash text-[10px]"></i></button></td>
+                </tr>
+            `;
+        });
+    }
 
-    window.savePostOrderChanges = function() {
-        const working = (typeof workingFeedPosts !== 'undefined') ? workingFeedPosts : [];
-        for (let i = 0; i < working.length; i++) {
-            if (working[i].firebaseDocId) {
-                updateDoc(doc(db, "posts", working[i].firebaseDocId), { orderIndex: i }).catch(console.error);
-            }
-        }
-        showNotification('Post sequence saved!');
-        const updateBar = document.getElementById('postUpdateBar');
-        if (updateBar) updateBar.classList.add('hidden');
-    };
+    function renderAdminPostsList() {
+        const container = document.getElementById('adminPostsListContainer');
+        const counter = document.getElementById('lblAdminPostsCount');
+        if (!container) return;
+        if (counter) counter.innerText = feedPosts.length;
+        container.innerHTML = '';
 
-    function syncPostDocNonBlocking(postId) {
-        const currentPosts = window.syncFirebaseData.getPosts();
-        const target = currentPosts.find(p => p.id === postId);
-        if (target && target.firebaseDocId) {
-            updateDoc(doc(db, "posts", target.firebaseDocId), {
-                likes: target.likes || 0,
-                likedUsers: target.likedUsers || [],
-                comments: target.comments || []
-            }).catch(console.error);
+        feedPosts.forEach(post => {
+            container.innerHTML += `
+                <div class="bg-slate-50 border border-slate-200 rounded-xl p-3 space-y-2">
+                    <div class="flex gap-2.5 items-start"><img src="${post.image}" class="w-12 h-12 rounded-lg object-cover border"><div class="flex-1"><h4 class="text-xs font-black">${post.title}</h4><p class="text-[9px] text-slate-500">${post.desc}</p></div></div>
+                    <div class="flex justify-end pt-1.5 border-t"><button onclick="deleteFeedPost('${post._docId}')" class="px-2 py-1 bg-red-50 text-red-600 rounded-md text-[10px] font-bold"><i class="fa-solid fa-trash-can"></i> Delete</button></div>
+                </div>
+            `;
+        });
+    }
+
+    function renderRegisteredUsers() {
+        const tableBody = document.getElementById('registeredUsersRows');
+        const badge = document.getElementById('adminUsersCountBadge');
+        if (!tableBody) return;
+        if (badge) badge.innerText = registeredUsers.length;
+        tableBody.innerHTML = '';
+
+        registeredUsers.forEach(user => {
+            tableBody.innerHTML += `
+                <tr class="hover:bg-slate-50 text-xs">
+                    <td class="p-2.5 font-extrabold">${user.name}</td>
+                    <td class="p-2.5 text-sky-600">${user.phone}</td>
+                    <td class="p-2.5 text-slate-500">${user.location}</td>
+                    <td class="p-2.5 text-slate-500">${user.email}</td>
+                    <td class="p-2.5 text-center"><button onclick="db.collection('users').doc('${user._docId}').delete()" class="w-6 h-6 bg-red-50 text-red-500 rounded-lg"><i class="fa-solid fa-trash text-[9px]"></i></button></td>
+                </tr>
+            `;
+        });
+    }
+
+    // Utility & Invoices
+    function showNotification(message) {
+        const container = document.getElementById('toastContainer');
+        if (!container) return;
+        const toast = document.createElement('div');
+        toast.className = `flex items-center gap-3 p-3 rounded-xl border bg-white shadow-md text-xs font-bold text-slate-800`;
+        toast.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-500"></i> ${message}`;
+        container.appendChild(toast);
+        setTimeout(() => toast.remove(), 2500);
+    }
+
+    function generateStoreInvoice() {
+        const modalOverlay = document.getElementById('invoiceModalOverlay');
+        const invoiceTableBody = document.getElementById('invoiceTableRows');
+        const keys = Object.keys(cartItems);
+        if (keys.length === 0) return;
+        if (invoiceTableBody) invoiceTableBody.innerHTML = '';
+        let totalAmount = 0;
+
+        keys.forEach(id => {
+            const item = menuData.find(x => x.id == id || x._docId == id);
+            if (!item) return;
+            const qty = cartItems[id];
+            const total = item.price * qty;
+            totalAmount += total;
+            invoiceTableBody.innerHTML += `<tr><td class="py-2 font-bold">${item.name}</td><td class="text-center font-bold">${qty}</td><td class="text-right font-black">Rs. ${total}</td></tr>`;
+        });
+
+        if (document.getElementById('lblInvDate')) document.getElementById('lblInvDate').innerText = new Date().toLocaleString();
+        if (document.getElementById('lblTxnId')) document.getElementById('lblTxnId').innerText = '#ACP-' + Math.floor(1000 + Math.random() * 9000);
+        if (document.getElementById('lblSub')) document.getElementById('lblSub').innerText = 'Rs. ' + totalAmount;
+        if (modalOverlay) modalOverlay.style.display = 'flex';
+    }
+
+    function closeReceiptAndScrollToMenu() { document.getElementById('invoiceModalOverlay').style.display = 'none'; }
+    function downloadInvoiceJPG() {
+        html2canvas(document.getElementById('receiptContainer'), { scale: 4, useCORS: true, backgroundColor: '#ffffff' }).then(canvas => {
+            const link = document.createElement('a');
+            link.download = 'Alqadri-Receipt.jpg';
+            link.href = canvas.toDataURL('image/jpeg', 1.0);
+            link.click();
+        });
+    }
+
+    function handleImageUpload(event) {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = (e) => document.getElementById('foodFormImage').value = e.target.result;
+            reader.readAsDataURL(file);
         }
     }
 
-    // Attach Non-Blocking background sync to comments & likes
-    ['likePost', 'submitComment', 'saveEditComment', 'saveEditReply', 'deleteComment', 'deleteReply', 'likeComment', 'dislikeComment', 'likeReply', 'dislikeReply'].forEach(fnName => {
-        const orig = window[fnName];
-        window[fnName] = function(...args) {
-            if (typeof orig === "function") orig(...args);
-            const postId = args[0];
-            if (postId) syncPostDocNonBlocking(postId);
-        };
-    });
-
-    // ------------------------------------------
-    // 4. FAST CUSTOMER CRM SYNC
-    // ------------------------------------------
-    onSnapshot(usersCol, (snapshot) => {
-        if (snapshot.metadata.hasPendingWrites) return;
-
-        let users = [];
-        snapshot.forEach((docSnap) => {
-            users.push({ firebaseDocId: docSnap.id, ...docSnap.data() });
-        });
-        
-        window.syncFirebaseData.updateUsers(users);
-        if (typeof renderRegisteredUsers === "function") renderRegisteredUsers();
-    });
-
-    window.registerUser = function() {
-        const name = document.getElementById('regName').value.trim();
-        const phone = document.getElementById('regPhone').value.trim();
-        const loc = document.getElementById('regLocation').value.trim();
-        const email = document.getElementById('regEmail').value.trim() || 'No Email';
-        
-        if(!name || !phone || !loc) {
-            showNotification('Please fill in Name, Phone, and Location.', 'warning');
-            return;
+    function handlePostImageUpload(event) {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                document.getElementById('postFormImage').value = e.target.result;
+                document.getElementById('postImagePreview').src = e.target.result;
+                document.getElementById('postImagePreviewContainer').classList.remove('hidden');
+            };
+            reader.readAsDataURL(file);
         }
+    }
 
-        const newUser = { name, phone, location: loc, email, createdAt: Date.now() };
+    function removePostImage() {
+        document.getElementById('postFormFile').value = '';
+        document.getElementById('postFormImage').value = '';
+        document.getElementById('postImagePreviewContainer').classList.add('hidden');
+    }
 
-        // Instant UI Response
-        window.currentUser = newUser; 
-        localStorage.setItem('acp_current_user', JSON.stringify(window.currentUser));
+    function resetAdminForm() {
+        document.getElementById('editFoodId').value = '';
+        document.getElementById('adminFoodForm').reset();
+        document.getElementById('formPanelTitle').innerText = 'Add New Food Item';
+        document.getElementById('foodFormSubmitBtn').innerHTML = '<i class="fa-solid fa-save mr-1"></i> Save Product';
+    }
 
-        const currentUsers = window.syncFirebaseData.getUsers();
-        currentUsers.push(newUser);
-
-        updateUserAccountDisplay();
-        showNotification(`Welcome, ${name}! Account saved.`);
-        closeUserModal();
-        
-        document.getElementById('regName').value = '';
-        document.getElementById('regPhone').value = '';
-        document.getElementById('regLocation').value = '';
-        document.getElementById('regEmail').value = '';
-
-        renderCustomerSocialFeeds();
-        renderRegisteredUsers();
-
-        // Background save
-        const sanitizedPhone = phone.replace(/[^0-9]/g, '');
-        setDoc(doc(db, "users", sanitizedPhone), newUser).catch(console.error);
-    };
-
-    window.removeCustomerRecord = function(idx) {
-        const currentUsers = window.syncFirebaseData.getUsers();
-        const target = currentUsers[idx];
-        if (target) {
-            currentUsers.splice(idx, 1);
-            renderRegisteredUsers();
-            showNotification('Account deleted.', 'warning');
-
-            if (target.firebaseDocId) {
-                deleteDoc(doc(db, "users", target.firebaseDocId)).catch(console.error);
-            }
-        }
-    };
+    function resetPostForm() {
+        document.getElementById('editPostId').value = '';
+        document.getElementById('postFormTitle').value = '';
+        document.getElementById('postFormFile').value = '';
+        document.getElementById('postFormImage').value = '';
+        document.getElementById('postFormDesc').value = '';
+        document.getElementById('postImagePreviewContainer').classList.add('hidden');
+    }
 </script>
 </body>
 </html>
