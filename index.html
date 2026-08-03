@@ -4072,10 +4072,55 @@
             });
         }
     </script>
-<!-- FIREBASE REAL-TIME BACKEND ENGINE FOR ALQADRI CHASKA POINT (NO AUTO-SEEDING) -->
+<!-- ========================================== -->
+<!-- 1. BACKEND DATA BRIDGE (OPTIMISTIC UI)     -->
+<!-- ========================================== -->
+<script>
+    window.syncFirebaseData = {
+        updateMenu: function(items) {
+            if (typeof menuData !== 'undefined') {
+                menuData.length = 0;
+                menuData.push(...items);
+            }
+            if (typeof workingMenuData !== 'undefined') {
+                workingMenuData.length = 0;
+                workingMenuData.push(...JSON.parse(JSON.stringify(items)));
+            }
+        },
+        updatePosts: function(posts) {
+            if (typeof feedPosts !== 'undefined') {
+                feedPosts.length = 0;
+                feedPosts.push(...posts);
+            }
+            if (typeof workingFeedPosts !== 'undefined') {
+                workingFeedPosts.length = 0;
+                workingFeedPosts.push(...JSON.parse(JSON.stringify(posts)));
+            }
+        },
+        updateOrders: function(orders) {
+            if (typeof ordersList !== 'undefined') {
+                ordersList.length = 0;
+                ordersList.push(...orders);
+            }
+        },
+        updateUsers: function(users) {
+            if (typeof registeredUsers !== 'undefined') {
+                registeredUsers.length = 0;
+                registeredUsers.push(...users);
+            }
+        },
+        getMenu: function() { return (typeof menuData !== 'undefined') ? menuData : []; },
+        getPosts: function() { return (typeof feedPosts !== 'undefined') ? feedPosts : []; },
+        getOrders: function() { return (typeof ordersList !== 'undefined') ? ordersList : []; },
+        getUsers: function() { return (typeof registeredUsers !== 'undefined') ? registeredUsers : []; }
+    };
+</script>
+
+<!-- ========================================== -->
+<!-- 2. HIGH-PERFORMANCE REALTIME FIREBASE      -->
+<!-- ========================================== -->
 <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-analytics.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { 
         getFirestore, 
         collection, 
@@ -4088,9 +4133,9 @@
         query, 
         orderBy, 
         enableIndexedDbPersistence 
-    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-    // 1. Firebase Config
+    // Firebase Config
     const firebaseConfig = {
         apiKey: "AIzaSyAU3wBPK_iKzH-F0qfRp9KFG4Keq8tmm2U",
         authDomain: "alfa-corex-1-c9856.firebaseapp.com",
@@ -4102,142 +4147,127 @@
     };
 
     const app = initializeApp(firebaseConfig);
-    const analytics = getAnalytics(app);
     const db = getFirestore(app);
 
-    // Offline Cache Support
-    enableIndexedDbPersistence(db).catch((err) => {
-        console.warn("Persistence error:", err.code);
+    // Fast Cache
+    enableIndexedDbPersistence(db).catch(() => {});
+
+    const menuCol = collection(db, "menu");
+    const ordersCol = collection(db, "orders");
+    const postsCol = collection(db, "posts");
+    const usersCol = collection(db, "users");
+
+    // ------------------------------------------
+    // 1. FAST REALTIME MENU SYNC
+    // ------------------------------------------
+    onSnapshot(query(menuCol, orderBy("orderIndex", "asc")), (snapshot) => {
+        // Ignore local pending write echoes to prevent UI lag/flicker
+        if (snapshot.metadata.hasPendingWrites) return;
+
+        let items = [];
+        snapshot.forEach((docSnap) => {
+            items.push({ firebaseDocId: docSnap.id, ...docSnap.data() });
+        });
+        
+        window.syncFirebaseData.updateMenu(items);
+
+        if (typeof renderCustomerMenu === "function") renderCustomerMenu();
+        if (typeof renderLocalMenu === "function") renderLocalMenu();
+        if (typeof renderDrinksMenu === "function") renderDrinksMenu();
+        if (typeof renderAdminCatalog === "function") renderAdminCatalog();
     });
 
-    const menuRef = collection(db, "menu");
-    const ordersRef = collection(db, "orders");
-    const postsRef = collection(db, "posts");
-    const usersRef = collection(db, "users");
-
-    // ==========================================
-    // REAL-TIME LISTENERS (WITHOUT AUTO-SEEDING)
-    // ==========================================
-
-    // A. Real-Time Menu Sync (No auto-seed)
-    onSnapshot(menuRef, (snapshot) => {
-        const fetchedMenu = [];
-        snapshot.forEach((doc) => {
-            fetchedMenu.push({ ...doc.data(), docId: doc.id });
-        });
-
-        window.menuData = fetchedMenu;
-        window.workingMenuData = JSON.parse(JSON.stringify(fetchedMenu));
-        
-        if (typeof window.renderCustomerMenu === 'function') window.renderCustomerMenu();
-        if (typeof window.renderLocalMenu === 'function') window.renderLocalMenu();
-        if (typeof window.renderDrinksMenu === 'function') window.renderDrinksMenu();
-        if (typeof window.renderAdminCatalog === 'function') window.renderAdminCatalog();
-    }, (error) => console.error("Menu Sync Error:", error));
-
-    // B. Real-Time Orders Sync
-    onSnapshot(ordersRef, (snapshot) => {
-        const fetchedOrders = [];
-        snapshot.forEach((doc) => {
-            fetchedOrders.push({ ...doc.data(), docId: doc.id });
-        });
-
-        fetchedOrders.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
-
-        window.ordersList = fetchedOrders;
-        if (typeof window.renderAdminOrdersList === 'function') window.renderAdminOrdersList();
-    }, (error) => console.error("Orders Sync Error:", error));
-
-    // C. Real-Time Social Posts Sync (No auto-seed)
-    onSnapshot(postsRef, (snapshot) => {
-        const fetchedPosts = [];
-        snapshot.forEach((doc) => {
-            fetchedPosts.push({ ...doc.data(), docId: doc.id });
-        });
-
-        fetchedPosts.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
-
-        window.feedPosts = fetchedPosts;
-        window.workingFeedPosts = JSON.parse(JSON.stringify(fetchedPosts));
-
-        if (typeof window.renderCustomerSocialFeeds === 'function') window.renderCustomerSocialFeeds();
-        if (typeof window.renderAdminPostsList === 'function') window.renderAdminPostsList();
-    }, (error) => console.error("Posts Sync Error:", error));
-
-    // D. Real-Time Registered Users Sync
-    onSnapshot(usersRef, (snapshot) => {
-        const fetchedUsers = [];
-        snapshot.forEach((doc) => {
-            fetchedUsers.push({ ...doc.data(), docId: doc.id });
-        });
-
-        window.registeredUsers = fetchedUsers;
-        if (typeof window.renderRegisteredUsers === 'function') window.renderRegisteredUsers();
-    }, (error) => console.error("Users Sync Error:", error));
-
-
-    // ==========================================
-    // MANUAL CRUD OPERATIONS VIA ADMIN & USER ACTIONS
-    // ==========================================
-
-    window.handleFoodFormSubmit = async function(event) {
+    window.handleFoodFormSubmit = function(event) {
         event.preventDefault();
         const editId = document.getElementById('editFoodId').value;
         const name = document.getElementById('foodFormName').value.trim();
         const price = parseInt(document.getElementById('foodFormPrice').value);
-        let image = document.getElementById('foodFormImage').value.trim();
+        let image = document.getElementById('foodFormImage').value.trim() || 'https://placehold.co/400x300/FF5A36/ffffff?text=ACP';
         const desc = document.getElementById('foodFormDesc').value.trim();
         const category = document.getElementById('foodFormCategory').value;
 
         if (!name || isNaN(price)) {
-            window.showNotification('Please fill in required name and price fields.', 'warning');
+            showNotification('Please fill in required fields.', 'warning');
             return;
         }
 
-        if (!image) image = 'https://placehold.co/400x300/FF5A36/ffffff?text=ACP';
+        const currentMenu = window.syncFirebaseData.getMenu();
 
-        try {
-            if (editId) {
-                const docRef = doc(db, "menu", editId.toString());
-                await updateDoc(docRef, { name, price, image, desc, category });
-                window.showNotification('Catalog item updated!');
-            } else {
-                const newId = Date.now();
-                const docRef = doc(db, "menu", newId.toString());
-                await setDoc(docRef, { id: newId, name, price, image, desc, category });
-                window.showNotification('Product added to database!');
+        if (editId) {
+            const target = currentMenu.find(x => x.id == editId);
+            if (target) {
+                target.name = name; target.price = price; target.image = image; target.desc = desc; target.category = category;
+                if (target.firebaseDocId) {
+                    updateDoc(doc(db, "menu", target.firebaseDocId), { name, price, image, desc, category }).catch(console.error);
+                }
+                showNotification('Food item updated!');
             }
-            window.resetAdminForm();
-        } catch (e) {
-            console.error("Catalog Save Error:", e);
-            window.showNotification('Failed to save item.', 'warning');
+        } else {
+            const newId = Date.now();
+            const newItem = { id: newId, name, price, image, desc, category, orderIndex: currentMenu.length };
+            currentMenu.push(newItem);
+            addDoc(menuCol, newItem).then(docRef => { newItem.firebaseDocId = docRef.id; }).catch(console.error);
+            showNotification('New product added!');
         }
+
+        // Instant UI Render (0ms Lag)
+        renderCustomerMenu();
+        renderLocalMenu();
+        renderDrinksMenu();
+        renderAdminCatalog();
+        resetAdminForm();
     };
 
-    window.deleteFoodCatalog = async function(id) {
-        try {
-            await deleteDoc(doc(db, "menu", id.toString()));
-            window.showNotification('Item removed from catalog.');
-        } catch (e) {
-            console.error("Delete Food Error:", e);
-        }
-    };
+    window.deleteFoodCatalog = function(id) {
+        const currentMenu = window.syncFirebaseData.getMenu();
+        const index = currentMenu.findIndex(x => x.id == id);
+        if (index !== -1) {
+            const target = currentMenu[index];
+            currentMenu.splice(index, 1);
+            if (window.cartItems && window.cartItems[id]) delete window.cartItems[id];
+            
+            // Instant UI Render
+            renderAdminCatalog();
+            renderCustomerMenu();
+            renderLocalMenu();
+            renderDrinksMenu();
+            showNotification('Item removed.');
 
-    window.saveCatalogOrderChanges = async function() {
-        try {
-            for (let i = 0; i < window.workingMenuData.length; i++) {
-                const item = window.workingMenuData[i];
-                await setDoc(doc(db, "menu", item.id.toString()), item, { merge: true });
+            if (target.firebaseDocId) {
+                deleteDoc(doc(db, "menu", target.firebaseDocId)).catch(console.error);
             }
-            document.getElementById('catalogUpdateBar')?.classList.add('hidden');
-            window.showNotification('Catalog order saved!');
-        } catch(e) {
-            console.error("Catalog reorder error:", e);
         }
     };
 
-    window.finalizeOrderAndSendWhatsApp = async function() {
-        const keys = Object.keys(window.cartItems);
+    window.saveCatalogOrderChanges = function() {
+        const working = (typeof workingMenuData !== 'undefined') ? workingMenuData : [];
+        for (let i = 0; i < working.length; i++) {
+            if (working[i].firebaseDocId) {
+                updateDoc(doc(db, "menu", working[i].firebaseDocId), { orderIndex: i }).catch(console.error);
+            }
+        }
+        showNotification('Catalog order saved!');
+        const updateBar = document.getElementById('catalogUpdateBar');
+        if (updateBar) updateBar.classList.add('hidden');
+    };
+
+    // ------------------------------------------
+    // 2. FAST REALTIME ORDERS SYNC
+    // ------------------------------------------
+    onSnapshot(query(ordersCol, orderBy("timestamp", "desc")), (snapshot) => {
+        if (snapshot.metadata.hasPendingWrites) return;
+
+        let orders = [];
+        snapshot.forEach((docSnap) => {
+            orders.push({ firebaseDocId: docSnap.id, ...docSnap.data() });
+        });
+        
+        window.syncFirebaseData.updateOrders(orders);
+        if (typeof renderAdminOrdersList === "function") renderAdminOrdersList();
+    });
+
+    window.finalizeOrderAndSendWhatsApp = function() {
+        const keys = Object.keys(window.cartItems || {});
         if (keys.length === 0) return;
 
         const name = document.getElementById('checkoutName').value.trim();
@@ -4245,17 +4275,17 @@
         const location = document.getElementById('checkoutLocation').value.trim();
 
         if (!name || !phone || !location) {
-            window.showNotification('Please fill in Name, Phone and Location.', 'warning');
+            showNotification('Please fill in Name, Phone and Location.', 'warning');
             return;
         }
 
-        const orderNum = Math.floor(1000 + Math.random() * 9000);
-        const orderId = '#ACP-' + orderNum;
+        const orderId = '#ACP-' + Math.floor(1000 + Math.random() * 9000);
         let itemsDetail = [];
         let grandTotal = 0;
+        const currentMenu = window.syncFirebaseData.getMenu();
 
         keys.forEach(id => {
-            const item = window.menuData.find(x => x.id == id);
+            const item = currentMenu.find(x => x.id == id);
             if (item) {
                 const qty = window.cartItems[id];
                 const total = item.price * qty;
@@ -4274,243 +4304,244 @@
             location: location,
             date: dateStr,
             time: timeStr,
-            timestamp: Date.now(),
             items: itemsDetail,
             total: grandTotal,
-            status: 'Pending'
+            status: 'Pending',
+            timestamp: Date.now()
         };
 
-        try {
-            await setDoc(doc(db, "orders", orderNum.toString()), newOrder);
+        // Instant Local Update & WhatsApp Launch (0ms Lag)
+        const currentOrders = window.syncFirebaseData.getOrders();
+        currentOrders.unshift(newOrder);
 
-            let waMsg = `*🛒 NEW ORDER - ALQADRI CHASKA POINT*\n`;
-            waMsg += `*Order ID:* ${orderId}\n`;
-            waMsg += `*Customer:* ${name}\n`;
-            waMsg += `*Phone:* ${phone}\n`;
-            waMsg += `*Location:* ${location}\n\n`;
-            waMsg += `*Items Ordered:*\n`;
-            itemsDetail.forEach(it => {
-                waMsg += `• ${it.name} x${it.qty} = Rs. ${it.total}\n`;
-            });
-            waMsg += `\n*Grand Total:* Rs. ${grandTotal}\n`;
-            waMsg += `Thank you! Please prepare my order.`;
+        let waMsg = `*🛒 NEW ORDER - ALQADRI CHASKA POINT*\n`;
+        waMsg += `*Order ID:* ${orderId}\n*Customer:* ${name}\n*Phone:* ${phone}\n*Location:* ${location}\n\n*Items Ordered:*\n`;
+        itemsDetail.forEach(it => { waMsg += `• ${it.name} x${it.qty} = Rs. ${it.total}\n`; });
+        waMsg += `\n*Grand Total:* Rs. ${grandTotal}\n`;
 
-            const whatsappUrl = `https://wa.me/923102434222?text=${encodeURIComponent(waMsg)}`;
+        closeCheckoutConfirmModal();
+        showNotification(`Order ${orderId} placed!`);
+        addOrderNotification(`Order Placed (${orderId})`, `Order sent to WhatsApp & kitchen.`);
 
-            window.closeCheckoutConfirmModal();
-            window.showNotification(`Order ${orderId} saved! Opening WhatsApp...`);
-            window.addOrderNotification(`Order Placed (${orderId})`, `Order sent to WhatsApp.`);
+        window.cartItems = {};
+        renderCustomerMenu();
+        renderLocalMenu();
+        renderDrinksMenu();
+        renderCartSummary();
+        renderAdminOrdersList();
 
-            window.cartItems = {};
-            window.renderCustomerMenu();
-            window.renderLocalMenu();
-            window.renderDrinksMenu();
-            window.renderCartSummary();
+        window.open(`https://wa.me/923102434222?text=${encodeURIComponent(waMsg)}`, '_blank');
 
-            window.open(whatsappUrl, '_blank');
-        } catch(e) {
-            console.error("Order Place Error:", e);
+        // Non-blocking background save to Firestore
+        addDoc(ordersCol, newOrder).then(docRef => { newOrder.firebaseDocId = docRef.id; }).catch(console.error);
+    };
+
+    window.approveAdminOrder = function(index) {
+        const currentOrders = window.syncFirebaseData.getOrders();
+        const ord = currentOrders[index];
+        if (ord) {
+            ord.status = 'Approved';
+            renderAdminOrdersList();
+            showNotification(`Order ${ord.id} approved!`);
+            addOrderNotification(`Order Approved (${ord.id})`, `Kitchen approved order ${ord.id}!`, true);
+
+            if (ord.firebaseDocId) {
+                updateDoc(doc(db, "orders", ord.firebaseDocId), { status: 'Approved' }).catch(console.error);
+            }
         }
     };
 
-    window.approveAdminOrder = async function(index) {
-        const ord = window.ordersList[index];
-        if (!ord) return;
+    window.removeAdminOrder = function(index) {
+        const currentOrders = window.syncFirebaseData.getOrders();
+        const ord = currentOrders[index];
+        if (ord) {
+            currentOrders.splice(index, 1);
+            renderAdminOrdersList();
+            showNotification('Order cleared.');
 
-        try {
-            const cleanDocId = ord.docId || ord.id.replace('#ACP-', '');
-            await updateDoc(doc(db, "orders", cleanDocId), { status: 'Approved' });
-            window.showNotification(`Order ${ord.id} Approved!`);
-        } catch(e) {
-            console.error("Approve order error:", e);
+            if (ord.firebaseDocId) {
+                deleteDoc(doc(db, "orders", ord.firebaseDocId)).catch(console.error);
+            }
         }
     };
 
-    window.removeAdminOrder = async function(index) {
-        const ord = window.ordersList[index];
-        if (!ord) return;
+    // ------------------------------------------
+    // 3. FAST REALTIME SOCIAL FEED SYNC
+    // ------------------------------------------
+    onSnapshot(query(postsCol, orderBy("orderIndex", "asc")), (snapshot) => {
+        if (snapshot.metadata.hasPendingWrites) return;
 
-        try {
-            const cleanDocId = ord.docId || ord.id.replace('#ACP-', '');
-            await deleteDoc(doc(db, "orders", cleanDocId));
-            window.showNotification('Order record deleted.');
-        } catch(e) {
-            console.error("Delete order error:", e);
-        }
-    };
+        let posts = [];
+        snapshot.forEach((docSnap) => {
+            posts.push({ firebaseDocId: docSnap.id, ...docSnap.data() });
+        });
+        
+        window.syncFirebaseData.updatePosts(posts);
 
-    window.handleFeedPostSubmit = async function(event) {
+        if (typeof renderCustomerSocialFeeds === "function") renderCustomerSocialFeeds();
+        if (typeof renderAdminPostsList === "function") renderAdminPostsList();
+    });
+
+    window.handleFeedPostSubmit = function(event) {
         event.preventDefault();
-
         const editId = document.getElementById('editPostId').value;
         const title = document.getElementById('postFormTitle').value.trim();
         const image = document.getElementById('postFormImage').value.trim();
         const desc = document.getElementById('postFormDesc').value.trim();
 
         if (!title || !image || !desc) {
-            window.showNotification('Please fill in required post details.', 'warning');
+            showNotification('Please fill in required post details.', 'warning');
             return;
         }
 
-        const adminAuthorName = "Alqadri Chaska Point";
+        const currentPosts = window.syncFirebaseData.getPosts();
 
-        try {
-            if (editId) {
-                await updateDoc(doc(db, "posts", editId.toString()), {
-                    title, image, desc, authorName: adminAuthorName
-                });
-                window.showNotification('Post updated live!');
-            } else {
-                const newId = Date.now();
-                await setDoc(doc(db, "posts", newId.toString()), {
-                    id: newId,
-                    title,
-                    image,
-                    desc,
-                    authorName: adminAuthorName,
-                    timestamp: Date.now(),
-                    likes: 0,
-                    likedUsers: [],
-                    comments: []
-                });
-                window.showNotification('New post broadcasted live!');
+        if (editId) {
+            const target = currentPosts.find(p => p.id == editId);
+            if (target) {
+                target.title = title; target.image = image; target.desc = desc;
+                if (target.firebaseDocId) {
+                    updateDoc(doc(db, "posts", target.firebaseDocId), { title, image, desc }).catch(console.error);
+                }
+                showNotification('Post updated!');
             }
-            window.resetPostForm();
-        } catch(e) {
-            console.error("Post Broadcast Error:", e);
-        }
-    };
-
-    window.deleteFeedPost = async function(postId) {
-        try {
-            await deleteDoc(doc(db, "posts", postId.toString()));
-            window.showNotification('Post deleted.', 'warning');
-        } catch(e) {
-            console.error("Delete Post Error:", e);
-        }
-    };
-
-    window.likePost = async function(id) {
-        const post = window.feedPosts.find(p => p.id === id);
-        if (!post) return;
-
-        let identifier = window.currentUser ? window.currentUser.phone : (window.guestSessionName || "guest_session");
-        let likedUsers = post.likedUsers ? [...post.likedUsers] : [];
-        let likes = post.likes || 0;
-
-        if (likedUsers.includes(identifier)) {
-            likedUsers = likedUsers.filter(u => u !== identifier);
-            likes = Math.max(0, likes - 1);
         } else {
-            likedUsers.push(identifier);
-            likes += 1;
-        }
-
-        try {
-            await updateDoc(doc(db, "posts", id.toString()), { likes, likedUsers });
-        } catch(e) {
-            console.error("Like post error:", e);
-        }
-    };
-
-    window.submitComment = async function(id) {
-        const post = window.feedPosts.find(p => p.id === id);
-        const input = document.getElementById(`comment-input-${id}`);
-        if (!post || !input) return;
-
-        const commentText = input.value.trim();
-        if (!commentText) return;
-
-        let commenterName = window.currentUser ? window.currentUser.name : (window.guestSessionName || "");
-        if (!commenterName) {
-            window.openGuestNameModal();
-            return;
-        }
-
-        let updatedComments = JSON.parse(JSON.stringify(post.comments || []));
-
-        const replyToIndex = input.dataset.replyToIndex;
-        if (replyToIndex !== undefined && replyToIndex !== "") {
-            const idx = parseInt(replyToIndex);
-            if (updatedComments[idx]) {
-                if (!updatedComments[idx].replies) updatedComments[idx].replies = [];
-                updatedComments[idx].replies.push({
-                    commenter: commenterName,
-                    text: commentText,
-                    isAdmin: false,
-                    timestamp: Date.now(),
-                    likes: 0,
-                    dislikes: 0,
-                    likedUsers: [],
-                    dislikedUsers: []
-                });
-            }
-            delete input.dataset.replyToIndex;
-        } else {
-            updatedComments.push({
-                commenter: commenterName,
-                text: commentText,
-                isAdmin: false,
+            const newPostId = Date.now();
+            const newPost = {
+                id: newPostId,
+                title,
+                image,
+                desc,
+                authorName: "Alqadri Chaska Point",
                 timestamp: Date.now(),
                 likes: 0,
-                dislikes: 0,
                 likedUsers: [],
-                dislikedUsers: [],
-                replies: []
-            });
+                comments: [],
+                orderIndex: currentPosts.length
+            };
+            currentPosts.unshift(newPost);
+            addDoc(postsCol, newPost).then(docRef => { newPost.firebaseDocId = docRef.id; }).catch(console.error);
+            showNotification('Post broadcasted live!');
         }
 
-        try {
-            await updateDoc(doc(db, "posts", id.toString()), { comments: updatedComments });
-            input.value = '';
-        } catch(e) {
-            console.error("Submit Comment Error:", e);
+        renderCustomerSocialFeeds();
+        renderAdminPostsList();
+        resetPostForm();
+    };
+
+    window.deleteFeedPost = function(postId) {
+        const currentPosts = window.syncFirebaseData.getPosts();
+        const index = currentPosts.findIndex(p => p.id === postId);
+        if (index !== -1) {
+            const target = currentPosts[index];
+            currentPosts.splice(index, 1);
+            renderCustomerSocialFeeds();
+            renderAdminPostsList();
+            showNotification('Post deleted.', 'warning');
+
+            if (target.firebaseDocId) {
+                deleteDoc(doc(db, "posts", target.firebaseDocId)).catch(console.error);
+            }
         }
     };
 
-    window.registerUser = async function() {
+    window.savePostOrderChanges = function() {
+        const working = (typeof workingFeedPosts !== 'undefined') ? workingFeedPosts : [];
+        for (let i = 0; i < working.length; i++) {
+            if (working[i].firebaseDocId) {
+                updateDoc(doc(db, "posts", working[i].firebaseDocId), { orderIndex: i }).catch(console.error);
+            }
+        }
+        showNotification('Post sequence saved!');
+        const updateBar = document.getElementById('postUpdateBar');
+        if (updateBar) updateBar.classList.add('hidden');
+    };
+
+    function syncPostDocNonBlocking(postId) {
+        const currentPosts = window.syncFirebaseData.getPosts();
+        const target = currentPosts.find(p => p.id === postId);
+        if (target && target.firebaseDocId) {
+            updateDoc(doc(db, "posts", target.firebaseDocId), {
+                likes: target.likes || 0,
+                likedUsers: target.likedUsers || [],
+                comments: target.comments || []
+            }).catch(console.error);
+        }
+    }
+
+    // Attach Non-Blocking background sync to comments & likes
+    ['likePost', 'submitComment', 'saveEditComment', 'saveEditReply', 'deleteComment', 'deleteReply', 'likeComment', 'dislikeComment', 'likeReply', 'dislikeReply'].forEach(fnName => {
+        const orig = window[fnName];
+        window[fnName] = function(...args) {
+            if (typeof orig === "function") orig(...args);
+            const postId = args[0];
+            if (postId) syncPostDocNonBlocking(postId);
+        };
+    });
+
+    // ------------------------------------------
+    // 4. FAST CUSTOMER CRM SYNC
+    // ------------------------------------------
+    onSnapshot(usersCol, (snapshot) => {
+        if (snapshot.metadata.hasPendingWrites) return;
+
+        let users = [];
+        snapshot.forEach((docSnap) => {
+            users.push({ firebaseDocId: docSnap.id, ...docSnap.data() });
+        });
+        
+        window.syncFirebaseData.updateUsers(users);
+        if (typeof renderRegisteredUsers === "function") renderRegisteredUsers();
+    });
+
+    window.registerUser = function() {
         const name = document.getElementById('regName').value.trim();
         const phone = document.getElementById('regPhone').value.trim();
         const loc = document.getElementById('regLocation').value.trim();
         const email = document.getElementById('regEmail').value.trim() || 'No Email';
-
+        
         if(!name || !phone || !loc) {
-            window.showNotification('Please fill in Name, Phone, and Location.', 'warning');
+            showNotification('Please fill in Name, Phone, and Location.', 'warning');
             return;
         }
 
         const newUser = { name, phone, location: loc, email, createdAt: Date.now() };
 
-        try {
-            const userDocRef = doc(db, "users", phone.replace(/[^0-9]/g, ''));
-            await setDoc(userDocRef, newUser);
+        // Instant UI Response
+        window.currentUser = newUser; 
+        localStorage.setItem('acp_current_user', JSON.stringify(window.currentUser));
 
-            window.currentUser = newUser;
-            localStorage.setItem('acp_current_user', JSON.stringify(window.currentUser));
-            window.updateUserAccountDisplay();
+        const currentUsers = window.syncFirebaseData.getUsers();
+        currentUsers.push(newUser);
 
-            window.showNotification(`Welcome, ${name}!`);
-            window.closeUserModal();
+        updateUserAccountDisplay();
+        showNotification(`Welcome, ${name}! Account saved.`);
+        closeUserModal();
+        
+        document.getElementById('regName').value = '';
+        document.getElementById('regPhone').value = '';
+        document.getElementById('regLocation').value = '';
+        document.getElementById('regEmail').value = '';
 
-            document.getElementById('regName').value = '';
-            document.getElementById('regPhone').value = '';
-            document.getElementById('regLocation').value = '';
-            document.getElementById('regEmail').value = '';
-        } catch(e) {
-            console.error("Register error:", e);
-        }
+        renderCustomerSocialFeeds();
+        renderRegisteredUsers();
+
+        // Background save
+        const sanitizedPhone = phone.replace(/[^0-9]/g, '');
+        setDoc(doc(db, "users", sanitizedPhone), newUser).catch(console.error);
     };
 
-    window.removeCustomerRecord = async function(idx) {
-        const user = window.registeredUsers[idx];
-        if (!user) return;
+    window.removeCustomerRecord = function(idx) {
+        const currentUsers = window.syncFirebaseData.getUsers();
+        const target = currentUsers[idx];
+        if (target) {
+            currentUsers.splice(idx, 1);
+            renderRegisteredUsers();
+            showNotification('Account deleted.', 'warning');
 
-        try {
-            const cleanDocId = user.docId || user.phone.replace(/[^0-9]/g, '');
-            await deleteDoc(doc(db, "users", cleanDocId));
-            window.showNotification('Customer deleted.');
-        } catch(e) {
-            console.error("Remove CRM user error:", e);
+            if (target.firebaseDocId) {
+                deleteDoc(doc(db, "users", target.firebaseDocId)).catch(console.error);
+            }
         }
     };
 </script>
