@@ -4052,13 +4052,44 @@
     </script>
 </body>
 </html>
-
 <!-- Firebase SDK Libraries (10.12.0 UMD) -->
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
 
 <script>
     (function() {
+        // INSTANT 0ms MEMORY HYDRATION (Eliminates page load delay)
+        try {
+            const cachedMenu = localStorage.getItem('acp_cached_menu');
+            const cachedPosts = localStorage.getItem('acp_cached_posts');
+
+            if (cachedMenu && typeof menuData !== 'undefined' && menuData.length === 0) {
+                const parsedMenu = JSON.parse(cachedMenu);
+                if (Array.isArray(parsedMenu) && parsedMenu.length > 0) {
+                    menuData.length = 0;
+                    menuData.push(...parsedMenu);
+                    workingMenuData = JSON.parse(JSON.stringify(menuData));
+                    if (typeof renderCustomerMenu === 'function') renderCustomerMenu();
+                    if (typeof renderLocalMenu === 'function') renderLocalMenu();
+                    if (typeof renderDrinksMenu === 'function') renderDrinksMenu();
+                    if (typeof renderAdminCatalog === 'function') renderAdminCatalog();
+                }
+            }
+
+            if (cachedPosts && typeof feedPosts !== 'undefined' && feedPosts.length === 0) {
+                const parsedPosts = JSON.parse(cachedPosts);
+                if (Array.isArray(parsedPosts) && parsedPosts.length > 0) {
+                    feedPosts.length = 0;
+                    feedPosts.push(...parsedPosts);
+                    workingFeedPosts = JSON.parse(JSON.stringify(feedPosts));
+                    if (typeof renderCustomerSocialFeeds === 'function') renderCustomerSocialFeeds();
+                    if (typeof renderAdminPostsList === 'function') renderAdminPostsList();
+                }
+            }
+        } catch(e) {
+            console.warn("Local hydration skip:", e);
+        }
+
         // Firebase configuration
         const firebaseConfig = {
           apiKey: "AIzaSyAU3wBPK_iKzH-F0qfRp9KFG4Keq8tmm2U",
@@ -4079,7 +4110,7 @@
         
         const db = firebase.firestore();
 
-        // 100% LIVE REAL-TIME FIRESTORE LISTENERS (NO STALE CACHE)
+        // FAST BACKGROUND FIRESTORE LISTENERS
 
         // 1. Sync Food Menu Catalog
         db.collection("menu").onSnapshot(
@@ -4087,10 +4118,12 @@
                 const items = [];
                 snapshot.forEach((doc) => { items.push({ ...doc.data() }); });
                 
-                // Clear local memory and populate ONLY with live Firestore data
                 menuData.length = 0;
                 if (items.length > 0) {
                     menuData.push(...items);
+                    try { localStorage.setItem('acp_cached_menu', JSON.stringify(items)); } catch(e){}
+                } else {
+                    try { localStorage.removeItem('acp_cached_menu'); } catch(e){}
                 }
                 workingMenuData = JSON.parse(JSON.stringify(menuData));
 
@@ -4098,7 +4131,7 @@
                 if (typeof renderLocalMenu === 'function') renderLocalMenu();
                 if (typeof renderDrinksMenu === 'function') renderDrinksMenu();
                 if (typeof renderAdminCatalog === 'function') renderAdminCatalog();
-                console.log("✅ Live Menu Synced from Firestore:", items.length, "items");
+                console.log("✅ Live Menu Synced:", items.length, "items");
             },
             (error) => { console.error("❌ Firestore Menu Error:", error.message); }
         );
@@ -4110,16 +4143,18 @@
                 snapshot.forEach((doc) => { posts.push({ ...doc.data() }); });
                 posts.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
 
-                // Clear local memory and populate ONLY with live Firestore data
                 feedPosts.length = 0;
                 if (posts.length > 0) {
                     feedPosts.push(...posts);
+                    try { localStorage.setItem('acp_cached_posts', JSON.stringify(posts)); } catch(e){}
+                } else {
+                    try { localStorage.removeItem('acp_cached_posts'); } catch(e){}
                 }
                 workingFeedPosts = JSON.parse(JSON.stringify(feedPosts));
 
                 if (typeof renderCustomerSocialFeeds === 'function') renderCustomerSocialFeeds();
                 if (typeof renderAdminPostsList === 'function') renderAdminPostsList();
-                console.log("✅ Live Posts Synced from Firestore:", posts.length, "posts");
+                console.log("✅ Live Posts Synced:", posts.length, "posts");
             },
             (error) => { console.error("❌ Firestore Posts Error:", error.message); }
         );
@@ -4136,7 +4171,7 @@
                 }
 
                 if (typeof renderAdminOrdersList === 'function') renderAdminOrdersList();
-                console.log("✅ Live Orders Synced from Firestore:", orders.length, "orders");
+                console.log("✅ Live Orders Synced:", orders.length, "orders");
             },
             (error) => { console.error("❌ Firestore Orders Error:", error.message); }
         );
@@ -4153,7 +4188,7 @@
                 }
 
                 if (typeof renderRegisteredUsers === 'function') renderRegisteredUsers();
-                console.log("✅ Live Users Synced from Firestore:", users.length, "users");
+                console.log("✅ Live Users Synced:", users.length, "users");
             },
             (error) => { console.error("❌ Firestore Users Error:", error.message); }
         );
