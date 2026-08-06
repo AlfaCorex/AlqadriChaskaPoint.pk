@@ -1,0 +1,2399 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ACP Premium Fast Food & Traditional Twist</title>
+
+    <!-- PWA Installation Tags -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#FF5A36">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="icon-192.png">
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,500&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- html2canvas -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Firebase SDK Libraries (from Backend.txt) -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+
+    <style>
+        :root {
+            --primary: #FF5A36;
+            --primary-hover: #E04825;
+            --primary-light: rgba(255, 90, 54, 0.1);
+            --secondary: #0F172A;
+            --accent: #F97316;
+            --background: #F8FAFC;
+            --app-bg: #FAFAF9;
+            --card-bg: #FFFFFF;
+            --text-main: #334155;
+            --text-muted: #64748B;
+            --border-color: #E2E8F0;
+            --radius-lg: 24px;
+            --radius-md: 16px;
+            --radius-sm: 10px;
+            --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.03), 0 2px 4px -1px rgba(0, 0, 0, 0.02);
+            --shadow-md: 0 10px 25px -5px rgba(15, 23, 42, 0.05), 0 8px 16px -6px rgba(15, 23, 42, 0.03);
+            --shadow-lg: 0 20px 40px -15px rgba(255, 90, 54, 0.12);
+            --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .glow-on-hover {
+            width: 138px;
+            height: 60px;
+            border: none;
+            outline: none;
+            color: #fff;
+            background: #0F172A;
+            position: relative;
+            z-index: 0;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2px 4px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            overflow: hidden;
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+        }
+
+        .glow-on-hover::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: conic-gradient(from 0deg, transparent 0%, #000000 25%, #475569 50%, #000000 75%, transparent 100%);
+            animation: rotateGlow 3.5s linear infinite;
+            z-index: -2;
+            opacity: 1;
+        }
+
+        .glow-on-hover::after {
+            content: '';
+            position: absolute;
+            inset: 2px;
+            background: #0F172A;
+            border-radius: 8px;
+            z-index: -1;
+            transition: background 0.3s ease;
+        }
+
+        .glow-on-hover:hover {
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.6);
+            transform: translateY(-2px);
+        }
+
+        @keyframes rotateGlow {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .btn-tab-effect {
+            transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn-tab-effect::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 50%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+            transform: skewX(-25deg);
+            transition: none;
+        }
+        
+        .btn-tab-effect:hover::after {
+            left: 150%;
+            transition: left 0.95s ease-in-out;
+        }
+
+        .btn-tab-active {
+            box-shadow: 0 4px 14px rgba(255, 90, 54, 0.35), inset 0 1px 3px rgba(255, 255, 255, 0.2);
+            transform: scale(1.02);
+        }
+
+        .btn-tab-inactive:hover {
+            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
+            border-color: rgba(255, 90, 54, 0.25);
+            transform: translateY(-1px);
+        }
+
+        .btn-action-effect {
+            position: relative;
+            overflow: hidden;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .btn-action-effect::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 50%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.35), transparent);
+            transform: skewX(-25deg);
+        }
+        .btn-action-effect:hover::after {
+            left: 150%;
+            transition: left 0.75s ease-in-out;
+        }
+
+        .social-glow-wa:hover {
+            box-shadow: 0 0 12px rgba(37, 211, 102, 0.65);
+            transform: translateY(-2px) scale(1.06);
+        }
+        .social-glow-fb:hover {
+            box-shadow: 0 0 12px rgba(24, 119, 242, 0.65);
+            transform: translateY(-2px) scale(1.06);
+        }
+        .social-glow-ig:hover {
+            box-shadow: 0 0 12px rgba(238, 42, 123, 0.65);
+            transform: translateY(-2px) scale(1.06);
+        }
+        .social-glow-tt:hover {
+            box-shadow: 0 0 12px rgba(0, 242, 254, 0.65);
+            transform: translateY(-2px) scale(1.06);
+        }
+
+        @keyframes ring-animation {
+            0% { transform: rotate(0); }
+            10% { transform: rotate(25deg); }
+            20% { transform: rotate(-20deg); }
+            30% { transform: rotate(20deg); }
+            40% { transform: rotate(-15deg); }
+            50% { transform: rotate(0); }
+            100% { transform: rotate(0); }
+        }
+
+        .animate-ring {
+            display: inline-block;
+            animation: ring-animation 2s ease infinite;
+            transform-origin: center;
+        }
+
+        .hotline-highlight {
+            position: relative;
+            display: inline-block;
+            color: #FF5A36;
+            font-weight: 900;
+            text-shadow: 0 0 10px rgba(255, 90, 54, 0.3);
+            transition: var(--transition);
+            letter-spacing: 0.5px;
+        }
+        
+        .hotline-highlight:hover {
+            color: #ffffff;
+            text-shadow: 0 0 15px rgba(255, 90, 54, 1);
+            transform: scale(1.05);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--background);
+            color: var(--text-main);
+            line-height: 1.5;
+            overflow-x: hidden;
+        }
+
+        .app-container {
+            max-width: 480px;
+            margin: 0 auto;
+            background-color: var(--app-bg);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            box-shadow: 0 0 60px rgba(15, 23, 42, 0.1);
+            border-left: 1px solid rgba(15, 23, 42, 0.04);
+            border-right: 1px solid rgba(15, 23, 42, 0.04);
+        }
+
+        .app-header {
+            position: sticky;
+            top: 0;
+            z-index: 999;
+            background: rgba(250, 250, 249, 0.95);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border-bottom: 2px solid rgba(226, 232, 240, 0.95);
+            box-shadow: 0 4px 12px -2px rgba(15, 23, 42, 0.05);
+            transition: var(--transition);
+        }
+
+        .header-content {
+            padding: 10px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .header-brand {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            min-width: 0;
+        }
+
+        .header-logo-container {
+            position: relative;
+            width: 34px;
+            height: 34px;
+            background: linear-gradient(135deg, #FF5A36, #F97316);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ffffff;
+            box-shadow: var(--shadow-sm);
+            border: 2px solid #ffffff;
+            flex-shrink: 0;
+            font-size: 0.85rem;
+        }
+
+        .header-logo-badge {
+            position: absolute;
+            bottom: -2px;
+            right: -2px;
+            background-color: var(--secondary);
+            color: #ffffff;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            font-size: 7px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1.5px solid #ffffff;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+        }
+
+        .header-title-text {
+            font-family: 'Playfair Display', serif;
+            font-size: 0.95rem;
+            font-weight: 800;
+            color: var(--secondary);
+            letter-spacing: -0.3px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .app-hero {
+            padding: 24px 16px;
+            text-align: center;
+            background-color: #FBF1EF;
+            border-bottom: 1px dashed rgba(226, 232, 240, 0.85);
+        }
+
+        .hero-title-compact {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.7rem;
+            font-weight: 800;
+            color: var(--secondary);
+            line-height: 1.25;
+            margin-bottom: 6px;
+        }
+
+        .hero-title-compact span {
+            color: var(--primary);
+        }
+
+        .hero-desc-compact {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            max-width: 330px;
+            margin: 0 auto;
+        }
+
+        .app-main {
+            padding: 20px 16px;
+            flex-grow: 1;
+        }
+
+        .section-header-compact {
+            font-size: 1rem;
+            font-weight: 800;
+            color: var(--secondary);
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-indicator {
+            width: 4px;
+            height: 16px;
+            background-color: var(--primary);
+            border-radius: 2px;
+            display: inline-block;
+        }
+
+        .grid-fast-food {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .portrait-card {
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            box-shadow: var(--shadow-sm);
+            transition: all 0.2s ease-in-out;
+        }
+
+        .portrait-card:hover {
+            transform: none !important;
+        }
+
+        .card-image-box {
+            height: 85px;
+            background-size: cover;
+            background-position: center;
+            background-color: #E2E8F0;
+            position: relative;
+        }
+
+        .card-info-box {
+            padding: 6px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            flex-grow: 1;
+        }
+
+        .card-title-compact {
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: var(--secondary);
+            line-height: 1.25;
+            margin-bottom: 2px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            height: 28px;
+        }
+
+        .card-price-compact {
+            font-size: 0.75rem;
+            font-weight: 800;
+            color: var(--primary);
+            margin-bottom: 4px;
+        }
+
+        .selector-box-compact {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #F1F5F9;
+            border-radius: 30px;
+            padding: 2px;
+        }
+
+        .btn-qty-mini {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background-color: #FFFFFF;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: 800;
+            color: var(--secondary);
+            cursor: pointer;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            transition: var(--transition);
+        }
+
+        .btn-qty-mini:hover {
+            background-color: var(--primary);
+            color: #FFFFFF;
+        }
+
+        .qty-val-mini {
+            font-size: 0.75rem;
+            font-weight: 800;
+            width: 18px;
+            text-align: center;
+        }
+
+        .grid-local-food {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .local-mini-card {
+            border-radius: var(--radius-sm);
+            padding: 0;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            box-shadow: var(--shadow-sm);
+            height: 100%;
+            transition: all 0.2s ease-in-out;
+        }
+
+        .local-mini-card:hover {
+            transform: none !important;
+        }
+
+        .local-mini-card img {
+            width: 100%;
+            height: 55px;
+            object-fit: cover;
+            margin: 0 0 2px 0;
+            border: none;
+            border-radius: 0;
+        }
+
+        .local-title-compact {
+            font-size: 0.65rem;
+            font-weight: 700;
+            color: var(--secondary);
+            line-height: 1.2;
+            height: 24px;
+            overflow: hidden;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            margin-bottom: 2px;
+            width: 100%;
+            padding: 0 4px;
+        }
+
+        .local-price-compact {
+            font-size: 0.7rem;
+            font-weight: 800;
+            color: var(--primary);
+            margin-bottom: 4px;
+            padding: 0 4px;
+        }
+
+        .checkout-box-mobile {
+            background-color: var(--card-bg);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border-color);
+            padding: 16px;
+            margin-top: 10px;
+            box-shadow: var(--shadow-md);
+        }
+
+        .receipt-mini-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.8rem;
+            margin-bottom: 12px;
+        }
+
+        .receipt-mini-table th {
+            text-align: left;
+            padding-bottom: 6px;
+            color: var(--text-muted);
+            border-bottom: 1px solid var(--border-color);
+            text-transform: uppercase;
+            font-size: 0.65rem;
+            letter-spacing: 0.5px;
+        }
+
+        .receipt-mini-table td {
+            padding: 8px 0;
+            border-bottom: 1px solid #FAF9F6;
+            color: var(--secondary);
+        }
+
+        .bill-summary-compact {
+            background: #FAF9F6;
+            border-radius: var(--radius-md);
+            padding: 12px;
+            margin-bottom: 14px;
+            font-size: 0.8rem;
+        }
+
+        .bill-row-compact {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 6px;
+            color: var(--text-muted);
+        }
+
+        .bill-row-compact.grand {
+            margin-bottom: 0;
+            padding-top: 8px;
+            border-top: 1px dashed var(--border-color);
+            font-weight: 800;
+            color: var(--secondary);
+            font-size: 1rem;
+        }
+
+        .bill-row-compact.grand span:last-child {
+            color: var(--primary);
+        }
+
+        .btn-order-approve {
+            width: 100%;
+            background-color: var(--primary);
+            color: white;
+            padding: 10px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 0.8rem;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            box-shadow: 0 4px 12px rgba(255, 90, 54, 0.25);
+            transition: var(--transition);
+        }
+
+        .btn-order-approve:hover {
+            background-color: var(--primary-hover);
+            transform: translateY(-1px);
+        }
+
+        .invoice-overlay-backdrop {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 9999;
+            background: rgba(15, 23, 42, 0.65);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            overflow-y: auto;
+        }
+
+        .receipt-container {
+            width: 100%;
+            max-width: 280px;
+            border-radius: 20px;
+            background: #ffffff;
+            border: 1px solid #E2E8F0;
+            box-shadow: 0 25px 50px -12px rgba(15, 23, 42, 0.2);
+            overflow: hidden;
+            position: relative;
+            margin: auto;
+        }
+
+        .receipt-header-strip {
+            height: 8px;
+            background: linear-gradient(90deg, #FF5A36 0%, #F97316 100%);
+        }
+
+        .receipt-body {
+            padding: 18px;
+        }
+
+        .receipt-dashed-tear {
+            border-top: 2px dashed #CBD5E1;
+            margin: 14px 0;
+            position: relative;
+        }
+
+        .receipt-dashed-tear::before, .receipt-dashed-tear::after {
+            content: '';
+            position: absolute;
+            top: -10px;
+            width: 16px;
+            height: 16px;
+            background: var(--app-bg);
+            border-radius: 50%;
+            border: 1px solid #cbd5e1;
+            box-sizing: border-box;
+        }
+
+        .receipt-dashed-tear::before {
+            left: -28px;
+            clip-path: polygon(50% 0%, 100% 0%, 100% 100%, 50% 100%);
+        }
+
+        .receipt-dashed-tear::after {
+            right: -28px;
+            clip-path: polygon(0% 0%, 50% 0%, 50% 100%, 0% 100%);
+        }
+
+        @media print {
+            body * { visibility: hidden; }
+            .receipt-container, .receipt-container * { visibility: visible; }
+            .receipt-container {
+                position: absolute; left: 50%; top: 10px;
+                transform: translateX(-50%); width: 100%;
+                max-width: 280px; border: none; box-shadow: none;
+            }
+            .no-print { display: none !important; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="toastContainer" class="fixed top-6 right-6 z-[10000] space-y-2 pointer-events-none max-w-[320px]"></div>
+
+    <!-- Main Mobile Responsive Container -->
+    <div id="customer-page" class="app-container shadow-2xl">
+        
+        <header class="app-header no-print">
+            <div class="header-content">
+                <div class="flex items-center justify-between w-full">
+                    <a href="#" class="header-brand">
+                        <div class="header-logo-container">
+                            <i class="fa-solid fa-utensils text-sm"></i>
+                            <div class="header-logo-badge" title="Fast Food & Twist">
+                                <i class="fa-solid fa-burger"></i>
+                            </div>
+                        </div>
+                        <span class="header-title-text font-serif">Alqadri Chaska Point</span>
+                    </a>
+                    
+                    <div class="flex items-center gap-2">
+                        <button onclick="openNotificationsModal()" class="p-1.5 text-slate-700 hover:text-primary transition-all relative" title="Notifications">
+                            <i class="fa-solid fa-bell text-base"></i>
+                            <span id="navBellBadge" class="absolute top-0.5 right-0.5 w-2 h-2 bg-red-500 rounded-full border-2 border-white hidden animate-pulse"></span>
+                        </button>
+
+                        <button id="navUserBtn" onclick="openUserModal()" class="transition-all" title="User Account">
+                        </button>
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-center gap-3 w-full">
+                    <button id="tabBtnStore" onclick="switchCustomerTab('store')" class="btn-tab-effect btn-tab-active flex-1 max-w-[180px] flex items-center justify-center gap-2 py-2 px-4 text-xs font-black rounded-xl border border-[#FF5A36] bg-[#FF5A36] text-white shadow-md active:scale-95">
+                        <i class="fa-solid fa-utensils"></i> Order Menu
+                    </button>
+                    <button id="tabBtnFeeds" onclick="switchCustomerTab('feeds')" class="btn-tab-effect btn-tab-inactive flex-1 max-w-[180px] flex items-center justify-center gap-2 py-2 px-4 text-xs font-black rounded-xl border border-slate-200 bg-white text-slate-700 shadow-sm relative active:scale-95">
+                        <i class="fa-solid fa-rss text-orange-500"></i> Social Feed
+                        <span class="absolute -top-1 -right-1 w-2 h-2 bg-rose-500 rounded-full animate-ping"></span>
+                        <span class="absolute -top-1 -right-1 w-2 h-2 bg-rose-500 rounded-full"></span>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <section id="customer-hero" class="app-hero no-print">
+            <h1 class="hero-title-compact">
+                Premium <span>Twist of Taste</span>
+            </h1>
+            <p class="hero-desc-compact">
+                Fresh daily local bites and premium fast food prepared with secret spices of Gujranwala.
+            </p>
+        </section>
+
+        <!-- Dynamic Main Views -->
+        <main class="app-main flex-grow">
+            
+            <!-- VIEW 1: STORE MENU -->
+            <div id="view-store" class="space-y-6">
+                
+                <div>
+                    <h2 class="section-header-compact">
+                        <span class="section-indicator"></span>Fast Food Menu
+                    </h2>
+                    <div class="grid-fast-food" id="menuGridContainer"></div>
+                </div>
+
+                <hr class="border-t-2 border-slate-200/80 my-5">
+
+                <div>
+                    <h2 class="section-header-compact">
+                        <span class="section-indicator"></span>Local Delicacies
+                    </h2>
+                    <div class="grid-local-food" id="localMenuGridContainer"></div>
+                </div>
+
+                <hr class="border-t-2 border-slate-200/80 my-5">
+
+                <div>
+                    <h2 class="section-header-compact">
+                        <span class="section-indicator"></span>Cold Drinks & Beverages
+                    </h2>
+                    <div class="grid-local-food" id="drinksMenuGridContainer"></div>
+                </div>
+
+                <!-- Shopping Cart Section -->
+                <div id="order-section" class="no-print mt-4">
+                    <div class="checkout-box-mobile">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-sm font-extrabold text-slate-900 flex items-center gap-2">
+                                <i class="fa-solid fa-shopping-basket text-primary"></i> Current Basket
+                            </h3>
+                            <button id="clearCartBtn" onclick="clearCart()" class="text-[10px] font-extrabold text-red-500 hover:text-red-700 transition-all flex items-center gap-1 px-2.5 py-1.5 bg-red-50 rounded-full">
+                                <i class="fa-solid fa-trash-can"></i> Clear
+                            </button>
+                        </div>
+
+                        <div id="emptyCart" class="py-8 text-center text-slate-400 text-xs font-semibold">
+                            <i class="fa-solid fa-cart-shopping text-xl text-slate-300 mb-2 block"></i>
+                            Select delicious items to begin your order checkout.
+                        </div>
+
+                        <div id="activeCart" class="hidden">
+                            <table class="receipt-mini-table">
+                                <thead>
+                                    <tr>
+                                        <th>Item Name</th>
+                                        <th class="text-center" style="width: 50px;">Qty</th>
+                                        <th class="text-right" style="width: 80px;">Price</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="cartTableRows"></tbody>
+                            </table>
+
+                            <div class="bill-summary-compact">
+                                <div class="bill-row-compact">
+                                    <span>Subtotal</span>
+                                    <span id="txtSubtotal">Rs. 0</span>
+                                </div>
+                                <div class="bill-row-compact">
+                                    <span>Inclusive Taxes (GST)</span>
+                                    <span>Rs. 0</span>
+                                </div>
+                                <div class="bill-row-compact grand">
+                                    <span>Grand Total</span>
+                                    <span id="txtGrandTotal">Rs. 0</span>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-center gap-2 w-full mt-3">
+                                <button class="btn-order-approve btn-action-effect flex-1 !py-2.5 !px-3 !text-xs !rounded-xl" onclick="openCheckoutConfirmModal()">
+                                    <i class="fa-solid fa-circle-check"></i> Place Order
+                                </button>
+                                <button class="btn-order-approve btn-action-effect flex-1 !py-2.5 !px-3 !text-xs !rounded-xl" style="background-color: #0F172A;" onclick="generateStoreInvoice()">
+                                    <i class="fa-solid fa-receipt"></i> View Receipt
+                                </button>
+                                <button onclick="clearCart()" class="p-2.5 bg-red-50 hover:bg-red-500 text-red-500 hover:text-white border border-red-200 rounded-xl transition-all font-bold text-xs flex items-center justify-center shrink-0 shadow-sm" title="Cancel Order Selection">
+                                    <i class="fa-solid fa-xmark text-sm"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VIEW 2: SOCIAL FEEDS -->
+            <div id="view-feeds" class="hidden space-y-4">
+                <div class="bg-gradient-to-r from-orange-50 to-amber-50 rounded-2xl p-4 border border-orange-200/50 flex items-center gap-3 mb-2">
+                    <div class="w-10 h-10 rounded-full bg-orange-500/10 flex items-center justify-center text-orange-600">
+                        <i class="fa-solid fa-bullhorn text-lg"></i>
+                    </div>
+                    <div>
+                        <h4 class="text-xs font-black text-slate-800">Exclusive Social Board</h4>
+                        <p class="text-[10px] text-slate-500">Live discount deals, announcements and recipes!</p>
+                    </div>
+                </div>
+
+                <div id="feedPostsContainer" class="space-y-6"></div>
+            </div>
+
+        </main>
+
+        <!-- FLOATING STICKY ORDER BAR -->
+        <div id="floatingCartBar" class="fixed bottom-4 left-1/2 -translate-x-1/2 w-[calc(100%-2rem)] max-w-[440px] z-[9990] bg-slate-900/95 backdrop-blur-md border border-slate-700/80 p-3 rounded-2xl shadow-2xl transition-all duration-300 translate-y-24 opacity-0 pointer-events-none no-print">
+            <div class="flex items-center justify-between gap-2">
+                <div class="flex flex-col pl-1 cursor-pointer" onclick="document.getElementById('order-section').scrollIntoView({behavior: 'smooth'})">
+                    <span class="text-[9px] text-slate-400 font-extrabold uppercase tracking-wider"><span id="floatingCartCount">0</span> Items</span>
+                    <span id="floatingCartTotal" class="text-sm font-black text-amber-400">Rs. 0</span>
+                </div>
+                <div class="flex items-center gap-1.5">
+                    <button onclick="openCheckoutConfirmModal()" class="btn-action-effect bg-[#FF5A36] hover:bg-[#E04825] text-white py-2 px-3 rounded-xl font-bold text-xs shadow-md flex items-center gap-1 transition-all active:scale-95" title="Place Order">
+                        <i class="fa-solid fa-circle-check text-xs"></i> Place Order
+                    </button>
+                    <button onclick="generateStoreInvoice()" class="btn-action-effect bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-600 py-2 px-2.5 rounded-xl font-bold text-xs shadow-md flex items-center gap-1 transition-all active:scale-95" title="View Receipt">
+                        <i class="fa-solid fa-receipt text-xs"></i> Receipt
+                    </button>
+                    <button onclick="clearCart()" class="bg-red-500/20 hover:bg-red-500 text-red-400 hover:text-white border border-red-500/30 p-2 rounded-xl text-xs font-bold transition-all active:scale-95 flex items-center justify-center shrink-0" title="Cancel Selection">
+                        <i class="fa-solid fa-xmark text-sm"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <footer id="mainFooterSection" class="bg-slate-900 text-slate-300 p-6 text-center space-y-4 no-print mt-8 border-t-2 border-primary">
+        </footer>
+
+    </div>
+
+    <!-- MODALS SECTION -->
+    <!-- Checkout Confirm Modal -->
+    <div id="checkoutConfirmModal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-md z-[10000] hidden flex items-center justify-center p-4" onclick="closeCheckoutConfirmModal()">
+        <div class="bg-white rounded-[24px] max-w-sm w-full p-5 border border-slate-200 relative shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto text-center" onclick="event.stopPropagation()">
+            <button onclick="closeCheckoutConfirmModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
+                <i class="fa-solid fa-circle-xmark text-xl"></i>
+            </button>
+
+            <div class="flex flex-col items-center justify-center border-b border-slate-100 pb-3">
+                <div class="w-10 h-10 bg-orange-100 text-[#FF5A36] rounded-full flex items-center justify-center text-lg shrink-0 mb-1">
+                    <i class="fa-solid fa-circle-check"></i>
+                </div>
+                <h3 class="text-sm font-extrabold text-slate-900">Confirm Order Details</h3>
+                <p class="text-[10px] text-slate-400">Review selected items & delivery address</p>
+            </div>
+
+            <div class="bg-amber-50 border border-amber-200 text-amber-800 p-2 rounded-xl text-[10px] font-bold flex items-center justify-center gap-1.5 text-center mx-auto max-w-[280px]">
+                <i class="fa-solid fa-triangle-exclamation text-amber-600"></i>
+                <span>Note: Home delivery facility is not available.</span>
+            </div>
+
+            <div class="bg-slate-50 p-3 rounded-2xl border border-slate-200 space-y-2 text-left">
+                <div id="checkoutModalItemsList" class="space-y-1 max-h-32 overflow-y-auto pr-1"></div>
+                <div class="flex justify-between items-center pt-2 border-t border-slate-200 font-extrabold text-xs text-slate-900">
+                    <span>Total Balance:</span>
+                    <span id="checkoutModalGrandTotal" class="text-sm font-black text-[#FF5A36]">Rs. 0</span>
+                </div>
+            </div>
+
+            <form onsubmit="event.preventDefault(); finalizeOrderAndSendWhatsApp();" class="space-y-3 text-left">
+                <div class="space-y-2.5 pb-2">
+                    <div>
+                        <label class="block text-slate-500 mb-1 uppercase text-[9px] font-bold tracking-wider">Your Full Name *</label>
+                        <input type="text" id="checkoutName" required placeholder="Enter Your Name *" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none text-xs font-bold text-slate-850 focus:border-[#FF5A36]">
+                    </div>
+
+                    <div>
+                        <label class="block text-slate-500 mb-1 uppercase text-[9px] font-bold tracking-wider">Phone Number *</label>
+                        <input type="tel" id="checkoutPhone" required placeholder="03XXXXXXXXX *" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none text-xs font-bold text-slate-850 focus:border-[#FF5A36]">
+                    </div>
+
+                    <div>
+                        <label class="block text-slate-500 mb-1 uppercase text-[9px] tracking-wider">Location / Address *</label>
+                        <input type="text" id="checkoutLocation" required placeholder="Street / Colony / Area in Gujranwala *" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none text-xs font-bold text-slate-850 focus:border-[#FF5A36]">
+                    </div>
+                </div>
+
+                <button type="submit" class="w-full py-3 bg-[#FF5A36] hover:bg-[#E04825] text-white font-extrabold rounded-xl text-xs transition-all shadow-md flex items-center justify-center gap-2 mt-4">
+                    <i class="fa-brands fa-whatsapp text-base"></i> Confirm and place order
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- User Auth Modal -->
+    <div id="userAuthModal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-md z-[10000] hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-[24px] max-w-xs w-full p-6 border border-slate-200 relative shadow-2xl">
+            <button onclick="closeUserModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
+                <i class="fa-solid fa-circle-xmark text-xl"></i>
+            </button>
+            
+            <div id="userAuthContainer">
+                <div class="flex bg-slate-100 p-1 rounded-xl mb-4 text-xs font-bold">
+                    <button type="button" onclick="switchAuthMode('signin')" id="btnAuthTabSignIn" class="flex-1 py-1.5 rounded-lg text-center transition-all bg-white text-[#FF5A36] shadow-sm">
+                        Sign In
+                    </button>
+                    <button type="button" onclick="switchAuthMode('register')" id="btnAuthTabRegister" class="flex-1 py-1.5 rounded-lg text-center transition-all text-slate-600 hover:text-slate-900">
+                        Register
+                    </button>
+                </div>
+
+                <div id="userSignInView">
+                    <div class="text-center mb-3">
+                        <h3 class="text-sm font-extrabold text-slate-900 font-serif">Welcome Back!</h3>
+                        <p class="text-slate-500 text-[10px] mt-0.5">Sign in with your registered phone number</p>
+                    </div>
+
+                    <form onsubmit="event.preventDefault(); signInUser();" class="space-y-3">
+                        <div>
+                            <input type="tel" id="signInPhone" required placeholder="Phone Number *" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg outline-none text-xs font-bold">
+                        </div>
+                        <button type="submit" class="w-full py-2.5 bg-[#FF5A36] hover:bg-[#E04825] text-white font-bold rounded-lg text-xs transition-all shadow-md">
+                            Sign In
+                        </button>
+                    </form>
+                </div>
+
+                <div id="userRegView" class="hidden">
+                    <div class="text-center mb-3">
+                        <h3 class="text-sm font-extrabold text-slate-900 font-serif">Register New Account</h3>
+                        <p class="text-slate-500 text-[10px] mt-0.5">Fill in your details for faster checkout</p>
+                    </div>
+                    
+                    <form onsubmit="event.preventDefault(); registerUser();" class="space-y-3">
+                        <div>
+                            <input type="text" id="regName" required placeholder="Full Name *" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg outline-none text-xs">
+                        </div>
+                        <div>
+                            <input type="tel" id="regPhone" required placeholder="Phone Number *" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg outline-none text-xs">
+                        </div>
+                        <div>
+                            <input type="text" id="regLocation" required placeholder="Location/Address *" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg outline-none text-xs">
+                        </div>
+                        <div>
+                            <input type="email" id="regEmail" placeholder="Email (Optional)" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg outline-none text-xs">
+                        </div>
+                        <button type="submit" class="w-full py-2.5 bg-[#FF5A36] hover:bg-[#E04825] text-white font-bold rounded-lg text-xs transition-all shadow-md">
+                            Register Account
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <div id="userProfileView" class="hidden text-center">
+                <div class="w-14 h-14 bg-orange-100 rounded-full flex items-center justify-center text-2xl text-[#FF5A36] mx-auto mb-3 shadow-inner">
+                    <i class="fa-solid fa-user-check"></i>
+                </div>
+                <h3 class="text-base font-extrabold text-slate-900 font-serif" id="profileName">User Name</h3>
+                <p class="text-slate-500 text-xs mt-0.5" id="profilePhone">0300-0000000</p>
+                <p class="text-slate-400 text-[10px] mt-0.5 truncate px-2" id="profileLocation">Location</p>
+                
+                <div class="pt-4 mt-4 border-t border-slate-100 space-y-2">
+                    <button onclick="logoutUser()" class="w-full py-2.5 bg-red-50 hover:bg-red-500 text-red-600 hover:text-white border border-red-200 font-bold rounded-xl text-xs transition-all shadow-sm flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-right-from-bracket"></i> Sign Out / Exit Account
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Guest Name Modal -->
+    <div id="guestNameModal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-md z-[10000] hidden flex items-center justify-center p-4" onclick="closeGuestNameModal()">
+        <div class="bg-white rounded-[24px] max-w-xs w-full p-6 border border-slate-200 relative shadow-2xl text-center space-y-3" onclick="event.stopPropagation()">
+            <div class="w-12 h-12 bg-orange-100 text-[#FF5A36] rounded-full flex items-center justify-center text-xl mx-auto shadow-inner">
+                <i class="fa-solid fa-user-pen"></i>
+            </div>
+            <h3 class="text-sm font-black text-slate-900 font-serif">Welcome Guest Foodie!</h3>
+            <p class="text-[11px] text-slate-500 font-medium leading-relaxed bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                💡 Enter your name once to comment on social posts during this session.
+            </p>
+            
+            <form onsubmit="event.preventDefault(); saveGuestNameFromPopup();" class="space-y-3 pt-1">
+                <div>
+                    <input type="text" id="popupGuestNameInput" required placeholder="Enter Your Name *" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none text-xs font-bold text-slate-800 focus:border-[#FF5A36]">
+                </div>
+                <button type="submit" class="w-full py-2.5 bg-[#FF5A36] hover:bg-[#E04825] text-white font-extrabold rounded-xl text-xs transition-all shadow-md flex items-center justify-center gap-1.5">
+                    <i class="fa-solid fa-check"></i> OK / Enter
+                </button>
+            </form>
+            <p class="text-[9px] text-slate-400">Your details are not added to any registration database.</p>
+        </div>
+    </div>
+
+    <!-- Admin Comments Modal -->
+    <div id="adminCommentsModal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-md z-[10001] hidden flex items-center justify-center p-4" onclick="closeAdminCommentsModal()">
+        <div class="bg-white rounded-[24px] max-w-md w-full p-5 border border-slate-200 relative shadow-2xl space-y-4 max-h-[85vh] flex flex-col" onclick="event.stopPropagation()">
+            <button onclick="closeAdminCommentsModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
+                <i class="fa-solid fa-circle-xmark text-xl"></i>
+            </button>
+            
+            <div class="flex items-center gap-3 border-b border-slate-100 pb-3 shrink-0">
+                <div class="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center text-lg text-primary">
+                    <i class="fa-solid fa-comments"></i>
+                </div>
+                <div>
+                    <h3 class="text-sm font-extrabold text-slate-900">Manage Post Comments</h3>
+                    <p class="text-[10px] text-slate-400" id="adminCommentsPostTitle">Review & delete comments / replies</p>
+                </div>
+            </div>
+            
+            <div id="adminCommentsListContainer" class="space-y-3 overflow-y-auto flex-grow pr-1"></div>
+        </div>
+    </div>
+
+    <!-- Notifications Modal -->
+    <div id="notificationsModal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-md z-[10000] hidden flex items-center justify-center p-4" onclick="closeNotificationsModal()">
+        <div class="bg-white rounded-[24px] max-w-xs w-full p-5 border border-slate-200 relative shadow-2xl" onclick="event.stopPropagation()">
+            <button onclick="closeNotificationsModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
+                <i class="fa-solid fa-circle-xmark text-xl"></i>
+            </button>
+            
+            <div class="flex items-center gap-3 mb-4 border-b border-slate-100 pb-3">
+                <div class="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center text-lg text-primary">
+                    <i class="fa-solid fa-bell"></i>
+                </div>
+                <div>
+                    <h3 class="text-sm font-extrabold text-slate-900">Notifications</h3>
+                    <p class="text-[10px] text-slate-400">Order updates & status alerts</p>
+                </div>
+            </div>
+            
+            <div id="notificationsList" class="space-y-2.5 max-h-64 overflow-y-auto">
+                <div class="text-center py-6 text-slate-400 text-xs">
+                    <i class="fa-regular fa-bell-slash text-2xl text-slate-300 block mb-1"></i>
+                    No order alerts yet.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Auth Modal -->
+    <div id="adminAuthModal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-md z-[10000] hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-[24px] max-w-xs w-full p-6 border border-slate-200 shadow-2xl relative">
+            <button onclick="closeAdminAuth()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
+                <i class="fa-solid fa-circle-xmark text-xl"></i>
+            </button>
+            <div class="text-center mb-4">
+                <div class="w-12 h-12 bg-[#FF5A36]/15 rounded-full flex items-center justify-center text-xl text-[#FF5A36] mx-auto mb-2">
+                    <i class="fa-solid fa-shield-halved"></i>
+                </div>
+                <h3 class="text-base font-extrabold text-slate-900 font-serif">Admin Authentication</h3>
+                <p class="text-slate-500 text-[10px] mt-1">Please enter passcode to access control center.</p>
+            </div>
+            <form onsubmit="event.preventDefault(); verifyAdminPasscode();" class="space-y-3">
+                <input type="password" id="adminPasscode" maxlength="4" placeholder="••••" class="w-full text-center tracking-[1.2em] text-xl font-black bg-slate-50 border border-slate-200 rounded-xl py-3 focus:ring-3 focus:ring-[#FF5A36]/15 focus:border-[#FF5A36] outline-none">
+                <button type="submit" class="w-full py-3 bg-[#FF5A36] hover:bg-[#E04825] text-white font-bold rounded-xl text-xs transition-all shadow-md">
+                    Verify & Enter
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Admin Dashboard Page -->
+    <div id="admin-page" class="hidden min-h-screen bg-slate-50 w-full relative z-[1000] pb-20">
+        <div class="max-w-[480px] mx-auto p-4">
+            
+            <div class="flex justify-between items-center bg-slate-900 text-white p-4 rounded-2xl shadow-xl mb-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-[#FF5A36] flex items-center justify-center text-white text-lg shadow-lg border border-slate-800 shrink-0">
+                        <i class="fa-solid fa-sliders"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-sm font-extrabold font-serif tracking-wide">ACP Control Center</h2>
+                        <p class="text-[10px] text-slate-400 font-sans">Mobile Store Management</p>
+                    </div>
+                </div>
+                <button onclick="closeAdminPortal()" class="px-3 py-1.5 bg-slate-800 border border-slate-700 text-slate-200 rounded-xl text-xs font-bold hover:bg-rose-500 hover:text-white transition-all shadow-md flex items-center gap-1">
+                    <i class="fa-solid fa-store"></i> Exit
+                </button>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2 my-4">
+                <button onclick="switchAdminTab('orders')" id="adminTabOrders" class="p-3 rounded-2xl border text-center transition-all bg-white border-[#FF5A36] shadow-md text-slate-900 font-extrabold text-xs flex flex-col items-center gap-1.5 relative active:scale-95">
+                    <i class="fa-solid fa-shopping-bag text-xl text-[#FF5A36]"></i>
+                    <span class="text-[11px]">Customers Orders</span>
+                    <span id="adminOrdersCountBadge" class="absolute top-2 right-2 bg-[#FF5A36] text-white rounded-full text-[9px] w-5 h-5 flex items-center justify-center font-black">0</span>
+                </button>
+
+                <button onclick="switchAdminTab('catalog')" id="adminTabCatalog" class="p-3 rounded-2xl border border-slate-200 bg-white text-slate-700 font-bold text-xs flex flex-col items-center gap-1.5 relative hover:border-[#FF5A36] active:scale-95">
+                    <i class="fa-solid fa-utensils text-xl text-slate-500"></i>
+                    <span class="text-[11px]">Manage Catalog</span>
+                </button>
+
+                <button onclick="switchAdminTab('feed')" id="adminTabFeed" class="p-3 rounded-2xl border border-slate-200 bg-white text-slate-700 font-bold text-xs flex flex-col items-center gap-1.5 relative hover:border-[#FF5A36] active:scale-95">
+                    <i class="fa-solid fa-bullhorn text-xl text-amber-500"></i>
+                    <span class="text-[11px]">Publish Post</span>
+                </button>
+
+                <button onclick="switchAdminTab('users')" id="adminTabUsers" class="p-3 rounded-2xl border border-slate-200 bg-white text-slate-700 font-bold text-xs flex flex-col items-center gap-1.5 relative hover:border-[#FF5A36] active:scale-95">
+                    <i class="fa-solid fa-users text-xl text-sky-500"></i>
+                    <span class="text-[11px]">Registered Customers</span>
+                    <span id="adminUsersCountBadge" class="absolute top-2 right-2 bg-red-500 text-white rounded-full text-[9px] w-5 h-5 flex items-center justify-center font-black">0</span>
+                </button>
+            </div>
+
+            <div id="admin-sec-orders" class="space-y-4">
+                <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+                    <div class="flex justify-between items-center border-b border-slate-100 pb-3 mb-4">
+                        <div>
+                            <h3 class="text-sm font-black text-slate-950 flex items-center gap-2">
+                                <i class="fa-solid fa-bag-shopping text-[#FF5A36]"></i> Placed Orders
+                            </h3>
+                            <p class="text-[10px] text-slate-400 mt-0.5">Incoming customer orders requiring approval</p>
+                        </div>
+                        <span class="bg-orange-50 border border-orange-200 text-orange-700 text-[10px] font-black px-2.5 py-1 rounded-full">
+                            Total: <span id="lblAdminOrdersCount">0</span>
+                        </span>
+                    </div>
+
+                    <div id="adminOrdersContainer" class="space-y-3"></div>
+                </div>
+            </div>
+
+            <div id="admin-sec-catalog" class="hidden space-y-4">
+                <div class="grid grid-cols-2 gap-2 mb-2">
+                    <button type="button" onclick="switchCatalogSubTab('list')" id="btnSubCatList" class="py-2 px-3 rounded-xl text-xs font-black text-center transition-all bg-[#FF5A36] text-white shadow-sm border border-[#FF5A36] flex items-center justify-center gap-1.5">
+                        <i class="fa-solid fa-list-check"></i> Catalog List
+                    </button>
+                    <button type="button" onclick="switchCatalogSubTab('add')" id="btnSubCatAdd" class="py-2 px-3 rounded-xl text-xs font-bold text-center transition-all bg-white text-slate-700 hover:bg-slate-100 border border-slate-200 flex items-center justify-center gap-1.5">
+                        <i class="fa-solid fa-plus-circle"></i> Add New Food Item
+                    </button>
+                </div>
+
+                <div id="subSecCatalogList" class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+                    <div class="flex justify-between items-center pb-2 border-b border-slate-100">
+                        <h3 class="text-xs font-black text-slate-900 flex items-center gap-1.5">
+                            <i class="fa-solid fa-boxes-stacked text-[#FF5A36]"></i> Catalog List
+                        </h3>
+                        <span class="bg-slate-100 text-slate-700 px-2 py-0.5 rounded-full text-[10px] font-black"><span id="adminCatalogCount">0</span> Items</span>
+                    </div>
+
+                    <div class="flex gap-1.5 overflow-x-auto pb-1">
+                        <button onclick="filterAdminCatalog('all')" id="catFilterAll" class="px-2.5 py-1 rounded-lg text-[10px] font-black bg-[#FF5A36] text-white shadow-sm shrink-0">All Items</button>
+                        <button onclick="filterAdminCatalog('fast')" id="catFilterFast" class="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 shrink-0">Fast Food</button>
+                        <button onclick="filterAdminCatalog('local')" id="catFilterLocal" class="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 shrink-0">Local Menu</button>
+                        <button onclick="filterAdminCatalog('drinks')" id="catFilterDrinks" class="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 shrink-0">Cold Drinks</button>
+                    </div>
+
+                    <div class="overflow-x-auto bg-slate-50 rounded-xl border border-slate-100">
+                        <table class="w-full text-left border-collapse min-w-[340px]">
+                            <thead class="bg-slate-100 text-slate-500 text-[9px] font-black uppercase">
+                                <tr>
+                                    <th class="p-2.5">Product</th>
+                                    <th class="p-2.5 text-right">Price</th>
+                                    <th class="p-2.5 text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="adminCatalogRows" class="divide-y divide-slate-100 text-xs bg-white"></tbody>
+                        </table>
+                    </div>
+
+                    <div id="catalogUpdateBar" class="hidden pt-3 flex justify-center">
+                        <button onclick="saveCatalogOrderChanges()" class="py-2.5 px-5 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold rounded-xl text-xs transition-all shadow-md flex items-center gap-2 active:scale-95">
+                            <i class="fa-solid fa-circle-check text-sm"></i> Save Catalog Order Changes
+                        </button>
+                    </div>
+                </div>
+
+                <div id="subSecAddFoodForm" class="hidden bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+                    <h3 class="text-xs font-black text-slate-900 pb-2 border-b border-slate-100 flex items-center gap-2">
+                        <i class="fa-solid fa-circle-plus text-[#FF5A36] text-sm"></i>
+                        <span id="formPanelTitle">Add New Food Item</span>
+                    </h3>
+                    
+                    <form id="adminFoodForm" onsubmit="handleFoodFormSubmit(event)" class="space-y-3 text-xs font-bold text-slate-700">
+                        <input type="hidden" id="editFoodId" value="">
+                        
+                        <div>
+                            <label class="block text-slate-500 mb-1 uppercase text-[9px] tracking-wider">Item Name *</label>
+                            <input type="text" id="foodFormName" required placeholder="e.g., Special Zinger / Cold Drink" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none text-xs">
+                        </div>
+                        
+                        <div class="grid grid-cols-2 gap-2">
+                            <div>
+                                <label class="block text-slate-500 mb-1 uppercase text-[9px] tracking-wider">Category *</label>
+                                <select id="foodFormCategory" required class="w-full px-2 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none text-xs font-bold text-slate-800">
+                                    <option value="fast">Fast Food</option>
+                                    <option value="local">Local Menu</option>
+                                    <option value="drinks">Cold Drinks</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-slate-500 mb-1 uppercase text-[9px] tracking-wider">Price (Rs.) *</label>
+                                <input type="number" id="foodFormPrice" required min="1" placeholder="250" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none text-xs">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-slate-500 mb-1 uppercase text-[9px] tracking-wider">Upload Device Image</label>
+                            <input type="file" id="foodFormFile" accept="image/*" onchange="handleImageUpload(event)" class="w-full text-xs text-slate-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-[10px] file:font-bold file:bg-[#FF5A36]/10 file:text-[#FF5A36]">
+                        </div>
+
+                        <div>
+                            <label class="block text-slate-500 mb-1 uppercase text-[9px] tracking-wider">Or Image URL</label>
+                            <input type="text" id="foodFormImage" placeholder="https://..." class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none text-xs">
+                        </div>
+
+                        <div>
+                            <label class="block text-slate-500 mb-1 uppercase text-[9px] tracking-wider">Short Description</label>
+                            <textarea id="foodFormDesc" rows="2" placeholder="Briefly describe ingredients..." class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none text-xs resize-none"></textarea>
+                        </div>
+
+                        <div class="pt-1 flex gap-2">
+                            <button type="submit" id="foodFormSubmitBtn" class="flex-1 py-2.5 bg-[#FF5A36] text-white font-black rounded-xl text-xs transition-all shadow-md">
+                                <i class="fa-solid fa-save"></i> Save Product
+                            </button>
+                            <button type="button" onclick="resetAdminForm()" class="px-3 py-2.5 bg-slate-100 text-slate-500 rounded-xl font-bold text-xs">
+                                Clear
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div id="admin-sec-feed" class="hidden space-y-4">
+                <div class="grid grid-cols-2 gap-2 mb-2">
+                    <button type="button" onclick="switchFeedSubTab('list')" id="btnSubFeedList" class="py-2 px-3 rounded-xl text-xs font-black text-center transition-all bg-[#FF5A36] text-white shadow-sm border border-[#FF5A36] flex items-center justify-center gap-1.5">
+                        <i class="fa-solid fa-newspaper"></i> Active Posts
+                    </button>
+                    <button type="button" onclick="switchFeedSubTab('create')" id="btnSubFeedCreate" class="py-2 px-3 rounded-xl text-xs font-bold text-center transition-all bg-white text-slate-700 hover:bg-slate-100 border border-slate-200 flex items-center justify-center gap-1.5">
+                        <i class="fa-solid fa-paper-plane"></i> Broadcast Post
+                    </button>
+                </div>
+
+                <div id="subSecFeedCreate" class="hidden bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+                    <div class="border-b border-slate-100 pb-2">
+                        <h3 id="postFormHeading" class="text-xs font-black text-slate-950 flex items-center gap-2">
+                            <i class="fa-solid fa-paper-plane text-orange-500"></i> Broadcast / Edit Post
+                        </h3>
+                    </div>
+
+                    <form onsubmit="handleFeedPostSubmit(event)" class="space-y-3 text-xs font-bold text-slate-700">
+                        <input type="hidden" id="editPostId" value="">
+
+                        <div>
+                            <label class="block text-slate-500 mb-1 uppercase text-[9px] tracking-wider">Post Title *</label>
+                            <input type="text" id="postFormTitle" required placeholder="e.g., Friday Special Deal 15% OFF!" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none text-xs">
+                        </div>
+
+                        <div>
+                            <label class="block text-slate-500 mb-1 uppercase text-[9px] tracking-wider">Upload / URL Image *</label>
+                            <input type="file" id="postFormFile" accept="image/*" onchange="handlePostImageUpload(event)" class="w-full text-xs text-slate-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-[10px] file:font-bold file:bg-[#FF5A36]/10 file:text-[#FF5A36]">
+                            <input type="text" id="postFormImage" required placeholder="Or paste image URL" class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none text-xs mt-1.5">
+                            
+                            <div id="postImagePreviewContainer" class="hidden mt-2 relative border border-dashed border-slate-200 rounded-xl overflow-hidden p-1.5 bg-slate-50">
+                                <img id="postImagePreview" class="w-full h-28 object-cover rounded-lg" src="">
+                                <button type="button" onclick="removePostImage()" class="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full hover:bg-red-600 transition-all text-[10px] shadow" title="Delete Image">
+                                    <i class="fa-solid fa-trash-can"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-slate-500 mb-1 uppercase text-[9px] tracking-wider">Description *</label>
+                            <textarea id="postFormDesc" required rows="3" placeholder="Write details of your deal..." class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none text-xs resize-y"></textarea>
+                        </div>
+
+                        <div class="flex gap-2 pt-1">
+                            <button type="submit" id="btnPostSubmit" class="flex-1 py-2.5 bg-[#FF5A36] text-white font-black rounded-xl text-xs transition-all shadow-md">
+                                <i class="fa-solid fa-bullhorn"></i> Broadcast Post
+                            </button>
+                            <button type="button" id="btnCancelPostEdit" onclick="resetPostForm()" class="hidden px-3 py-2.5 bg-slate-200 text-slate-700 font-bold rounded-xl text-xs">
+                                Cancel
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <div id="subSecFeedList" class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+                    <div class="border-b border-slate-100 pb-2 flex justify-between items-center">
+                        <h3 class="text-xs font-black text-slate-900 flex items-center gap-1.5">
+                            <i class="fa-solid fa-newspaper text-amber-500"></i> Active Posts
+                        </h3>
+                        <span class="text-[10px] bg-slate-100 px-2.5 py-0.5 rounded-full font-bold text-slate-600"><span id="lblAdminPostsCount">0</span> Published</span>
+                    </div>
+
+                    <div id="adminPostsListContainer" class="space-y-3"></div>
+
+                    <div id="postUpdateBar" class="hidden pt-3 flex justify-center">
+                        <button onclick="savePostOrderChanges()" class="py-2.5 px-5 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold rounded-xl text-xs transition-all shadow-md flex items-center gap-2 active:scale-95">
+                            <i class="fa-solid fa-circle-check text-sm"></i> Save Post Order Changes
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div id="admin-sec-users" class="hidden">
+                <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+                    <div class="border-b border-slate-100 pb-3">
+                        <h3 class="text-xs font-black text-slate-950 flex items-center gap-2">
+                            <i class="fa-solid fa-id-card text-sky-500"></i> Registered Customer Base
+                        </h3>
+                        <div class="relative w-full text-xs font-bold mt-2">
+                            <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-slate-400"></i>
+                            <input type="text" oninput="searchUsers(this.value)" placeholder="Search registrants..." class="w-full pl-8 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none text-xs">
+                        </div>
+                    </div>
+
+                    <div class="overflow-x-auto rounded-xl border border-slate-100">
+                        <table class="w-full text-left border-collapse min-w-[420px]">
+                            <thead class="bg-slate-100 text-slate-600 text-[9px] font-black border-b border-slate-200 uppercase">
+                                <tr>
+                                    <th class="p-2.5">Name</th>
+                                    <th class="p-2.5">Phone</th>
+                                    <th class="p-2.5">Location</th>
+                                    <th class="p-2.5">Email</th>
+                                    <th class="p-2.5 text-center">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="registeredUsersRows" class="divide-y divide-slate-100 text-xs font-bold text-slate-700 bg-white"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Invoice Receipt Overlay -->
+    <div id="invoiceModalOverlay" class="invoice-overlay-backdrop" onclick="closeReceiptAndScrollToMenu()">
+        <div class="receipt-container" id="receiptContainer" onclick="event.stopPropagation()">
+            <button class="absolute top-3 right-3 text-slate-400 hover:text-slate-600 no-print focus:outline-none transition-all" onclick="closeReceiptAndScrollToMenu()" aria-label="Close Receipt">
+                <i class="fa-solid fa-circle-xmark text-2xl bg-white rounded-full shadow"></i>
+            </button>
+
+            <div class="receipt-header-strip"></div>
+            
+            <div class="receipt-body">
+                <div class="text-center text-[9px] text-slate-400 space-y-0.5 mb-4 mt-6">
+                    <div>Order ID: <span class="font-extrabold text-slate-700" id="lblTxnId">#ACP-0000</span></div>
+                    <div id="lblInvDate">-</div>
+                </div>
+
+                <div class="flex items-center justify-center gap-3 mb-4">
+                    <div class="h-[1px] bg-slate-200 flex-grow"></div>
+                    <div class="text-center shrink-0">
+                        <h2 class="font-serif font-black text-xs text-slate-800 tracking-wide">Alqadri Chaska Point</h2>
+                        <p class="text-[8px] text-slate-400 font-bold">Premium Taste Outlets</p>
+                    </div>
+                    <div class="h-[1px] bg-slate-200 flex-grow"></div>
+                </div>
+
+                <table class="w-full text-[10px] border-collapse mb-4">
+                    <thead>
+                        <tr class="border-b border-slate-200 text-slate-400 text-[9px]">
+                            <th class="text-left pb-2 font-bold uppercase">Item Details</th>
+                            <th class="text-center pb-2 font-bold uppercase" style="width: 40px;">Qty</th>
+                            <th class="text-right pb-2 font-bold uppercase" style="width: 70px;">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody id="invoiceTableRows" class="divide-y divide-slate-100"></tbody>
+                </table>
+
+                <div class="receipt-dashed-tear"></div>
+                
+                <div class="flex justify-between items-center text-xs font-extrabold text-slate-900 px-1">
+                    <span>You have to pay</span>
+                    <span class="text-[#FF5A36] text-sm font-black" id="lblSub">Rs. 0</span>
+                </div>
+
+                <div class="text-center mt-6">
+                    <p class="text-[9px] text-slate-400 italic">Thank you for ordering with Chaska Point!</p>
+                </div>
+
+                <div class="no-print mt-6 flex gap-2 justify-center">
+                    <button class="px-4 py-2.5 bg-slate-900 text-white font-extrabold rounded-xl text-[10px] hover:bg-slate-800 transition-all flex items-center gap-1 shadow-sm" onclick="window.print()">
+                        <i class="fa-solid fa-print"></i> Print
+                    </button>
+                    <button class="px-4 py-2.5 bg-[#FF5A36] text-white font-extrabold rounded-xl text-[10px] hover:bg-[#E04825] transition-all flex items-center gap-1 shadow-sm" onclick="downloadInvoiceJPG()">
+                        <i class="fa-solid fa-file-image"></i> Save as JPG
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- User Reply Modal -->
+    <div id="userReplyModal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-md z-[10000] hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-[24px] max-w-xs w-full p-6 border border-slate-200 relative shadow-2xl space-y-3">
+            <button onclick="closeUserReplyModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
+                <i class="fa-solid fa-circle-xmark text-xl"></i>
+            </button>
+            <div class="flex items-center gap-2 border-b border-slate-100 pb-2">
+                <div class="w-8 h-8 rounded-full bg-orange-100 text-[#FF5A36] flex items-center justify-center text-sm font-bold">
+                    <i class="fa-solid fa-reply"></i>
+                </div>
+                <div>
+                    <h3 class="text-xs font-black text-slate-900">Reply to Comment</h3>
+                    <p class="text-[9px] text-slate-400" id="userReplyTargetTitle">Reply thread</p>
+                </div>
+            </div>
+            <form onsubmit="event.preventDefault(); submitUserReply();" class="space-y-3">
+                <input type="hidden" id="userReplyPostId">
+                <input type="hidden" id="userReplyCommentIndex">
+                <div>
+                    <textarea id="userReplyText" required rows="3" placeholder="Write your reply..." class="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none text-xs resize-none"></textarea>
+                </div>
+                <button type="submit" class="w-full py-2.5 bg-[#FF5A36] hover:bg-[#E04825] text-white font-bold rounded-xl text-xs transition-all shadow-md">
+                    Post Reply
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Share Overlay Sheet Modal -->
+    <div id="shareModal" class="fixed inset-0 bg-slate-900/70 backdrop-blur-md z-[10001] hidden flex items-center justify-center p-4" onclick="closeShareModal()">
+        <div class="bg-white rounded-[24px] max-w-xs w-full p-5 border border-slate-200 relative shadow-2xl space-y-4 text-center" onclick="event.stopPropagation()">
+            <button onclick="closeShareModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
+                <i class="fa-solid fa-circle-xmark text-xl"></i>
+            </button>
+            <div class="flex flex-col items-center">
+                <div class="w-10 h-10 bg-orange-100 text-[#FF5A36] rounded-full flex items-center justify-center text-lg mb-2">
+                    <i class="fa-solid fa-share-nodes"></i>
+                </div>
+                <h3 class="text-xs font-black text-slate-900">Share This Deal</h3>
+                <p class="text-[9px] text-slate-400">Choose your favorite platform to share</p>
+            </div>
+            <div class="grid grid-cols-4 gap-3 py-2">
+                <a id="shareWA" target="_blank" class="flex flex-col items-center gap-1 cursor-pointer">
+                    <div class="w-10 h-10 bg-[#25D366] text-white rounded-full flex items-center justify-center text-lg shadow hover:scale-105 transition-all">
+                        <i class="fa-brands fa-whatsapp text-lg"></i>
+                    </div>
+                    <span class="text-[9px] font-bold text-slate-600 font-sans">WhatsApp</span>
+                </a>
+                <a id="shareFB" target="_blank" class="flex flex-col items-center gap-1 cursor-pointer">
+                    <div class="w-10 h-10 bg-[#1877F2] text-white rounded-full flex items-center justify-center text-lg shadow hover:scale-105 transition-all">
+                        <i class="fa-brands fa-facebook-f text-base"></i>
+                    </div>
+                    <span class="text-[9px] font-bold text-slate-600 font-sans">Facebook</span>
+                </a>
+                <a id="shareTW" target="_blank" class="flex flex-col items-center gap-1 cursor-pointer">
+                    <div class="w-10 h-10 bg-[#111111] text-white rounded-full flex items-center justify-center text-lg shadow hover:scale-105 transition-all">
+                        <i class="fa-brands fa-x-twitter text-base"></i>
+                    </div>
+                    <span class="text-[9px] font-bold text-slate-600 font-sans">X / Twitter</span>
+                </a>
+                <button onclick="copyShareLink()" class="flex flex-col items-center gap-1">
+                    <div class="w-10 h-10 bg-slate-800 text-white rounded-full flex items-center justify-center text-lg shadow hover:scale-105 transition-all">
+                        <i class="fa-solid fa-link text-base"></i>
+                    </div>
+                    <span class="text-[9px] font-bold text-slate-600 font-sans">Copy Link</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN JAVASCRIPT & BACKEND FIRESTORE SYNC -->
+    <script>
+        // --- 1. FIREBASE REALTIME FIRESTORE INTEGRATION (Backend.txt Logic) ---
+        (function() {
+            const firebaseConfig = {
+              apiKey: "AIzaSyAU3wBPK_iKzH-F0qfRp9KFG4Keq8tmm2U",
+              authDomain: "alfa-corex-1-c9856.firebaseapp.com",
+              projectId: "alfa-corex-1-c9856",
+              storageBucket: "alfa-corex-1-c9856.firebasestorage.app",
+              messagingSenderId: "685367477889",
+              appId: "1:685367477889:web:f83b7028683df4fdc96f80",
+              measurementId: "G-ZKPVH2RPW5"
+            };
+
+            if (typeof firebase === 'undefined') return;
+
+            if (!firebase.apps.length) {
+                firebase.initializeApp(firebaseConfig);
+            }
+            
+            const db = firebase.firestore();
+
+            // 1. Sync Food Menu Catalog
+            db.collection("menu").onSnapshot(
+                (snapshot) => {
+                    const items = [];
+                    snapshot.forEach((doc) => { items.push({ ...doc.data() }); });
+                    
+                    menuData.length = 0;
+                    if (items.length > 0) {
+                        menuData.push(...items);
+                    }
+                    workingMenuData = JSON.parse(JSON.stringify(menuData));
+
+                    if (typeof renderCustomerMenu === 'function') renderCustomerMenu();
+                    if (typeof renderLocalMenu === 'function') renderLocalMenu();
+                    if (typeof renderDrinksMenu === 'function') renderDrinksMenu();
+                    if (typeof renderAdminCatalog === 'function') renderAdminCatalog();
+                },
+                (error) => { console.error("Firestore Menu Error:", error.message); }
+            );
+
+            // 2. Sync Social Feed Posts
+            db.collection("posts").onSnapshot(
+                (snapshot) => {
+                    const posts = [];
+                    snapshot.forEach((doc) => { posts.push({ ...doc.data() }); });
+                    posts.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+
+                    feedPosts.length = 0;
+                    if (posts.length > 0) {
+                        feedPosts.push(...posts);
+                    }
+                    workingFeedPosts = JSON.parse(JSON.stringify(feedPosts));
+
+                    if (typeof renderCustomerSocialFeeds === 'function') renderCustomerSocialFeeds();
+                    if (typeof renderAdminPostsList === 'function') renderAdminPostsList();
+                },
+                (error) => { console.error("Firestore Posts Error:", error.message); }
+            );
+
+            // 3. Sync Customer Orders
+            db.collection("orders").onSnapshot(
+                (snapshot) => {
+                    const orders = [];
+                    snapshot.forEach((doc) => { orders.push({ ...doc.data() }); });
+                    
+                    ordersList.length = 0;
+                    if (orders.length > 0) {
+                        ordersList.push(...orders);
+                    }
+
+                    if (typeof renderAdminOrdersList === 'function') renderAdminOrdersList();
+                },
+                (error) => { console.error("Firestore Orders Error:", error.message); }
+            );
+
+            // 4. Sync CRM Registered Users
+            db.collection("users").onSnapshot(
+                (snapshot) => {
+                    const users = [];
+                    snapshot.forEach((doc) => { users.push({ ...doc.data() }); });
+
+                    registeredUsers.length = 0;
+                    if (users.length > 0) {
+                        registeredUsers.push(...users);
+                    }
+
+                    if (typeof renderRegisteredUsers === 'function') renderRegisteredUsers();
+                },
+                (error) => { console.error("Firestore Users Error:", error.message); }
+            );
+
+            // FIRESTORE WRITE HELPERS
+            window.dbSaveFoodItem = function(item) {
+                if (!item || !item.id) return;
+                db.collection("menu").doc(item.id.toString()).set(item, { merge: true });
+            };
+
+            window.dbDeleteFoodItem = function(id) {
+                if (!id) return;
+                db.collection("menu").doc(id.toString()).delete();
+            };
+
+            window.dbSavePost = function(post) {
+                if (!post || !post.id) return;
+                db.collection("posts").doc(post.id.toString()).set(post, { merge: true });
+            };
+
+            window.dbDeletePost = function(id) {
+                if (!id) return;
+                db.collection("posts").doc(id.toString()).delete();
+            };
+
+            window.dbSaveOrder = function(order) {
+                if (!order || !order.id) return;
+                const cleanId = order.id.replace('#', '').replace(/[^a-zA-Z0-9]/g, '');
+                db.collection("orders").doc(cleanId).set(order, { merge: true });
+            };
+
+            window.dbDeleteOrder = function(orderId) {
+                if (!orderId) return;
+                const cleanId = orderId.replace('#', '').replace(/[^a-zA-Z0-9]/g, '');
+                db.collection("orders").doc(cleanId).delete();
+            };
+
+            window.dbSaveUser = function(user) {
+                if (!user || !user.phone) return;
+                const cleanId = user.phone.replace(/[^0-9]/g, '') || Date.now().toString();
+                db.collection("users").doc(cleanId).set(user, { merge: true });
+            };
+        })();
+
+        // --- 2. FRONTEND APP VARIABLES & FUNCTIONS ---
+        let cartItems = {};
+        let notificationsHistory = [];
+        let expandedComments = {}; 
+        let commentSortModes = {}; 
+        let expandedReplies = {}; 
+        let currentUser = null; 
+        let guestSessionName = ""; 
+        let activeAdminCatalogFilter = 'all';
+        let sharedPostText = ""; 
+
+        let editingComment = null; 
+        let editingReply = null;   
+
+        let workingMenuData = [];
+        let workingFeedPosts = [];
+        let menuData = [];
+        let ordersList = [];
+        let registeredUsers = [];
+        let feedPosts = [];
+
+        function toggleCommentDropdown(dropdownId, event) {
+            if (event) event.stopPropagation();
+            document.querySelectorAll('[id^="cdrop-"], [id^="rdrop-"]').forEach(el => {
+                if (el.id !== dropdownId) {
+                    el.classList.add('hidden');
+                }
+            });
+            const target = document.getElementById(dropdownId);
+            if (target) {
+                target.classList.toggle('hidden');
+            }
+        }
+
+        window.addEventListener('click', function(e) {
+            if (!e.target.closest('[id^="cdrop-"]') && !e.target.closest('[id^="rdrop-"]')) {
+                document.querySelectorAll('[id^="cdrop-"], [id^="rdrop-"]').forEach(el => {
+                    el.classList.add('hidden');
+                });
+            }
+        });
+
+        function startEditComment(postId, commentIndex) {
+            editingComment = { postId, commentIndex };
+            editingReply = null;
+            document.querySelectorAll('[id^="cdrop-"], [id^="rdrop-"]').forEach(el => el.classList.add('hidden'));
+            renderCustomerSocialFeeds();
+            setTimeout(() => {
+                const el = document.getElementById(`edit-comment-input-${postId}-${commentIndex}`);
+                if (el) {
+                    el.focus();
+                    el.setSelectionRange(el.value.length, el.value.length);
+                }
+            }, 50);
+        }
+
+        function saveEditComment(postId, commentIndex) {
+            const post = feedPosts.find(p => p.id === postId) || workingFeedPosts.find(p => p.id === postId);
+            const input = document.getElementById(`edit-comment-input-${postId}-${commentIndex}`);
+            if (post && post.comments[commentIndex] && input) {
+                const newText = input.value.trim();
+                if (newText) {
+                    post.comments[commentIndex].text = newText;
+                    if (window.dbSavePost) window.dbSavePost(post);
+                    showNotification("Comment updated successfully!");
+                }
+            }
+            editingComment = null;
+            renderCustomerSocialFeeds();
+            renderAdminPostsList();
+            const modal = document.getElementById('adminCommentsModal');
+            if (modal && !modal.classList.contains('hidden')) {
+                openAdminCommentsModal(postId);
+            }
+        }
+
+        function startEditReply(postId, commentIndex, replyIndex) {
+            editingReply = { postId, commentIndex, replyIndex };
+            editingComment = null;
+            document.querySelectorAll('[id^="cdrop-"], [id^="rdrop-"]').forEach(el => el.classList.add('hidden'));
+            renderCustomerSocialFeeds();
+            setTimeout(() => {
+                const el = document.getElementById(`edit-reply-input-${postId}-${commentIndex}-${replyIndex}`);
+                if (el) {
+                    el.focus();
+                    el.setSelectionRange(el.value.length, el.value.length);
+                }
+            }, 50);
+        }
+
+        function saveEditReply(postId, commentIndex, replyIndex) {
+            const post = feedPosts.find(p => p.id === postId) || workingFeedPosts.find(p => p.id === postId);
+            const input = document.getElementById(`edit-reply-input-${postId}-${commentIndex}-${replyIndex}`);
+            if (post && post.comments[commentIndex] && post.comments[commentIndex].replies[replyIndex] && input) {
+                const newText = input.value.trim();
+                if (newText) {
+                    post.comments[commentIndex].replies[replyIndex].text = newText;
+                    if (window.dbSavePost) window.dbSavePost(post);
+                    showNotification("Reply updated successfully!");
+                }
+            }
+            editingReply = null;
+            renderCustomerSocialFeeds();
+            renderAdminPostsList();
+            const modal = document.getElementById('adminCommentsModal');
+            if (modal && !modal.classList.contains('hidden')) {
+                openAdminCommentsModal(postId);
+            }
+        }
+
+        function cancelEditComment() {
+            editingComment = null;
+            editingReply = null;
+            renderCustomerSocialFeeds();
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            const savedUser = localStorage.getItem('acp_current_user');
+            if (savedUser) {
+                try {
+                    currentUser = JSON.parse(savedUser);
+                } catch(e) {
+                    currentUser = null;
+                }
+            }
+
+            updateUserAccountDisplay();
+            renderCustomerMenu();
+            renderLocalMenu();
+            renderDrinksMenu();
+            renderCartSummary();
+            renderCustomerSocialFeeds();
+            renderDynamicFooter();
+        });
+
+        function openGuestNameModal() {
+            const modal = document.getElementById('guestNameModal');
+            if (modal) modal.classList.remove('hidden');
+            const input = document.getElementById('popupGuestNameInput');
+            if (input) {
+                input.value = guestSessionName;
+                setTimeout(() => {
+                    input.focus();
+                    input.select();
+                }, 50);
+            }
+        }
+
+        function closeGuestNameModal() {
+            const modal = document.getElementById('guestNameModal');
+            if (modal) modal.classList.add('hidden');
+        }
+
+        function saveGuestNameFromPopup() {
+            const input = document.getElementById('popupGuestNameInput');
+            if (!input) return;
+
+            const val = input.value.trim();
+            if (!val) return;
+
+            guestSessionName = val;
+            closeGuestNameModal();
+            renderCustomerSocialFeeds();
+        }
+
+        function resetGuestSessionName() {
+            openGuestNameModal();
+        }
+
+        function updateUserAccountDisplay() {
+            const userBtn = document.getElementById('navUserBtn');
+            if (!userBtn) return;
+
+            if (currentUser) {
+                const fullName = currentUser.name ? currentUser.name.trim() : 'User';
+                const firstSpelling = fullName.split(' ')[0];
+                userBtn.innerHTML = `
+                    <div class="flex items-center gap-1.5 px-2 py-0.5 bg-orange-50 border border-orange-200/80 rounded-full shadow-sm hover:bg-orange-100 transition-all cursor-pointer">
+                        <i class="fa-solid fa-circle-user text-primary text-sm shrink-0"></i>
+                        <span class="text-[11px] font-black text-slate-800 tracking-tight max-w-[90px] truncate">${firstSpelling}</span>
+                        <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full shrink-0"></span>
+                    </div>
+                `;
+            } else {
+                userBtn.innerHTML = `
+                    <div class="flex items-center gap-1 px-2.5 py-1 bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded-full transition-all cursor-pointer">
+                        <i class="fa-solid fa-circle-user text-slate-500 text-sm shrink-0"></i>
+                        <span class="text-[11px] font-bold text-slate-700">Sign In</span>
+                    </div>
+                `;
+            }
+        }
+
+        function switchCustomerTab(tabName) {
+            const storeBtn = document.getElementById('tabBtnStore');
+            const feedsBtn = document.getElementById('tabBtnFeeds');
+            const viewStore = document.getElementById('view-store');
+            const viewFeeds = document.getElementById('view-feeds');
+            const heroSec = document.getElementById('customer-hero');
+            const floatingCartBar = document.getElementById('floatingCartBar');
+
+            if (tabName === 'store') {
+                viewStore.classList.remove('hidden');
+                viewFeeds.classList.add('hidden');
+                heroSec.classList.remove('hidden');
+                storeBtn.className = "btn-tab-effect btn-tab-active flex-1 max-w-[180px] flex items-center justify-center gap-2 py-2 px-4 text-xs font-black rounded-xl border border-[#FF5A36] bg-[#FF5A36] text-white shadow-md active:scale-95";
+                feedsBtn.className = "btn-tab-effect btn-tab-inactive flex-1 max-w-[180px] flex items-center justify-center gap-2 py-2 px-4 text-xs font-black rounded-xl border border-slate-200 bg-white text-slate-700 shadow-sm relative active:scale-95";
+                
+                storeBtn.innerHTML = `<i class="fa-solid fa-utensils text-white"></i> Order Menu`;
+                feedsBtn.innerHTML = `
+                    <i class="fa-solid fa-rss text-orange-500"></i> Social Feed
+                    <span class="absolute -top-1 -right-1 w-2 h-2 bg-rose-500 rounded-full animate-ping"></span>
+                    <span class="absolute -top-1 -right-1 w-2 h-2 bg-rose-500 rounded-full"></span>
+                `;
+                renderCartSummary();
+            } else {
+                viewStore.classList.add('hidden');
+                viewFeeds.classList.remove('hidden');
+                heroSec.classList.add('hidden');
+                feedsBtn.className = "btn-tab-effect btn-tab-active flex-1 max-w-[180px] flex items-center justify-center gap-2 py-2 px-4 text-xs font-black rounded-xl border border-[#FF5A36] bg-[#FF5A36] text-white shadow-md relative active:scale-95";
+                storeBtn.className = "btn-tab-effect btn-tab-inactive flex-1 max-w-[180px] flex items-center justify-center gap-2 py-2 px-4 text-xs font-black rounded-xl border border-slate-200 bg-white text-slate-700 shadow-sm active:scale-95";
+                
+                feedsBtn.innerHTML = `
+                    <i class="fa-solid fa-rss text-white"></i> Social Feed
+                    <span class="absolute -top-1 -right-1 w-2 h-2 bg-rose-500 rounded-full animate-ping"></span>
+                    <span class="absolute -top-1 -right-1 w-2 h-2 bg-rose-500 rounded-full"></span>
+                `;
+                storeBtn.innerHTML = `<i class="fa-solid fa-utensils text-[#FF5A36]"></i> Order Menu`;
+
+                if (floatingCartBar) {
+                    floatingCartBar.classList.add('translate-y-24', 'opacity-0', 'pointer-events-none');
+                    floatingCartBar.classList.remove('translate-y-0', 'opacity-100', 'pointer-events-auto');
+                }
+            }
+            renderDynamicFooter();
+            window.scrollTo(0,0);
+        }
+
+        function renderDynamicFooter() {
+            const footerEl = document.getElementById('mainFooterSection');
+            if (!footerEl) return;
+
+            const viewStore = document.getElementById('view-store');
+            const isStoreActive = viewStore && !viewStore.classList.contains('hidden');
+
+            let socialIconsHtml = `
+                <div class="flex justify-center items-center gap-3">
+                    <a href="https://wa.me/923102434222" target="_blank" class="w-8 h-8 bg-[#25D366] text-white rounded-full flex items-center justify-center shadow-sm social-glow-wa transition-all text-xs border border-slate-800" title="Chat on WhatsApp">
+                        <i class="fa-brands fa-whatsapp text-sm"></i>
+                    </a>
+                    <a href="https://facebook.com/alqadrichaskapoint" target="_blank" class="w-8 h-8 bg-[#1877F2] text-white rounded-full flex items-center justify-center shadow-sm social-glow-fb transition-all text-xs border border-slate-800" title="Visit Facebook Page">
+                        <i class="fa-brands fa-facebook-f text-xs"></i>
+                    </a>
+                    <a href="https://instagram.com/alqadrichaskapoint" target="_blank" class="w-8 h-8 bg-gradient-to-tr from-[#f9ce34] via-[#ee2a7b] to-[#6228d7] text-white rounded-full flex items-center justify-center shadow-sm social-glow-ig transition-all text-xs border border-slate-800" title="Follow us on Instagram">
+                        <i class="fa-brands fa-instagram text-xs"></i>
+                    </a>
+                    <a href="https://tiktok.com/@alqadrichaskapoint" target="_blank" class="w-8 h-8 bg-[#010101] text-white rounded-full flex items-center justify-center shadow-sm social-glow-tt transition-all text-xs border border-slate-800" title="Follow us on TikTok">
+                        <i class="fa-brands fa-tiktok text-xs"></i>
+                    </a>
+                </div>
+            `;
+
+            let hotlineHtml = `
+                <div class="flex justify-center items-center gap-2 bg-slate-800/50 py-2 px-5 rounded-full w-fit mx-auto border border-slate-700/50 shadow-lg">
+                    <i class="fa-solid fa-phone text-primary animate-ring text-[11px]"></i> 
+                    <span class="text-slate-300 text-xs font-sans">Hotline:</span> 
+                    <a href="tel:03102434222" class="hotline-highlight text-sm">0310-2434222</a>
+                </div>
+            `;
+
+            let locationHtml = `
+                <div class="flex justify-center items-center gap-2 text-xs font-semibold text-slate-300 pt-1">
+                    <i class="fa-solid fa-location-dot text-rose-500"></i> Main Road Jalal Balagan , Gujranwala
+                </div>
+            `;
+
+            let adminPortalBtnHtml = `
+                <div class="pt-3 mt-1 border-t border-slate-800/80 flex justify-center">
+                    <button onclick="openAdminPortal()" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-slate-800 border border-slate-700 text-slate-300 hover:text-white hover:border-[#FF5A36] hover:bg-slate-750 transition-all text-[9px] font-extrabold tracking-wider uppercase shadow" title="Admin Control Dashboard">
+                        <i class="fa-solid fa-shield-halved text-primary text-[10px]"></i> Admin Portal
+                    </button>
+                </div>
+            `;
+
+            let copyrightHtml = `
+                <div class="pt-2 text-[10px] text-slate-500 text-center">
+                    <span>&copy; 2026 ACP Premium Fast Food. All rights reserved.</span>
+                </div>
+            `;
+
+            if (isStoreActive) {
+                footerEl.innerHTML = `
+                    <div class="flex flex-wrap justify-center items-center gap-3 text-xs text-white py-1">
+                        <div class="glow-on-hover">
+                            <i class="fa-solid fa-user-tie text-primary text-[12px] mb-0.5 shrink-0"></i>
+                            <span class="font-normal text-white text-[11.5px] whitespace-nowrap tracking-normal leading-tight shrink-0 font-sans">Mohsin Ali Raza</span>
+                            <span class="text-[8px] text-orange-400 font-extrabold uppercase tracking-wider mt-0.5 shrink-0 leading-none">Co-Founder</span>
+                        </div>
+                        <div class="glow-on-hover">
+                            <i class="fa-solid fa-user-gear text-primary text-[12px] mb-0.5 shrink-0"></i>
+                            <span class="font-normal text-white text-[11.5px] whitespace-nowrap tracking-normal leading-tight shrink-0 font-sans">Wasif Ali</span>
+                            <span class="text-[8px] text-orange-400 font-extrabold uppercase tracking-wider mt-0.5 shrink-0 leading-none">Admin</span>
+                        </div>
+                    </div>
+                    <div class="space-y-3 pt-2">
+                        ${socialIconsHtml}
+                        ${hotlineHtml}
+                        ${locationHtml}
+                    </div>
+                    ${adminPortalBtnHtml}
+                    ${copyrightHtml}
+                `;
+            } else {
+                footerEl.innerHTML = `
+                    <div class="font-serif text-white font-extrabold text-base leading-snug tracking-wide max-w-[340px] mx-auto">
+                        Thank you for visiting our website
+                    </div>
+                    <div class="font-serif font-black text-xl tracking-wide max-w-[340px] mx-auto" style="color: #FF5A36;">
+                        Al-Qadri Chaska Point
+                    </div>
+                    <hr class="border-t border-slate-800 w-32 mx-auto my-2.5">
+                    <p class="text-sm text-slate-100 font-bold leading-relaxed max-w-[360px] mx-auto pt-1">
+                        Stay connected with our latest food deals, tasty recipes, and special announcements.<br>
+                        Don't miss exciting offers and fresh updates from our restaurant. 🍔🍟
+                    </p>
+                    ${adminPortalBtnHtml}
+                    ${copyrightHtml}
+                `;
+            }
+        }
+
+        function renderCustomerMenu() {
+            const container = document.getElementById('menuGridContainer');
+            if (!container) return;
+
+            container.innerHTML = '';
+            const fastFoodItems = menuData.filter(x => x.category === 'fast');
+
+            if(fastFoodItems.length === 0) {
+                container.innerHTML = `<div class="col-span-3 py-6 text-center text-xs text-slate-400 italic bg-white rounded-xl border border-slate-200">No fast food items added yet.</div>`;
+                return;
+            }
+
+            fastFoodItems.forEach(item => {
+                const currentQty = cartItems[item.id] || 0;
+                const isSelected = currentQty > 0;
+
+                const cardOutline = isSelected 
+                    ? 'border-2 border-[#FF5A36] ring-2 ring-[#FF5A36]/20 bg-orange-50/20' 
+                    : 'border border-slate-200 bg-white';
+
+                const checkBadge = isSelected 
+                    ? `<div class="absolute top-1.5 right-1.5 bg-[#FF5A36] text-white w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-black shadow-md z-10"><i class="fa-solid fa-check"></i></div>` 
+                    : '';
+
+                container.innerHTML += `
+                    <div class="portrait-card relative ${cardOutline}" id="customer-card-${item.id}">
+                        ${checkBadge}
+                        <div class="card-image-box" style="background-image: url('${item.image}');"></div>
+                        <div class="card-info-box">
+                            <div class="text-center space-y-0">
+                                <h3 class="card-title-compact !mb-0" title="${item.name}">${item.name}</h3>
+                                <div class="card-price-compact !mb-0 !mt-0">Rs. ${item.price}</div>
+                            </div>
+                            <div class="selector-box-compact mt-1">
+                                <button class="btn-qty-mini" onclick="updateQty(${item.id}, -1)">-</button>
+                                <span class="qty-val-mini" id="qty-${item.id}">${currentQty}</span>
+                                <button class="btn-qty-mini" onclick="updateQty(${item.id}, 1)">+</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function renderLocalMenu() {
+            const container = document.getElementById('localMenuGridContainer');
+            if (!container) return;
+
+            container.innerHTML = '';
+            const localItems = menuData.filter(x => x.category === 'local');
+
+            if(localItems.length === 0) {
+                container.innerHTML = `<div class="col-span-4 py-6 text-center text-xs text-slate-400 italic bg-white rounded-xl border border-slate-200">No local items added yet.</div>`;
+                return;
+            }
+
+            localItems.forEach(item => {
+                const currentQty = cartItems[item.id] || 0;
+                const isSelected = currentQty > 0;
+
+                const cardOutline = isSelected 
+                    ? 'border-2 border-[#FF5A36] ring-2 ring-[#FF5A36]/20 bg-orange-50/20' 
+                    : 'border border-slate-200 bg-white';
+
+                const checkBadge = isSelected 
+                    ? `<div class="absolute top-1 right-1 bg-[#FF5A36] text-white w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-black shadow-md z-10"><i class="fa-solid fa-check"></i></div>` 
+                    : '';
+
+                container.innerHTML += `
+                    <div class="local-mini-card relative ${cardOutline}" id="local-card-${item.id}">
+                        ${checkBadge}
+                        <img src="${item.image}" alt="${item.name}" onerror="this.src='https://placehold.co/100x60/FF5A36/ffffff?text=ACP'">
+                        <div class="text-center space-y-0 w-full">
+                            <h3 class="local-title-compact !mb-0">${item.name}</h3>
+                            <div class="local-price-compact !mb-0 !mt-0">Rs. ${item.price}</div>
+                        </div>
+                        
+                        <div class="selector-box-compact w-full text-center mt-1 px-1 pb-1">
+                            <button class="btn-qty-mini !w-5 !h-5" onclick="updateQty(${item.id}, -1)">-</button>
+                            <span class="qty-val-mini !w-4 !text-[10px]" id="qty-local-${item.id}">${currentQty}</span>
+                            <button class="btn-qty-mini !w-5 !h-5" onclick="updateQty(${item.id}, 1)">+</button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function renderDrinksMenu() {
+            const container = document.getElementById('drinksMenuGridContainer');
+            if (!container) return;
+
+            container.innerHTML = '';
+            const drinkItems = menuData.filter(x => x.category === 'drinks');
+
+            if(drinkItems.length === 0) {
+                container.innerHTML = `<div class="col-span-4 py-6 text-center text-xs text-slate-400 italic bg-white rounded-xl border border-slate-200">No drinks added yet.</div>`;
+                return;
+            }
+
+            drinkItems.forEach(item => {
+                const currentQty = cartItems[item.id] || 0;
+                const isSelected = currentQty > 0;
+
+                const cardOutline = isSelected 
+                    ? 'border-2 border-[#FF5A36] ring-2 ring-[#FF5A36]/20 bg-orange-50/20' 
+                    : 'border border-slate-200 bg-white';
+
+                const checkBadge = isSelected 
+                    ? `<div class="absolute top-1 right-1 bg-[#FF5A36] text-white w-4 h-4 rounded-full flex items-center justify-center text-[9px] font-black shadow-md z-10"><i class="fa-solid fa-check"></i></div>` 
+                    : '';
+
+                container.innerHTML += `
+                    <div class="local-mini-card relative ${cardOutline}" id="drink-card-${item.id}">
+                        ${checkBadge}
+                        <img src="${item.image}" alt="${item.name}" onerror="this.src='https://placehold.co/100x60/FF5A36/ffffff?text=ACP'">
+                        <div class="text-center space-y-0 w-full">
+                            <h3 class="local-title-compact !mb-0">${item.name}</h3>
+                            <div class="local-price-compact !mb-0 !mt-0">Rs. ${item.price}</div>
+                        </div>
+                        
+                        <div class="selector-box-compact w-full text-center mt-1 px-1 pb-1">
+                            <button class="btn-qty-mini !w-5 !h-5" onclick="updateQty(${item.id}, -1)">-</button>
+                            <span class="qty-val-mini !w-4 !text-[10px]" id="qty-drink-${item.id}">${currentQty}</span>
+                            <button class="btn-qty-mini !w-5 !h-5" onclick="updateQty(${item.id}, 1)">+</button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function showNotification(message, type = 'success') {
+            const container = document.getElementById('toastContainer');
+            if (!container) return;
+
+            const icon = type === 'success' ? 'fa-circle-check text-emerald-500' : 'fa-triangle-exclamation text-amber-500';
+            const accent = type === 'success' ? 'border-emerald-100 bg-white' : 'border-amber-100 bg-white';
+            
+            const toast = document.createElement('div');
+            toast.className = `flex items-center gap-3 p-3 rounded-xl border ${accent} shadow-md transition-all transform translate-x-12 opacity-0 pointer-events-auto w-full max-w-xs`;
+            toast.innerHTML = `
+                <i class="fa-solid ${icon} text-base shrink-0"></i>
+                <div class="text-[10px] font-bold text-slate-800">${message}</div>
+            `;
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.classList.remove('translate-x-12', 'opacity-0');
+                toast.classList.add('translate-x-0', 'opacity-100');
+            }, 10);
+
+            setTimeout(() => {
+                toast.classList.add('translate-x-12', 'opacity-0');
+                setTimeout(() => { toast.remove(); }, 300);
+            }, 2500);
+        }
+
+        function updateQty(id, change) {
+            const currentQty = cartItems[id] || 0;
+            const newQty = Math.max(0, currentQty + change);
+            
+            if (newQty === 0) {
+                delete cartItems[id];
+            } else {
+                cartItems[id] = newQty;
+            }
+
+            renderCustomerMenu();
+            renderLocalMenu();
+            renderDrinksMenu();
+            renderCartSummary();
+        }
+
+        function renderCartSummary() {
+            const emptyState = document.getElementById('emptyCart');
+            const activeState = document.getElementById('activeCart');
+            const cartTableBody = document.getElementById('cartTableRows');
+            const floatingCartBar = document.getElementById('floatingCartBar');
+            const floatingCartCount = document.getElementById('floatingCartCount');
+            const floatingCartTotal = document.getElementById('floatingCartTotal');
+            
+            const keys = Object.keys(cartItems);
+            
+            let totalItemsCount = 0;
+            keys.forEach(k => {
+                totalItemsCount += cartItems[k];
+            });
+            
+            if (keys.length === 0) {
+                if (emptyState) emptyState.style.display = 'block';
+                if (activeState) activeState.style.display = 'none';
+                
+                if (floatingCartBar) {
+                    floatingCartBar.classList.add('translate-y-24', 'opacity-0', 'pointer-events-none');
+                    floatingCartBar.classList.remove('translate-y-0', 'opacity-100', 'pointer-events-auto');
+                }
+                return;
+            }
+
+            if (emptyState) emptyState.style.display = 'none';
+            if (activeState) activeState.style.display = 'block';
+            if (cartTableBody) cartTableBody.innerHTML = '';
+
+            let grandTotal = 0;
+
+            keys.forEach(id => {
+                const item = menuData.find(x => x.id == id);
+                if (!item) return;
+
+                const qty = cartItems[id];
+                const total = item.price * qty;
+                grandTotal += total;
+
+                if (cartTableBody) {
+                    cartTableBody.innerHTML += `
+                        <tr>
+                            <td class="font-bold py-2 text-slate-800">${item.name}</td>
+                            <td class="text-center font-extrabold py-2">${qty}</td>
+                            <td class="text-right font-black">Rs. ${total}</td>
+                        </tr>
+                    `;
+                }
+            });
+
+            const txtSubtotal = document.getElementById('txtSubtotal');
+            const txtGrandTotal = document.getElementById('txtGrandTotal');
+            if (txtSubtotal) txtSubtotal.innerText = 'Rs. ' + grandTotal;
+            if (txtGrandTotal) txtGrandTotal.innerText = 'Rs. ' + grandTotal;
+
+            if (floatingCartBar) {
+                if (floatingCartCount) floatingCartCount.innerText = totalItemsCount;
+                if (floatingCartTotal) floatingCartTotal.innerText = 'Rs. ' + grandTotal;
+                
+                const viewStore = document.getElementById('view-store');
+                if (viewStore && !viewStore.classList.contains('hidden')) {
+                    floatingCartBar.classList.remove('translate-y-24', 'opacity-0', 'pointer-events-none');
+                    floatingCartBar.classList.add('translate-y-0', 'opacity-100', 'pointer-events-auto');
+                }
+            }
+        }
+
+        function clearCart() {
+            cartItems = {};
+            renderCustomerMenu();
+            renderLocalMenu();
+            renderDrinksMenu();
+            renderCartSummary();
+            showNotification('Basket cleared.', 'warning');
+        }
+
+        function openCheckoutConfirmModal() {
+            const keys = Object.keys(cartItems);
+            if (keys.length === 0) {
+                showNotification('Your basket is empty!', 'warning');
+                return;
+            }
+
+            const itemsContainer = document.getElementById('checkoutModalItemsList');
+            const grandTotalEl = document.getElementById('checkoutModalGrandTotal');
+            
+            if (itemsContainer) itemsContainer.innerHTML = '';
+            let totalAmount = 0;
+
+            keys.forEach(id => {
+                const item = menuData.find(x => x.id == id);
+                if (item) {
+                    const qty = cartItems[id];
+                    const total = item.price * qty;
+                    totalAmount += total;
+
+                    itemsContainer.innerHTML += `
+                        <div class="flex justify-between items-center text-xs py-1 border-b border-slate-100 last:border-0">
+                            <span class="font-extrabold text-slate-800">${item.name} <span class="text-slate-400 font-normal">x${qty}</span></span>
+                            <span class="font-black text-slate-800">Rs. ${total}</span>
+                        </div>
+                    `;
+                }
+            });
+
+            if (grandTotalEl) grandTotalEl.innerText = 'Rs. ' + totalAmount;
+
+            const nameInput = document.getElementById('checkoutName');
+            const phoneInput = document.getElementById('checkoutPhone');
+            const locationInput = document.getElementById('checkoutLocation');
+
+            if (currentUser) {
+                if (nameInput) nameInput.value = currentUser.name;
+                if (phoneInput) phoneInput.value = currentUser.phone;
+                if (locationInput) locationInput.value = currentUser.location;
+            }
+
+            document.getElementById('checkoutConfirmModal').classList.remove('hidden');
+        }
+
+        function closeCheckoutConfirmModal() {
+            document.getElementById('checkoutConfirmModal').classList.add('hidden');
+        }
+
+        function finalizeOrderAndSendWhatsApp() {
+            const keys = Object.keys(cartItems);
+            if (keys.length === 0) return;
+
+            const name = document.getElementById('checkoutName').value.trim();
+            const phone = document.getElementById('checkoutPhone').value.trim();
+            const location = document.getElementById('checkoutLocation').value.trim();
+
+            if (!name || !phone || !location) {
+                showNotification('Please fill in Name, Phone and Location.', 'warning');
+                return;
+            }
+
+            const orderId = '#ACP-' + Math.floor(1000 + Math.random() * 9000);
+            let itemsDetail = [];
+            let grandTotal = 0;
+
+            keys.forEach(id => {
+                const item = menuData.find(x => x.id == id);
+                if (item) {
+                    const qty = cartItems[id];
+                    const total = item.price * qty;
+                    grandTotal += total;
+                    itemsDetail.push({ name: item.name, qty: qty, price: item.price, total: total });
+                }
+            });
+
+            const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            const dateStr = new Date().toLocaleDateString();
+
+            const newOrder = {
+                id: orderId,
+                customerName: name,
+                phone: phone,
+                location: location,
+                date: dateStr,
+                time: timeStr,
+                items: itemsDetail,
+                total: grandTotal,
+                status: 'Pending'
+            };
+
+            ordersList.unshift(newOrder);
+            if (window.dbSaveOrder) window.dbSaveOrder(newOrder);
+
+            let waMsg = `*🛒 NEW ORDER - ALQADRI CHASKA POINT*\n`;
+            waMsg += `*Order ID:* ${orderId}\n`;
+            waMsg += `*Customer:* ${name}\n`;
+            waMsg += `*Phone:* ${phone}\n`;
+            waMsg += `*Location:* ${location}\n\n`;
+            waMsg += `*Items Ordered:*\n`;
+            itemsDetail.forEach(it => {
+                waMsg += `• ${it.name} x${it.qty} = Rs. ${it.total}\n`;
+            });
+            waMsg += `\n*Grand Total:* Rs. ${grandTotal}\n`;
+            waMsg += `Thank you! Please prepare my order.`;
+
+            const whatsappUrl = `https://wa.me/923102434222?text=${encodeURIComponent(waMsg)}`;
+
+            closeCheckoutConfirmModal();
+            showNotification(`Order ${orderId} submitted! Opening WhatsApp...`);
+
+            cartItems = {};
+            renderCustomerMenu();
+            renderLocalMenu();
+            renderDrinksMenu();
+            renderCartSummary();
+
+            window.open(whatsappUrl, '_blank');
+        }
+
+        function generateStoreInvoice() {
+            const modalOverlay = document.getElementById('invoiceModalOverlay');
+            const invoiceTableBody = document.getElementById('invoiceTableRows');
+            const keys = Object.keys(cartItems);
+
+            if (keys.length === 0) return;
+
+            if (invoiceTableBody) invoiceTableBody.innerHTML = '';
+            let totalAmount = 0;
+
+            keys.forEach(id => {
+                const item = menuData.find(x => x.id == id);
+                if (!item) return;
+
+                const qty = cartItems[id];
+                const total = item.price * qty;
+                totalAmount += total;
+
+                if (invoiceTableBody) {
+                    invoiceTableBody.innerHTML += `
+                        <tr class="text-slate-800">
+                            <td class="py-2 font-bold">${item.name}</td>
+                            <td class="text-center font-bold">${qty}</td>
+                            <td class="text-right font-black">Rs. ${total}</td>
+                        </tr>
+                    `;
+                }
+            });
+
+            const dateObj = new Date();
+            const lblInvDate = document.getElementById('lblInvDate');
+            if (lblInvDate) {
+                lblInvDate.innerText = dateObj.toLocaleDateString('en-US', {
+                    year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit'
+                });
+            }
+
+            const lblTxnId = document.getElementById('lblTxnId');
+            if (lblTxnId) {
+                lblTxnId.innerText = '#ACP-' + Math.floor(1000 + Math.random() * 9000);
+            }
+
+            const lblSub = document.getElementById('lblSub');
+            if (lblSub) lblSub.innerText = 'Rs. ' + totalAmount;
+
+            if (modalOverlay) modalOverlay.style.display = 'flex';
+        }
+
+        function closeReceiptAndScrollToMenu() {
+            const modalOverlay = document.getElementById('invoiceModalOverlay');
+            if (modalOverlay) {
+                modalOverlay.style.display = 'none';
+            }
+        }
+
+        function downloadInvoiceJPG() {
+            const element = document.getElementById('receiptContainer');
+            
+            const options = {
+                scale: 4,
+                useCORS: true,
+                allowTaint: true,
+                backgroundColor: '#ffffff',
+                scrollX: 0,
+                scrollY: -window.scrollY,
+                windowWidth: document.documentElement.offsetWidth,
+                windowHeight: document.documentElement.offsetHeight,
+                ignoreElements: (el) => el.classList.contains('no-print')
+            };
+
+            showNotification('Generating receipt image...');
+            
+            html2canvas(element, options).then(canvas => {
+                const link = document.createElement('a');
+                link.download = 'Alqadri-Receipt.jpg';
+                link.href = canvas.toDataURL('image/jpeg', 1.0);
+                link.click();
+                showNotification('High-resolution JPG saved successfully!');
+            }).catch(err => {
+                console.error("JPG capture error: ", err);
+                showNotification('Failed to generate JPG receipt.', 'warning');
+            });
+        }
+    </script>
+
+    <!-- PWA Service Worker Registration -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(reg => console.log('✅ PWA Service Worker Registered Successfully! Scope:', reg.scope))
+                    .catch(err => console.error('❌ Service Worker Registration Failed:', err));
+            });
+        }
+    </script>
+</body>
+</html>
